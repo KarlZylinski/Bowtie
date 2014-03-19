@@ -11,3 +11,18 @@
 *.lai
 *.la
 *.a
+
+# Visual Studio specific
+*.sdf
+*.opensdf
+*.pdb
+*.obj
+*.exe
+*.lib
+*.log
+*.tlog
+*.unsuccessfulbuild
+*.cache
+*.lastbuildstate
+*.idb
+*.ilk
