@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include <engine/engine.h>
 #include <foundation/array.h>
 #include <foundation/temp_allocator.h>
 #include <opengl_renderer/opengl_context_windows.h>
@@ -41,11 +42,13 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	s_allocator = &allocator;
 
 	{
-		OpenGLRenderer renderer;
+		OpenGLRenderer renderer(allocator);
 		s_renderer = &renderer;
 
 		OpenGLContextWindows context;
 		s_context = &context;
+
+		Engine engine(allocator, renderer.render_interface());
 
 		Window window(instance,&create_render_context_callback, &window_resized_callback,
 			&key_down_callback, &key_up_callback);
@@ -53,6 +56,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		while(window.is_open())
 		{			
 			window.dispatch_messages();
+			engine.update();
 		}
 	}
 

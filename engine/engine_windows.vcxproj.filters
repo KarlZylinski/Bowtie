@@ -2,8 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="engine\renderer.cpp" />
+    <ClCompile Include="engine\render_interface.cpp" />
+    <ClCompile Include="engine\engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
+    <ClInclude Include="engine\render_interface.h" />
+    <ClInclude Include="engine\render_fence.h" />
+    <ClInclude Include="engine\engine.h" />
+    <ClInclude Include="engine\renderer_command.h" />
   </ItemGroup>
 </Project>

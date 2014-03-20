@@ -11,10 +11,11 @@ namespace bowtie
 class OpenGLRenderer : public Renderer
 {
 public:
-	OpenGLRenderer();
+	OpenGLRenderer(Allocator& allocator);
 	~OpenGLRenderer();
 	
 	virtual void clear();
+	virtual void flip();
 	virtual void run_render_thread();
 	void set_opengl_context(OpenGLContext* context);
 private:

@@ -10,12 +10,14 @@ namespace bowtie
 /////////////////
 // Public members
 
-OpenGLRenderer::OpenGLRenderer() : _context(nullptr)
+OpenGLRenderer::OpenGLRenderer(Allocator& allocator) : Renderer(allocator), _context(nullptr)
 {
 }
 
 OpenGLRenderer::~OpenGLRenderer()
 {
+	set_active(false);
+	notify_command_queue_populated();
 	_rendering_thread.join();
 }
 
@@ -36,6 +38,11 @@ void OpenGLRenderer::clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void OpenGLRenderer::flip()
+{
+	_context->flip();
+}
+
 //////////////////
 // Private members
 
@@ -45,13 +52,22 @@ void OpenGLRenderer::run()
 
 	int extension_load_error = gl3wInit();
 	assert(extension_load_error == 0);
+		
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	set_active(true);
 
 	while(active())
 	{
-		clear();
-		_context->flip();
+		{
+			std::unique_lock<std::mutex> command_queue_populated_lock(_command_queue_populated_mutex);
+			_wait_for_command_queue_populated.wait(command_queue_populated_lock, [&]{return _command_queue_populated;});
+			_command_queue_populated = false;
+		}
+
+		consume_command_queue();
 	}
 }
 

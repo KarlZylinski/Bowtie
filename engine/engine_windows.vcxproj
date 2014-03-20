@@ -19,10 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\renderer.h" />
+    <ClInclude Include="engine\renderer_command.h" />
+    <ClInclude Include="engine\render_fence.h" />
+    <ClInclude Include="engine\render_interface.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\renderer.cpp" />
+    <ClCompile Include="engine\render_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\foundation_windows.vcxproj">
@@ -97,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Projects\KjellKod\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
