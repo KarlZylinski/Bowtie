@@ -22,11 +22,17 @@
     <ClCompile Include="application\application.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\engine\engine_windows.vcxproj">
+      <Project>{c2b76c8f-16a3-4454-98fc-625f488fcc04}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\foundation\foundation_windows.vcxproj">
       <Project>{f1c9e9f9-bfd6-4020-a64c-54734c47b6b4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\opengl_renderer\opengl_renderer_windows.vcxproj">
       <Project>{aad470b8-0425-454c-970f-e2a458a97f05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\os\os_windows.vcxproj">
+      <Project>{ee0cf23b-fec0-4b55-a8df-d901d7bd9b73}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -112,17 +118,18 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_LIBS)\glfw\include;$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\opengl_renderer</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\opengl_renderer;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(BOWTIE_LIBS)\glfw\lib\win64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

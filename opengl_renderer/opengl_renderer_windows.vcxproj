@@ -71,8 +71,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;GLEW_STATIC;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_LIBS)\glfw\include;$(BOWTIE_SOURCE)\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GLEW_STATIC;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -126,10 +126,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="opengl_renderer\gl3w.h" />
+    <ClInclude Include="opengl_renderer\GL3\gl3.h" />
+    <ClInclude Include="opengl_renderer\opengl_context.h" />
+    <ClInclude Include="opengl_renderer\opengl_context_windows.h" />
     <ClInclude Include="opengl_renderer\opengl_renderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="opengl_renderer\gl3w.c" />
+    <ClCompile Include="opengl_renderer\opengl_context.cpp" />
+    <ClCompile Include="opengl_renderer\opengl_context_windows.cpp" />
     <ClCompile Include="opengl_renderer\opengl_renderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\engine\engine_windows.vcxproj">
+      <Project>{c2b76c8f-16a3-4454-98fc-625f488fcc04}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

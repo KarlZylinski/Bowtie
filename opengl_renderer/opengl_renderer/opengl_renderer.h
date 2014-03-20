@@ -1,32 +1,31 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <thread>
+#include <engine/renderer.h>
+
+#include "opengl_context.h"
 
 namespace bowtie
 {
 
-namespace opengl_renderer
-{
-
-class OpenGLRenderer
+class OpenGLRenderer : public Renderer
 {
 public:
-	OpenGLRenderer(GLFWwindow& window);
+	OpenGLRenderer();
 	~OpenGLRenderer();
-
+	
+	virtual void clear();
+	virtual void run_render_thread();
+	void set_opengl_context(OpenGLContext* context);
 private:
-	void run_render_thread();
 	void run();
-
-	GLFWwindow& _window;
+	
+	OpenGLContext* _context;
 	std::thread _rendering_thread;
 		
 	// Disabled stuff
 	OpenGLRenderer(OpenGLRenderer&);
 	OpenGLRenderer& operator=(OpenGLRenderer&);
 };
-
-}
 
 }

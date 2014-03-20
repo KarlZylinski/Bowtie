@@ -1,18 +1,17 @@
 #include "opengl_renderer.h"
+
 #include <cassert>
 
-namespace bowtie
-{
+#include "gl3w.h"
 
-namespace opengl_renderer
+namespace bowtie
 {
 
 /////////////////
 // Public members
 
-OpenGLRenderer::OpenGLRenderer(GLFWwindow& window) : _window(window)
+OpenGLRenderer::OpenGLRenderer() : _context(nullptr)
 {
-	run_render_thread();
 }
 
 OpenGLRenderer::~OpenGLRenderer()
@@ -20,26 +19,40 @@ OpenGLRenderer::~OpenGLRenderer()
 	_rendering_thread.join();
 }
 
-//////////////////
-// Private members
-
 void OpenGLRenderer::run_render_thread()
 {
+	assert(_context);
+
 	_rendering_thread = std::thread(&OpenGLRenderer::run, this);
 }
 
-void OpenGLRenderer::run()
+void OpenGLRenderer::set_opengl_context(OpenGLContext* context)
 {
-	glfwMakeContextCurrent(&_window);
-	
-	while(!glfwWindowShouldClose(&_window))
-	{
-		glfwSwapBuffers(&_window);
-	}
-
-	glfwTerminate();
+	_context = context;
 }
 
+void OpenGLRenderer::clear()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+//////////////////
+// Private members
+
+void OpenGLRenderer::run()
+{
+	_context->make_current_for_calling_thread();
+
+	int extension_load_error = gl3wInit();
+	assert(extension_load_error == 0);
+
+	set_active(true);
+
+	while(active())
+	{
+		clear();
+		_context->flip();
+	}
 }
 
 }
