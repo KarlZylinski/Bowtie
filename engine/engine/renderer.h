@@ -29,10 +29,12 @@ public:
 	RenderInterface& render_interface() { return _render_interface; }
 
 	// Renderer API specific
+	virtual void test_draw() = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void run_render_thread() = 0;
 	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
+	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
 	
 protected:
 	void move_unprocessed_commands();

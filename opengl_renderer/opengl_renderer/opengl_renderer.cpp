@@ -3,8 +3,11 @@
 #include <cassert>
 
 #include <foundation/memory.h>
+#include <foundation/matrix4.h>
 
 #include "gl3w.h"
+
+static GLuint vertexbuffer;
 
 namespace bowtie
 {
@@ -85,6 +88,56 @@ void OpenGLRenderer::set_opengl_context(OpenGLContext* context)
 	_context = context;
 }
 
+void OpenGLRenderer::test_draw()
+{	
+	Matrix4 projection_matrix;
+
+	auto near_plane = 0.0f;
+	auto far_plane = 1.0f;
+	
+	projection_matrix[0][0] = 2.0f/639.0f;
+	projection_matrix[0][1] = 0;
+	projection_matrix[0][2] = 0;
+	projection_matrix[0][3] = 0;
+	
+	projection_matrix[1][0] = 0;
+	projection_matrix[1][1] = -2.0f/479.0f;
+	projection_matrix[1][2] = 0;
+	projection_matrix[1][3] = 0;
+
+	projection_matrix[2][0] = 0;
+	projection_matrix[2][1] = 0;
+	projection_matrix[2][2] = 2.0f/(far_plane/near_plane);
+	projection_matrix[2][3] = 0;
+	
+	projection_matrix[3][0] = -1;
+	projection_matrix[3][1] = 1;
+	projection_matrix[3][2] = (near_plane+far_plane)/(near_plane-far_plane);
+	projection_matrix[3][3] = 1;
+		
+	GLuint program = lookup_resource_object(1).handle;
+
+	assert(glIsProgram(program) && "Invalid shader program");
+	glUseProgram(program);
+
+	GLuint projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
+	glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection_matrix[0][0]);
+
+	glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0 
+	);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDisableVertexAttribArray(0);
+}
+
 void OpenGLRenderer::clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -105,7 +158,19 @@ void OpenGLRenderer::run()
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	
+
+	// TEST CODE
+
+	static const GLfloat test_vertices[] = {
+	   0.0f,  0.0f, 0.0f,
+	   640.0f, 0.0f, 0.0f,
+	   320.0f,  480.0f, 0.0f,
+	};
+
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(test_vertices), test_vertices, GL_STATIC_DRAW);
+
 	// 2D needs no degth test.
 	glDisable(GL_DEPTH_TEST);
 

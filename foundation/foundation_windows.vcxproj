@@ -25,6 +25,7 @@
     <ClInclude Include="foundation\hash.h" />
     <ClInclude Include="foundation\keyboard.h" />
     <ClInclude Include="foundation\math_types.h" />
+    <ClInclude Include="foundation\matrix4.h" />
     <ClInclude Include="foundation\memory.h" />
     <ClInclude Include="foundation\memory_types.h" />
     <ClInclude Include="foundation\murmur_hash.h" />

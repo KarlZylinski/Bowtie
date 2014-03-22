@@ -136,7 +136,15 @@ void Renderer::move_unprocessed_commands()
 void Renderer::render_world()
 {
 	clear();
+
+	test_draw();
+
 	flip();
+}
+
+InternalRenderResourceHandle Renderer::lookup_resource_object(RenderResourceHandle handle) const
+{
+	return _resource_lut[handle];
 }
 
 }
