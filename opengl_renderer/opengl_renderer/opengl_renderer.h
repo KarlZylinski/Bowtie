@@ -18,6 +18,9 @@ public:
 	virtual void flip();
 	virtual void run_render_thread();
 	void set_opengl_context(OpenGLContext* context);
+
+	// Resource loading
+	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
 private:
 	void run();
 	

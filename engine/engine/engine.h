@@ -1,5 +1,7 @@
 #pragma once
 
+#include "render_resource_handle.h"
+
 namespace bowtie
 {
 
@@ -15,6 +17,7 @@ public:
 private:
 	Allocator& _allocator;
 	RenderInterface& _render_interface;
+	RenderResourceHandle _test_shader;
 
 	Engine(const Engine&);
 	Engine& operator=(const Engine&);

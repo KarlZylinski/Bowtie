@@ -2,13 +2,12 @@
 
 #include <cassert>
 
+#include <foundation/memory.h>
+
 #include "gl3w.h"
 
 namespace bowtie
 {
-
-/////////////////
-// Public members
 
 OpenGLRenderer::OpenGLRenderer(Allocator& allocator) : Renderer(allocator), _context(nullptr)
 {
@@ -19,6 +18,59 @@ OpenGLRenderer::~OpenGLRenderer()
 	set_active(false);
 	notify_command_queue_populated();
 	_rendering_thread.join();
+}
+
+
+
+GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type)
+{
+	GLuint result = glCreateShader(shader_type);
+
+	if(!result)
+		return result;
+
+	glShaderSource(result, 1, &shader_source, NULL);
+	glCompileShader(result);
+
+	GLint status = 0;
+	glGetShaderiv(result, GL_COMPILE_STATUS, &status);
+
+	assert(status && "Compilation of shader failed.");
+	
+	return result;
+}
+	
+GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders)
+{
+    int i;
+	GLuint program;
+
+    program = glCreateProgram();
+
+    for(i = 0; i < shader_count; i++)
+        glAttachShader(program, shaders[i]);
+
+    glLinkProgram(program);
+
+	GLint status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+
+    assert(status && "Failed linking shader program");
+
+	if(delete_shaders)
+	{
+		for(i = 0; i < shader_count; i++)
+			glDeleteShader(shaders[i]);
+	}
+	
+	assert(glIsProgram(program));
+	
+	glValidateProgram(program);
+	GLint validation_status;
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
+	assert(validation_status && "Failed to validate program");
+	
+    return program;
 }
 
 void OpenGLRenderer::run_render_thread()
@@ -35,16 +87,13 @@ void OpenGLRenderer::set_opengl_context(OpenGLContext* context)
 
 void OpenGLRenderer::clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void OpenGLRenderer::flip()
 {
 	_context->flip();
 }
-
-//////////////////
-// Private members
 
 void OpenGLRenderer::run()
 {
@@ -56,10 +105,13 @@ void OpenGLRenderer::run()
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	
+	// 2D needs no degth test.
+	glDisable(GL_DEPTH_TEST);
 
 	set_active(true);
 
-	while(active())
+	while (active())
 	{
 		{
 			std::unique_lock<std::mutex> command_queue_populated_lock(_command_queue_populated_mutex);
@@ -69,6 +121,31 @@ void OpenGLRenderer::run()
 
 		consume_command_queue();
 	}
+}
+
+InternalRenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data, void* dynamic_data)
+{
+	GLuint vertex_shader = compile_glsl_shader((char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset), GL_VERTEX_SHADER);
+	GLuint fragment_shader = compile_glsl_shader((char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset), GL_FRAGMENT_SHADER);
+		
+	assert(vertex_shader != 0 && "Failed compiling vertex shader");
+	assert(fragment_shader != 0 && "Failed compiling fragments shader");
+
+	GLuint shaders[] = { vertex_shader, fragment_shader	};
+	
+	GLuint program = link_glsl_program(shaders, 2, true);
+	
+	if (program == 0)
+	{
+		char buf[1000];
+		int len;
+		glGetShaderInfoLog(program, 1000, &len, buf);
+		printf("%s", buf);
+	}
+
+	assert(program != 0 && "Failed to link glsl shader");
+	
+	return program;
 }
 
 }

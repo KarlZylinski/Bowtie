@@ -23,7 +23,10 @@
     <ClInclude Include="engine\renderer.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\render_fence.h" />
+    <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\render_interface.h" />
+    <ClInclude Include="engine\internal_render_resource_handle.h" />
+    <ClInclude Include="engine\render_resource_types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\engine.cpp" />
