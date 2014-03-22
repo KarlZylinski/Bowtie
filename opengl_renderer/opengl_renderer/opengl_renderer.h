@@ -14,7 +14,7 @@ public:
 	OpenGLRenderer(Allocator& allocator);
 	~OpenGLRenderer();
 	
-	virtual void test_draw();
+	virtual void test_draw(const View& view);
 	virtual void clear();
 	virtual void flip();
 	virtual void run_render_thread();

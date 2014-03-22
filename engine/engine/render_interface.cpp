@@ -22,27 +22,11 @@ RenderResourceData RenderInterface::create_render_resource(RenderResourceData::T
 	return rr;
 }
 
-RendererCommand RenderInterface::allocate_command(RendererCommand::Type type)
+RendererCommand RenderInterface::create_command(RendererCommand::Type type)
 {
 	RendererCommand command;
 	memset(&command, 0, sizeof(RendererCommand));
-
 	command.type = type;
-
-	switch (type)
-	{
-		case RendererCommand::Fence:
-			// Special treatment for fences. This data is deleted in wait_for_fence, not when the command is processed.
-			command.data = MAKE_NEW(_allocator, RenderFence);
-			break;
-		case RendererCommand::RenderWorld:
-			command.data = 0;
-			break;
-		default:
-			assert(!"Unknown command type");
-			break;
-	}
-
 	return command;
 }
 
@@ -85,7 +69,8 @@ void RenderInterface::load_resource(RenderResourceData& resource, void* dynamic_
 
 RenderFence& RenderInterface::create_fence()
 {
-	auto fence_command = allocate_command(RendererCommand::Fence);
+	auto fence_command = create_command(RendererCommand::Fence);
+	fence_command.data = MAKE_NEW(_allocator, RenderFence);
 	dispatch(fence_command);	
 	return *(RenderFence*)fence_command.data;
 }

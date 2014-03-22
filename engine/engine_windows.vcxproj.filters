@@ -4,6 +4,7 @@
     <ClCompile Include="engine\renderer.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\engine.cpp" />
+    <ClCompile Include="engine\view.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -14,5 +15,6 @@
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\internal_render_resource_handle.h" />
+    <ClInclude Include="engine\view.h" />
   </ItemGroup>
 </Project>

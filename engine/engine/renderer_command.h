@@ -1,5 +1,7 @@
 #pragma once
 
+#include "view.h"
+
 namespace bowtie
 {
 
@@ -10,6 +12,13 @@ struct RendererCommand
 	void* data;
 	unsigned dynamic_data_size;
 	void* dynamic_data;
+};
+
+struct RenderWorldData
+{
+	RenderWorldData(const View& view) : view(view) {}
+
+	View view;
 };
 
 }

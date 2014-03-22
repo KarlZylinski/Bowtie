@@ -81,7 +81,8 @@ void Renderer::consume_command_queue()
 			
 		case RendererCommand::RenderWorld:
 			{
-				render_world();
+				RenderWorldData& rwd = *(RenderWorldData*)command.data;
+				render_world(rwd.view);
 			}
 			break;
 
@@ -133,11 +134,11 @@ void Renderer::move_unprocessed_commands()
 	array::clear(_unprocessed_commands);
 }
 
-void Renderer::render_world()
+void Renderer::render_world(const View& view)
 {
 	clear();
 
-	test_draw();
+	test_draw(view);
 
 	flip();
 }

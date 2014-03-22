@@ -17,7 +17,7 @@ public:
 	bool active() const;
 	
 	RenderResourceData create_render_resource(RenderResourceData::Type type);
-	RendererCommand allocate_command(RendererCommand::Type type);
+	RendererCommand create_command(RendererCommand::Type type);
 	void dispatch(const RendererCommand& command);
 	void load_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
 

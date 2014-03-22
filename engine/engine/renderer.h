@@ -29,7 +29,7 @@ public:
 	RenderInterface& render_interface() { return _render_interface; }
 
 	// Renderer API specific
-	virtual void test_draw() = 0;
+	virtual void test_draw(const View& view) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void run_render_thread() = 0;
@@ -51,7 +51,7 @@ protected:
 private:
 	bool _active;
 	Allocator& _allocator;
-	void render_world();
+	void render_world(const View& view);
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;
 	RenderInterface _render_interface;

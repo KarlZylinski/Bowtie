@@ -54,7 +54,14 @@ void Engine::update()
 
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 	
-	auto render_world_command = _render_interface.allocate_command(RendererCommand::RenderWorld);
+	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
+
+	View view(Vector2(640,480), Vector2(0,0));
+
+	RenderWorldData& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
+	rwd.view = view;
+	render_world_command.data = &rwd;
+
 	_render_interface.dispatch(render_world_command);
 }
 
