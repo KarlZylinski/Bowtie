@@ -17,7 +17,9 @@ public:
 
 	const Vector2& position() const;
 	void set_position(const Vector2& position);
+	void set_position(float x, float y);
 	void move(const Vector2& distance);
+	void move(float x, float y);
 
 	Matrix4 projection() const;
 	Matrix4 view() const;

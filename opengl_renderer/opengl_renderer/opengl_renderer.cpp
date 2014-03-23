@@ -23,8 +23,6 @@ OpenGLRenderer::~OpenGLRenderer()
 	_rendering_thread.join();
 }
 
-
-
 GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type)
 {
 	GLuint result = glCreateShader(shader_type);
@@ -90,7 +88,7 @@ void OpenGLRenderer::set_opengl_context(OpenGLContext* context)
 
 void OpenGLRenderer::test_draw(const View& view)
 {	
-	auto projection_matrix = view.projection();
+	auto projection_matrix = view.view_projection();
 		
 	GLuint program = lookup_resource_object(1).handle;
 

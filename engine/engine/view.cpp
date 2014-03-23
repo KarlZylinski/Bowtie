@@ -3,7 +3,7 @@
 namespace bowtie
 {
 
-View::View(const Vector2& size, const Vector2& position) : _size(size), _position(position)
+View::View(const Vector2& size, const Vector2& position) : _size(size), _position(-position)
 {
 	
 }
@@ -30,12 +30,24 @@ const Vector2& View::position() const
 
 void View::set_position(const Vector2& position)
 {
-	_position = position;
+	_position = -position;
+}
+
+void View::set_position(float x, float y)
+{
+	_position.x = -x;
+	_position.y = -y;
 }
 
 void View::move(const Vector2& distance)
 {
-	_position += distance;
+	_position -= distance;
+}
+
+void View::move(float x, float y)
+{
+	_position.x -= x;
+	_position.y -= y;
 }
 
 Matrix4 View::projection() const
@@ -97,7 +109,7 @@ Matrix4 View::view() const
 
 Matrix4 View::view_projection() const
 {
-	return projection() * view();
+	return view() * projection();
 }
 
 } // namespace bowtie

@@ -45,6 +45,7 @@
     <ClInclude Include="foundation\temp_allocator.h" />
     <ClInclude Include="foundation\types.h" />
     <ClInclude Include="foundation\vector2.h" />
+    <ClInclude Include="foundation\vector4.h" />
     <ClInclude Include="GL\wglew.h" />
     <ClInclude Include="resource_path.h" />
   </ItemGroup>

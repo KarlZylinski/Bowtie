@@ -5,6 +5,7 @@
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\view.cpp" />
+    <ClCompile Include="engine\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -16,5 +17,6 @@
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\internal_render_resource_handle.h" />
     <ClInclude Include="engine\view.h" />
+    <ClInclude Include="engine\timer.h" />
   </ItemGroup>
 </Project>
