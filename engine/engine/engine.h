@@ -1,5 +1,7 @@
 #pragma once
 
+#include <foundation/vector2u.h>
+
 #include "render_resource_handle.h"
 
 namespace bowtie
@@ -13,6 +15,7 @@ class Engine
 public:
 	Engine(Allocator& allocator, RenderInterface& render_interface);
 	void update();
+	void resize(const Vector2u& resolution);
 
 private:
 	Allocator& _allocator;

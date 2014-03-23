@@ -23,6 +23,8 @@ public:
 
 	RenderFence& create_fence();
 	void wait_for_fence(RenderFence& fence);
+	void resize(const Vector2u& resolution);
+	const Vector2u& resolution() const;
 
 private:
 	Allocator& _allocator;

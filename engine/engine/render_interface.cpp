@@ -84,4 +84,19 @@ void RenderInterface::wait_for_fence(RenderFence& fence)
 	MAKE_DELETE(_allocator, RenderFence, &fence);
 }
 
+void RenderInterface::resize(const Vector2u& resolution)
+{
+	ResizeData& rd = *(ResizeData*)_allocator.allocate(sizeof(ResizeData));
+	rd.resolution = resolution;
+	
+	auto resize_command = create_command(RendererCommand::Resize);
+	resize_command.data = &rd;	
+	dispatch(resize_command);
+}
+
+const Vector2u& RenderInterface::resolution() const
+{
+	return _renderer.resolution();
+}
+
 }

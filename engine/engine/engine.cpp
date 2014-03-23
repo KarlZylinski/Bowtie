@@ -65,7 +65,7 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 	
 	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
-
+	
 	View view(Vector2(640,480), Vector2(0,0));
 	view.set_position(cos(_time_since_start) * 100.0f,sin(_time_since_start) * 100.0f);
 
@@ -74,6 +74,11 @@ void Engine::update()
 	render_world_command.data = &rwd;
 
 	_render_interface.dispatch(render_world_command);
+}
+
+void Engine::resize(const Vector2u& resolution)
+{
+	_render_interface.resize(resolution);
 }
 
 }

@@ -22,6 +22,7 @@ public:
 	virtual ~Renderer();
 	
 	bool active() const { return _active; }
+	const Vector2u& resolution() const { return _resolution; }
 	void add_renderer_command(const RendererCommand& command);
 	void load_resource(RenderResourceData& render_resource, void* dynamic_data);
 	void consume_command_queue();
@@ -32,6 +33,7 @@ public:
 	virtual void test_draw(const View& view) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
+	virtual void resize(const Vector2u& size) = 0;
 	virtual void run_render_thread() = 0;
 	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
@@ -47,6 +49,7 @@ protected:
 	void notify_command_queue_populated();
 	Array<RenderResourceHandle> _free_handles;
 	InternalRenderResourceHandle _resource_lut[num_handles];
+	Vector2u _resolution;
 
 private:
 	bool _active;

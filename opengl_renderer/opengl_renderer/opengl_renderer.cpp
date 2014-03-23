@@ -123,6 +123,11 @@ void OpenGLRenderer::flip()
 	_context->flip();
 }
 
+void OpenGLRenderer::resize(const Vector2u& resolution)
+{
+	glViewport(0, 0, resolution.x, resolution.y);
+}
+
 void OpenGLRenderer::run()
 {
 	_context->make_current_for_calling_thread();

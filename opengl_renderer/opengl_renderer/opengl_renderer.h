@@ -17,6 +17,7 @@ public:
 	virtual void test_draw(const View& view);
 	virtual void clear();
 	virtual void flip();
+	virtual void resize(const Vector2u& resolution);
 	virtual void run_render_thread();
 	void set_opengl_context(OpenGLContext* context);
 

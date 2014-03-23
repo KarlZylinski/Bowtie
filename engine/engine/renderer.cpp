@@ -93,8 +93,12 @@ void Renderer::consume_command_queue()
 			}
 			break;
 
-		default:
-			assert(!"Unknown renderer command");
+		case RendererCommand::Resize:
+			{
+				ResizeData& data = *(ResizeData*)command.data;
+				_resolution = data.resolution;
+				resize(data.resolution);
+			}
 			break;
 		}	
 
