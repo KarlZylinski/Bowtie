@@ -3,7 +3,7 @@
 namespace bowtie
 {
 
-class OpenGLContext
+class RendererContext
 {
 public:
 	virtual void flip() = 0;

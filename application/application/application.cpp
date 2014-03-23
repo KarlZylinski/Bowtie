@@ -20,9 +20,7 @@ namespace
 void create_render_context_callback(HWND hwnd, const Vector2u& resolution)
 {
 	s_context->create(hwnd);
-	s_renderer->set_opengl_context(s_context);
-	s_renderer->run_render_thread();
-	s_renderer->resize(resolution);
+	s_renderer->run(s_context, resolution);
 }
 
 void window_resized_callback(const Vector2u& resolution)

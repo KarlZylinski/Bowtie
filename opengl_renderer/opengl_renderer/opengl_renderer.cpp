@@ -12,7 +12,7 @@ static GLuint vertexbuffer;
 namespace bowtie
 {
 
-OpenGLRenderer::OpenGLRenderer(Allocator& allocator) : Renderer(allocator), _context(nullptr)
+OpenGLRenderer::OpenGLRenderer(Allocator& allocator) : Renderer(allocator)
 {
 }
 
@@ -74,18 +74,6 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
     return program;
 }
 
-void OpenGLRenderer::run_render_thread()
-{
-	assert(_context);
-
-	_rendering_thread = std::thread(&OpenGLRenderer::run, this);
-}
-
-void OpenGLRenderer::set_opengl_context(OpenGLContext* context)
-{
-	_context = context;
-}
-
 void OpenGLRenderer::test_draw(const View& view)
 {	
 	auto projection_matrix = view.view_projection();
@@ -128,7 +116,7 @@ void OpenGLRenderer::resize(const Vector2u& resolution)
 	glViewport(0, 0, resolution.x, resolution.y);
 }
 
-void OpenGLRenderer::run()
+void OpenGLRenderer::run_thread()
 {
 	_context->make_current_for_calling_thread();
 

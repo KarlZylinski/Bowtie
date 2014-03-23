@@ -18,5 +18,6 @@
     <ClInclude Include="engine\internal_render_resource_handle.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
+    <ClInclude Include="engine\renderer_context.h" />
   </ItemGroup>
 </Project>

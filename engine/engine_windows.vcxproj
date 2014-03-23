@@ -22,6 +22,7 @@
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\renderer.h" />
     <ClInclude Include="engine\renderer_command.h" />
+    <ClInclude Include="engine\renderer_context.h" />
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\render_interface.h" />

@@ -10,7 +10,7 @@
 namespace bowtie
 {
 
-Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator), _render_interface(*this, allocator)
+Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator), _render_interface(*this, allocator), _context(nullptr)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -150,6 +150,14 @@ void Renderer::render_world(const View& view)
 InternalRenderResourceHandle Renderer::lookup_resource_object(RenderResourceHandle handle) const
 {
 	return _resource_lut[handle];
+}
+
+void Renderer::run(RendererContext* context, const Vector2u& resolution)
+{
+	_context = context;
+
+	_rendering_thread = std::thread(&Renderer::run_thread, this);
+	resize(resolution);
 }
 
 }

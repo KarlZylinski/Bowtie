@@ -2,6 +2,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <thread>
 
 #include <foundation/collection_types.h>
 
@@ -9,6 +10,7 @@
 #include "render_interface.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
+#include "renderer_context.h"
 
 namespace bowtie
 {
@@ -28,25 +30,28 @@ public:
 	void consume_command_queue();
 	RenderResourceHandle create_handle();
 	RenderInterface& render_interface() { return _render_interface; }
-
+	void run(RendererContext* context, const Vector2u& resolution);
+	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
+	
 	// Renderer API specific
 	virtual void test_draw(const View& view) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
-	virtual void run_render_thread() = 0;
 	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
-	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
-	
+
 protected:
+	virtual void run_thread() = 0;
 	void move_unprocessed_commands();
 	void set_active(bool active) { _active = active; }
-	
+		
 	Queue<RendererCommand> _command_queue;
 	bool _command_queue_populated;
 	std::mutex _command_queue_populated_mutex;
 	std::condition_variable _wait_for_command_queue_populated;
 	void notify_command_queue_populated();
+	RendererContext* _context;
+	std::thread _rendering_thread;
 	Array<RenderResourceHandle> _free_handles;
 	InternalRenderResourceHandle _resource_lut[num_handles];
 	Vector2u _resolution;

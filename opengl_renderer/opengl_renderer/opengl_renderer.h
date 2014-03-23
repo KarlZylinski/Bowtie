@@ -1,9 +1,6 @@
 #pragma once
 
-#include <thread>
 #include <engine/renderer.h>
-
-#include "opengl_context.h"
 
 namespace bowtie
 {
@@ -18,17 +15,14 @@ public:
 	virtual void clear();
 	virtual void flip();
 	virtual void resize(const Vector2u& resolution);
-	virtual void run_render_thread();
-	void set_opengl_context(OpenGLContext* context);
 
 	// Resource loading
 	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
-private:
-	void run();
+
+protected:
+	virtual void run_thread();
 	
-	OpenGLContext* _context;
-	std::thread _rendering_thread;
-		
+private:	
 	// Disabled stuff
 	OpenGLRenderer(OpenGLRenderer&);
 	OpenGLRenderer& operator=(OpenGLRenderer&);
