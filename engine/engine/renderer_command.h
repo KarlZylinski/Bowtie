@@ -8,7 +8,7 @@ namespace bowtie
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, Resize };
+	enum Type { Fence, RenderWorld, LoadResource, Resize, SetUpSpriteRenderingQuad };
 	Type type;
 	void* data;
 	unsigned dynamic_data_size;

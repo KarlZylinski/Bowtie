@@ -7,8 +7,6 @@
 
 #include "gl3w.h"
 
-static GLuint vertexbuffer;
-
 namespace bowtie
 {
 
@@ -86,9 +84,11 @@ void OpenGLRenderer::test_draw(const View& view)
 	GLuint projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
 	glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection_matrix[0][0]);
 
+	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle].handle;
+
 	glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
+	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad);
+	glVertexAttribPointer(
 		0,
 		3,
 		GL_FLOAT,
@@ -97,7 +97,7 @@ void OpenGLRenderer::test_draw(const View& view)
 		(void*)0 
 	);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
 }
 
@@ -116,6 +116,26 @@ void OpenGLRenderer::resize(const Vector2u& resolution)
 	glViewport(0, 0, resolution.x, resolution.y);
 }
 
+InternalRenderResourceHandle OpenGLRenderer::set_up_sprite_rendering_quad()
+{
+	static const GLfloat sprite_rendering_quad_vertices[] = {
+	   0.0f, 0.0f, 0.0f,
+	   1.0f, 0.0f, 0.0f,
+	   0.0f, 1.0f, 0.0f,
+
+	   1.0f, 0.0f, 0.0f,
+	   1.0f, 1.0f, 0.0f,
+	   0.0f, 1.0f, 0.0f
+	};
+	
+	static GLuint sprite_rendering_quad_buffer;
+	glGenBuffers(1, &sprite_rendering_quad_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad_buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sprite_rendering_quad_vertices), sprite_rendering_quad_vertices, GL_STATIC_DRAW);
+
+	return InternalRenderResourceHandle(sprite_rendering_quad_buffer);
+}
+
 void OpenGLRenderer::run_thread()
 {
 	_context->make_current_for_calling_thread();
@@ -126,19 +146,7 @@ void OpenGLRenderer::run_thread()
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-
-	// TEST CODE
-
-	static const GLfloat test_vertices[] = {
-	   0.0f,  0.0f, 0.0f,
-	   640.0f, 0.0f, 0.0f,
-	   320.0f,  480.0f, 0.0f,
-	};
-
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(test_vertices), test_vertices, GL_STATIC_DRAW);
-
+	
 	// 2D needs no depth test.
 	glDisable(GL_DEPTH_TEST);
 

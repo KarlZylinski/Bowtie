@@ -79,7 +79,7 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 	case WM_CREATE:
 		{
 		Window* created_window = (Window*)(((LPCREATESTRUCT)lparam)->lpCreateParams);
-		created_window->invoke_window_created_callback(hwnd, window->resolution());
+		created_window->invoke_window_created_callback(hwnd, created_window->resolution());
 		}
 		return 0;
 	case WM_SIZE:

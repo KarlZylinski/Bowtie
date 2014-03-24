@@ -53,7 +53,7 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 
 void Engine::update()
 {
-	if (!_render_interface.active())
+	if (!_render_interface.is_setup())
 		return;
 				
 	float time_elapsed = timer::counter();

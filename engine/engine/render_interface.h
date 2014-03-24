@@ -14,6 +14,7 @@ class RenderInterface
 public:
 	RenderInterface(Renderer& renderer, Allocator& allocator);
 	
+	bool is_setup() const;
 	bool active() const;
 	
 	RenderResourceData create_render_resource(RenderResourceData::Type type);

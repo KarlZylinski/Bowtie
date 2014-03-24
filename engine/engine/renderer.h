@@ -32,12 +32,14 @@ public:
 	RenderInterface& render_interface() { return _render_interface; }
 	void run(RendererContext* context, const Vector2u& resolution);
 	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
-	
+	bool is_setup() const { return _is_setup; }
+
 	// Renderer API specific
 	virtual void test_draw(const View& view) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
+	virtual InternalRenderResourceHandle set_up_sprite_rendering_quad() = 0;
 	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 
 protected:
@@ -55,8 +57,10 @@ protected:
 	Array<RenderResourceHandle> _free_handles;
 	InternalRenderResourceHandle _resource_lut[num_handles];
 	Vector2u _resolution;
+	RenderResourceHandle _sprite_rendering_quad_handle;
 
 private:
+	bool _is_setup;
 	bool _active;
 	Allocator& _allocator;
 	void render_world(const View& view);

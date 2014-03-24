@@ -30,6 +30,11 @@ RendererCommand RenderInterface::create_command(RendererCommand::Type type)
 	return command;
 }
 
+bool RenderInterface::is_setup() const
+{
+	return _renderer.is_setup();
+}
+
 bool RenderInterface::active() const
 {
 	return _renderer.active();

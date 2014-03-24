@@ -10,7 +10,8 @@
 namespace bowtie
 {
 
-Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator), _render_interface(*this, allocator), _context(nullptr)
+Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
+	_render_interface(*this, allocator), _context(nullptr), _sprite_rendering_quad_handle(NotInitializedRenderResourceHandle), _is_setup(false)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -100,6 +101,15 @@ void Renderer::consume_command_queue()
 				resize(data.resolution);
 			}
 			break;
+		case RendererCommand::SetUpSpriteRenderingQuad:
+			{
+				_sprite_rendering_quad_handle = create_handle();
+				_resource_lut[_sprite_rendering_quad_handle] = set_up_sprite_rendering_quad();
+			}
+			break;
+		default:
+			assert(!"Command not implemented!");
+			break;
 		}	
 
 		if(clear_command_data) {
@@ -140,6 +150,8 @@ void Renderer::move_unprocessed_commands()
 
 void Renderer::render_world(const View& view)
 {
+	assert(_sprite_rendering_quad_handle != NotInitializedRenderResourceHandle && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
+
 	clear();
 
 	test_draw(view);
@@ -155,9 +167,13 @@ InternalRenderResourceHandle Renderer::lookup_resource_object(RenderResourceHand
 void Renderer::run(RendererContext* context, const Vector2u& resolution)
 {
 	_context = context;
-
 	_rendering_thread = std::thread(&Renderer::run_thread, this);
-	resize(resolution);
+
+	// Do stuff here which should happen before anything else.
+	_render_interface.resize(resolution);
+	_render_interface.dispatch(_render_interface.create_command(RendererCommand::SetUpSpriteRenderingQuad));
+
+	_is_setup = true;
 }
 
 }
