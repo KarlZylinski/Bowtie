@@ -47,6 +47,8 @@ void RenderInterface::dispatch(const RendererCommand& command)
 
 void RenderInterface::load_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
+	assert(resource.handle.type != ResourceHandle::NotInitialized && "Trying to load an uninitialized resource");
+
 	RendererCommand rc;
 
 	auto copied_resource = (RenderResourceData*)_allocator.allocate(sizeof(RenderResourceData));
@@ -60,6 +62,10 @@ void RenderInterface::load_resource(RenderResourceData& resource, void* dynamic_
 		case RenderResourceData::Type::Shader:
 			copied_resource->data = _allocator.allocate(sizeof(ShaderResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));
+			break;
+		case RenderResourceData::Type::Texture:
+			copied_resource->data = _allocator.allocate(sizeof(TextureResourceData));
+			memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
 			break;
 		default:
 			assert(!"Unknown resource data type.");

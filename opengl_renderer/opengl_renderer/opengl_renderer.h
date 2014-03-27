@@ -15,10 +15,11 @@ public:
 	virtual void clear();
 	virtual void flip();
 	virtual void resize(const Vector2u& resolution);
-	virtual InternalRenderResourceHandle set_up_sprite_rendering_quad();
+	virtual RenderResourceHandle set_up_sprite_rendering_quad();
 
 	// Resource loading
-	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
+	virtual RenderResourceHandle load_BMP(TextureResourceData& trd, void* dynamic_data);
+	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
 
 protected:
 	virtual void run_thread();

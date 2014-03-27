@@ -6,7 +6,7 @@
 
 #include <foundation/collection_types.h>
 
-#include "internal_render_resource_handle.h"
+#include "render_resource_handle.h"
 #include "render_interface.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
@@ -28,10 +28,10 @@ public:
 	void add_renderer_command(const RendererCommand& command);
 	void load_resource(RenderResourceData& render_resource, void* dynamic_data);
 	void consume_command_queue();
-	RenderResourceHandle create_handle();
+	ResourceHandle create_handle();
 	RenderInterface& render_interface() { return _render_interface; }
 	void run(RendererContext* context, const Vector2u& resolution);
-	InternalRenderResourceHandle lookup_resource_object(RenderResourceHandle handle) const;
+	RenderResourceHandle lookup_resource_object(ResourceHandle handle) const;
 	bool is_setup() const { return _is_setup; }
 
 	// Renderer API specific
@@ -39,8 +39,9 @@ public:
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
-	virtual InternalRenderResourceHandle set_up_sprite_rendering_quad() = 0;
-	virtual InternalRenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
+	virtual RenderResourceHandle set_up_sprite_rendering_quad() = 0;
+	virtual RenderResourceHandle load_BMP(TextureResourceData& trd, void* dynamic_data) = 0;
+	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 
 protected:
 	virtual void run_thread() = 0;
@@ -54,10 +55,10 @@ protected:
 	void notify_command_queue_populated();
 	RendererContext* _context;
 	std::thread _rendering_thread;
-	Array<RenderResourceHandle> _free_handles;
-	InternalRenderResourceHandle _resource_lut[num_handles];
+	Array<ResourceHandle> _free_handles;
+	RenderResourceHandle _resource_lut[num_handles];
 	Vector2u _resolution;
-	RenderResourceHandle _sprite_rendering_quad_handle;
+	ResourceHandle _sprite_rendering_quad_handle;
 
 private:
 	bool _is_setup;

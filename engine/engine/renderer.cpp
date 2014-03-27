@@ -11,12 +11,12 @@ namespace bowtie
 {
 
 Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _sprite_rendering_quad_handle(NotInitializedRenderResourceHandle), _is_setup(false)
+	_render_interface(*this, allocator), _context(nullptr), _is_setup(false)
 {
 	array::set_capacity(_free_handles, num_handles);
 
-	for(RenderResourceHandle handle = num_handles; handle > 0; --handle)
-		array::push_back(_free_handles, handle);
+	for(unsigned handle = num_handles; handle > 0; --handle)
+		array::push_back(_free_handles, ResourceHandle(handle));
 }
 
 Renderer::~Renderer()
@@ -36,21 +36,23 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 
 void Renderer::load_resource(RenderResourceData& render_resource, void* dynamic_data)
 {
-	InternalRenderResourceHandle handle;
+	RenderResourceHandle handle;
 
 	switch(render_resource.type)
 	{
 	case RenderResourceData::Shader:
 		handle = load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
+	case RenderResourceData::Texture:
+		handle = load_BMP(*(TextureResourceData*)render_resource.data, dynamic_data); break;
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
 	_allocator.deallocate(render_resource.data);
 
-	assert(handle.type != InternalRenderResourceHandle::NotInitialized && "Failed to load resource!");
+	assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
 						
-	// Map handle from outside of renderer (RenderResourceHandle) to internal handle (InternalRenderResourceHandle).
-	_resource_lut[render_resource.handle] = handle;
+	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
+	_resource_lut[render_resource.handle.handle] = handle;
 }
 
 void Renderer::consume_command_queue()
@@ -104,7 +106,7 @@ void Renderer::consume_command_queue()
 		case RendererCommand::SetUpSpriteRenderingQuad:
 			{
 				_sprite_rendering_quad_handle = create_handle();
-				_resource_lut[_sprite_rendering_quad_handle] = set_up_sprite_rendering_quad();
+				_resource_lut[_sprite_rendering_quad_handle.handle] = set_up_sprite_rendering_quad();
 			}
 			break;
 		default:
@@ -119,11 +121,11 @@ void Renderer::consume_command_queue()
 	}
 }
 
-RenderResourceHandle Renderer::create_handle()
+ResourceHandle Renderer::create_handle()
 {
 	assert(array::any(_free_handles) && "Out of render resource handles!");
 
-	RenderResourceHandle handle = array::back(_free_handles);
+	ResourceHandle handle = array::back(_free_handles);
 	array::pop_back(_free_handles);
 
 	return handle;
@@ -150,7 +152,7 @@ void Renderer::move_unprocessed_commands()
 
 void Renderer::render_world(const View& view)
 {
-	assert(_sprite_rendering_quad_handle != NotInitializedRenderResourceHandle && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
+	assert(_sprite_rendering_quad_handle.type != ResourceHandle::NotInitialized && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
 
 	clear();
 
@@ -159,9 +161,9 @@ void Renderer::render_world(const View& view)
 	flip();
 }
 
-InternalRenderResourceHandle Renderer::lookup_resource_object(RenderResourceHandle handle) const
+RenderResourceHandle Renderer::lookup_resource_object(ResourceHandle handle) const
 {
-	return _resource_lut[handle];
+	return _resource_lut[handle.handle];
 }
 
 void Renderer::run(RendererContext* context, const Vector2u& resolution)

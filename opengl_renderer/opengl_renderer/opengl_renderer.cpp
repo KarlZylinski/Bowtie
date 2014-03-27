@@ -76,7 +76,7 @@ void OpenGLRenderer::test_draw(const View& view)
 {	
 	auto projection_matrix = view.view_projection();
 		
-	GLuint program = lookup_resource_object(1).handle;
+	GLuint program = lookup_resource_object(1).render_handle;
 
 	assert(glIsProgram(program) && "Invalid shader program");
 	glUseProgram(program);
@@ -84,7 +84,7 @@ void OpenGLRenderer::test_draw(const View& view)
 	GLuint projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
 	glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection_matrix[0][0]);
 
-	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle].handle;
+	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad);
@@ -116,7 +116,7 @@ void OpenGLRenderer::resize(const Vector2u& resolution)
 	glViewport(0, 0, resolution.x, resolution.y);
 }
 
-InternalRenderResourceHandle OpenGLRenderer::set_up_sprite_rendering_quad()
+RenderResourceHandle OpenGLRenderer::set_up_sprite_rendering_quad()
 {
 	static const GLfloat sprite_rendering_quad_vertices[] = {
 	   0.0f, 0.0f, 0.0f,
@@ -133,7 +133,7 @@ InternalRenderResourceHandle OpenGLRenderer::set_up_sprite_rendering_quad()
 	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(sprite_rendering_quad_vertices), sprite_rendering_quad_vertices, GL_STATIC_DRAW);
 
-	return InternalRenderResourceHandle(sprite_rendering_quad_buffer);
+	return RenderResourceHandle(sprite_rendering_quad_buffer);
 }
 
 void OpenGLRenderer::run_thread()
@@ -164,7 +164,7 @@ void OpenGLRenderer::run_thread()
 	}
 }
 
-InternalRenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data, void* dynamic_data)
+RenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data, void* dynamic_data)
 {
 	GLuint vertex_shader = compile_glsl_shader((char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset), GL_VERTEX_SHADER);
 	GLuint fragment_shader = compile_glsl_shader((char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset), GL_FRAGMENT_SHADER);
@@ -187,6 +187,21 @@ InternalRenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& sha
 	assert(program != 0 && "Failed to link glsl shader");
 	
 	return program;
+}
+
+RenderResourceHandle OpenGLRenderer::load_BMP(TextureResourceData& trd, void* dynamic_data)
+{
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, trd.width, trd.height, 0, GL_BGR, GL_UNSIGNED_BYTE, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+	return texture_id;
 }
 
 }

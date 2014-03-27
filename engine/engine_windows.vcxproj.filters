@@ -6,6 +6,9 @@
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\timer.cpp" />
+    <ClCompile Include="engine\resource_manager.cpp" />
+    <ClCompile Include="engine\bmp.cpp" />
+    <ClCompile Include="engine\image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -14,10 +17,13 @@
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\render_resource_types.h" />
-    <ClInclude Include="engine\render_resource_handle.h" />
-    <ClInclude Include="engine\internal_render_resource_handle.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\renderer_context.h" />
+    <ClInclude Include="engine\resource_handle.h" />
+    <ClInclude Include="engine\render_resource_handle.h" />
+    <ClInclude Include="engine\resource_manager.h" />
+    <ClInclude Include="engine\bmp.h" />
+    <ClInclude Include="engine\image.h" />
   </ItemGroup>
 </Project>

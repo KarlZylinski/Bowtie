@@ -1,8 +1,7 @@
 #pragma once
 
 #include <foundation/vector2u.h>
-
-#include "render_resource_handle.h"
+#include "resource_manager.h"
 
 namespace bowtie
 {
@@ -20,7 +19,9 @@ public:
 private:
 	Allocator& _allocator;
 	RenderInterface& _render_interface;
-	RenderResourceHandle _test_shader;
+	ResourceManager _resource_manager;
+	ResourceHandle _test_shader;
+	Image* _test_image;
 	float _time_elapsed_previous_frame;
 	float _time_since_start;
 

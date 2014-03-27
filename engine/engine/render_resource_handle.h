@@ -2,8 +2,24 @@
 
 namespace bowtie
 {
+	
+struct RenderResourceHandle
+{
+	RenderResourceHandle() : type(NotInitialized) {}
+	RenderResourceHandle(unsigned h) : render_handle(h), type(Handle) {}
+	RenderResourceHandle(void* p) : render_object(p), type(Object) {}
 
-typedef unsigned RenderResourceHandle;
-#define NotInitializedRenderResourceHandle RenderResourceHandle(-1)
+	enum RenderResourceHandleType
+	{
+		Handle, Object, NotInitialized
+	};
+
+	RenderResourceHandleType type;
+	union
+	{
+		void* render_object;
+		unsigned render_handle;
+	};
+};
 
 } // namespace bowtie
