@@ -26,11 +26,13 @@
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\renderer_context.h" />
     <ClInclude Include="engine\render_fence.h" />
+    <ClInclude Include="engine\render_sprite.h" />
     <ClInclude Include="engine\resource_handle.h" />
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\resource_manager.h" />
+    <ClInclude Include="engine\sprite.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\view.h" />
   </ItemGroup>
@@ -41,6 +43,7 @@
     <ClCompile Include="engine\renderer.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
+    <ClCompile Include="engine\sprite.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />
   </ItemGroup>

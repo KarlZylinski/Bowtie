@@ -6,12 +6,13 @@
 #include <foundation/queue.h>
 
 #include "render_fence.h"
+#include "render_sprite.h"
 
 namespace bowtie
 {
 
 Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _is_setup(false)
+	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _sprites(allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -33,8 +34,17 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 	notify_command_queue_populated();
 }
 
+RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
+{
+	RenderSprite& render_sprite = *(RenderSprite*)_allocator.allocate(sizeof(RenderSprite));
 
-void Renderer::load_resource(RenderResourceData& render_resource, void* dynamic_data)
+	render_sprite.image = sprite_data.image;
+	render_sprite.model = sprite_data.model;
+
+	return &render_sprite;
+}
+
+void Renderer::create_resource(RenderResourceData& render_resource, void* dynamic_data)
 {
 	RenderResourceHandle handle;
 
@@ -44,6 +54,8 @@ void Renderer::load_resource(RenderResourceData& render_resource, void* dynamic_
 		handle = load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Texture:
 		handle = load_BMP(*(TextureResourceData*)render_resource.data, dynamic_data); break;
+	case RenderResourceData::Sprite:
+		handle = create_sprite(*(SpriteResourceData*)render_resource.data); break;
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
@@ -85,14 +97,14 @@ void Renderer::consume_command_queue()
 		case RendererCommand::RenderWorld:
 			{
 				RenderWorldData& rwd = *(RenderWorldData*)command.data;
-				render_world(rwd.view);
+				render_world(rwd.view, rwd.test_sprite);
 			}
 			break;
 
 		case RendererCommand::LoadResource:
 			{
 				RenderResourceData& data = *(RenderResourceData*)command.data;
-				load_resource(data, command.dynamic_data);
+				create_resource(data, command.dynamic_data);
 			}
 			break;
 
@@ -150,13 +162,13 @@ void Renderer::move_unprocessed_commands()
 	array::clear(_unprocessed_commands);
 }
 
-void Renderer::render_world(const View& view)
+void Renderer::render_world(const View& view, ResourceHandle test_sprite)
 {
 	assert(_sprite_rendering_quad_handle.type != ResourceHandle::NotInitialized && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
 
 	clear();
 
-	test_draw(view);
+	test_draw(view, test_sprite);
 
 	flip();
 }

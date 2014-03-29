@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <engine/render_sprite.h>
+
 #include <foundation/memory.h>
 #include <foundation/matrix4.h>
 
@@ -72,17 +74,32 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
     return program;
 }
 
-void OpenGLRenderer::test_draw(const View& view)
+void OpenGLRenderer::test_draw(const View& view, ResourceHandle test_sprite_handle)
 {	
-	auto projection_matrix = view.view_projection();
+	auto view_projection = view.view_projection();
 		
 	GLuint program = lookup_resource_object(1).render_handle;
+	RenderSprite& test_sprite = *(RenderSprite*)lookup_resource_object(test_sprite_handle.handle).render_object;
+	GLuint test_sprite_image = lookup_resource_object(test_sprite.image.handle).render_handle;
+
+	auto test_image_scale_matrix = Matrix4();
+	
+	test_image_scale_matrix[0][0] = 128;
+	test_image_scale_matrix[1][1] = 128;
+
+	auto model_matrix = test_sprite.model * test_image_scale_matrix;
+	auto model_view_projection_matrix = model_matrix * view_projection;
 
 	assert(glIsProgram(program) && "Invalid shader program");
 	glUseProgram(program);
 
-	GLuint projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
-	glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection_matrix[0][0]);
+	GLuint model_view_projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
+	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
+		
+	GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 1);
+	glUniform1i(texture_sampler_id, test_sprite_image);
 
 	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
 

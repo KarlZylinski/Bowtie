@@ -1,11 +1,21 @@
 #pragma once
 
 #include <cassert>
+#include <cstring>
 
 namespace bowtie
 {
 	struct Matrix4
 	{
+		inline Matrix4()
+		{
+			memset(&values[0][0], 0, sizeof(float) * 16);
+			values[0][0] = 1;
+			values[1][1] = 1;
+			values[2][2] = 1;
+			values[3][3] = 1;
+		}
+
 		float values[4][4];
 
 		inline float* operator[](unsigned i){

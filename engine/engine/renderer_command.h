@@ -1,14 +1,16 @@
 #pragma once
 
-#include "view.h"
 #include <foundation/vector2u.h>
+
+#include "resource_handle.h"
+#include "view.h"
 
 namespace bowtie
 {
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, Resize, SetUpSpriteRenderingQuad };
+	enum Type { Fence, RenderWorld, LoadResource, Resize, SetUpSpriteRenderingQuad, C };
 	Type type;
 	void* data;
 	unsigned dynamic_data_size;
@@ -17,9 +19,10 @@ struct RendererCommand
 
 struct RenderWorldData
 {
-	RenderWorldData(const View& view) : view(view) {}
+	RenderWorldData(const View& view, ResourceHandle& test_sprite) : view(view), test_sprite(test_sprite) {}
 
 	View view;
+	ResourceHandle test_sprite;
 };
 
 struct ResizeData

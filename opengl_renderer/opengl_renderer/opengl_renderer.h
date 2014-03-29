@@ -11,7 +11,7 @@ public:
 	OpenGLRenderer(Allocator& allocator);
 	~OpenGLRenderer();
 	
-	virtual void test_draw(const View& view);
+	virtual void test_draw(const View& view, ResourceHandle test_sprite);
 	virtual void clear();
 	virtual void flip();
 	virtual void resize(const Vector2u& resolution);

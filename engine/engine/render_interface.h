@@ -8,6 +8,7 @@ namespace bowtie
 
 class Allocator;
 class Renderer;
+class Sprite;
 struct RenderFence;
 class RenderInterface
 {
@@ -17,10 +18,11 @@ public:
 	bool is_setup() const;
 	bool active() const;
 	
-	RenderResourceData create_render_resource(RenderResourceData::Type type);
+	ResourceHandle create_sprite(Sprite& sprite);
+	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);
 	void dispatch(const RendererCommand& command);
-	void load_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
+	void create_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
 
 	RenderFence& create_fence();
 	void wait_for_fence(RenderFence& fence);

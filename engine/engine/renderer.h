@@ -26,7 +26,7 @@ public:
 	bool active() const { return _active; }
 	const Vector2u& resolution() const { return _resolution; }
 	void add_renderer_command(const RendererCommand& command);
-	void load_resource(RenderResourceData& render_resource, void* dynamic_data);
+	void create_resource(RenderResourceData& render_resource, void* dynamic_data);
 	void consume_command_queue();
 	ResourceHandle create_handle();
 	RenderInterface& render_interface() { return _render_interface; }
@@ -34,8 +34,10 @@ public:
 	RenderResourceHandle lookup_resource_object(ResourceHandle handle) const;
 	bool is_setup() const { return _is_setup; }
 
+	RenderResourceHandle create_sprite(SpriteResourceData& sprite_data);
+
 	// Renderer API specific
-	virtual void test_draw(const View& view) = 0;
+	virtual void test_draw(const View& view, ResourceHandle test_sprite) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
@@ -61,10 +63,11 @@ protected:
 	ResourceHandle _sprite_rendering_quad_handle;
 
 private:
+	Array<RenderResourceHandle> _sprites;
 	bool _is_setup;
 	bool _active;
 	Allocator& _allocator;
-	void render_world(const View& view);
+	void render_world(const View& view, ResourceHandle test_sprite);
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;
 	RenderInterface _render_interface;

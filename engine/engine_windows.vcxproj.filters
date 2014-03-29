@@ -9,6 +9,7 @@
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\image.cpp" />
+    <ClCompile Include="engine\sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -25,5 +26,7 @@
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\image.h" />
+    <ClInclude Include="engine\sprite.h" />
+    <ClInclude Include="engine\render_sprite.h" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <foundation/matrix4.h>
+
 #include "resource_handle.h"
 
 namespace bowtie
@@ -9,7 +11,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Shader, Texture
+		Shader, Texture, Sprite
 	};
 
 	Type type;
@@ -30,5 +32,10 @@ struct TextureResourceData
 	unsigned width, height;
 };
 
+struct SpriteResourceData
+{
+	ResourceHandle image;
+	Matrix4 model;
+};
 
 } // namespace bowtie

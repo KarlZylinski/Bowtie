@@ -10,6 +10,7 @@
 #include "render_interface.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
+#include "sprite.h"
 #include "timer.h"
 
 namespace bowtie
@@ -21,6 +22,8 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 
 	_test_shader = _resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
 	_test_image = _resource_manager.load_image("beer.bmp");
+	_test_sprite = Sprite(*_test_image);
+	_render_interface.create_sprite(_test_sprite);
 }
 
 void Engine::update()
@@ -43,6 +46,7 @@ void Engine::update()
 
 	RenderWorldData& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
 	rwd.view = view;
+	rwd.test_sprite = _test_sprite.render_handle();
 	render_world_command.data = &rwd;
 
 	_render_interface.dispatch(render_world_command);

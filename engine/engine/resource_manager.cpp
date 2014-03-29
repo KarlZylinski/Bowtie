@@ -55,10 +55,10 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), fragment_shader_source);
 
-	RenderResourceData shader_resource = _render_interface.create_render_resource(RenderResourceData::Shader);
+	RenderResourceData shader_resource = _render_interface.create_render_resource_data(RenderResourceData::Shader);
 	shader_resource.data = &srd;
 	
-	_render_interface.load_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
+	_render_interface.create_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
 	add_resource(get_shader_name(vertex_shader_filename, fragment_shader_filename), RT_Shader, shader_resource.handle);
 
 	_allocator.deallocate(vertex_shader_source);
@@ -69,7 +69,7 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 
 Image* ResourceManager::load_image(const char* filename)
 {
-	RenderResourceData texture = _render_interface.create_render_resource(RenderResourceData::Texture);
+	RenderResourceData texture = _render_interface.create_render_resource_data(RenderResourceData::Texture);
 	
 	BmpTexture bmp = bmp::load(filename, _allocator);
 	
@@ -80,7 +80,7 @@ Image* ResourceManager::load_image(const char* filename)
 	trd.texture_data_size = bmp.data_size;
 
 	texture.data = &trd;
-	_render_interface.load_resource(texture, bmp.data, trd.texture_data_size);
+	_render_interface.create_resource(texture, bmp.data, trd.texture_data_size);
 		
 	Image* image = (Image*)_allocator.allocate(sizeof(Image));
 	image->size = Vector2u(bmp.width, bmp.height);
