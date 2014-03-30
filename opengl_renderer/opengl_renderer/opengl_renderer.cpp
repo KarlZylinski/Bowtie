@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include <engine/render_sprite.h>
+#include <engine/render_texture.h>
 
 #include <foundation/memory.h>
 #include <foundation/matrix4.h>
@@ -80,12 +81,12 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle test_sprite_hand
 		
 	GLuint program = lookup_resource_object(1).render_handle;
 	RenderSprite& test_sprite = *(RenderSprite*)lookup_resource_object(test_sprite_handle.handle).render_object;
-	GLuint test_sprite_image = lookup_resource_object(test_sprite.image.handle).render_handle;
+	RenderTexture* test_sprite_texture = (RenderTexture*)lookup_resource_object(test_sprite.texture.handle).render_object;
 
 	auto test_image_scale_matrix = Matrix4();
 	
-	test_image_scale_matrix[0][0] = 128;
-	test_image_scale_matrix[1][1] = 128;
+	test_image_scale_matrix[0][0] = float(test_sprite_texture->resolution.x);
+	test_image_scale_matrix[1][1] = float(test_sprite_texture->resolution.y);
 
 	auto model_matrix = test_sprite.model * test_image_scale_matrix;
 	auto model_view_projection_matrix = model_matrix * view_projection;
@@ -99,7 +100,7 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle test_sprite_hand
 	GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 1);
-	glUniform1i(texture_sampler_id, test_sprite_image);
+	glUniform1i(texture_sampler_id, test_sprite_texture->render_handle.handle);
 
 	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
 
@@ -206,19 +207,48 @@ RenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data
 	return program;
 }
 
-RenderResourceHandle OpenGLRenderer::load_BMP(TextureResourceData& trd, void* dynamic_data)
+struct GLPixelFormat {
+	GLenum format;
+	GLenum internal_format;
+};
+
+GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
+{
+	GLPixelFormat gl_pixel_format;
+	memset(&gl_pixel_format, 0, sizeof(GLPixelFormat));
+
+	switch(pixel_format)
+	{
+	case image::RGB:
+		gl_pixel_format.format = GL_BGR;
+		gl_pixel_format.internal_format = GL_RGB;
+		break;
+	default: assert(!"Unknown pixel format"); break;
+	}
+
+	return gl_pixel_format;
+}
+
+RenderResourceHandle OpenGLRenderer::load_texture(TextureResourceData& trd, void* dynamic_data)
 {
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
 
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, trd.width, trd.height, 0, GL_BGR, GL_UNSIGNED_BYTE, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
+	auto pixel_format = gl_pixel_format(trd.pixel_format);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format.internal_format, trd.resolution.x, trd.resolution.y, 0, pixel_format.format, GL_UNSIGNED_BYTE, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	
-	return texture_id;
+	RenderTexture* render_texture = (RenderTexture*)_allocator.allocate(sizeof(RenderTexture));
+	render_texture->pixel_format = trd.pixel_format;
+	render_texture->render_handle = texture_id;
+	render_texture->resolution = trd.resolution;
+
+	return render_texture;
 }
 
 }

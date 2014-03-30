@@ -8,7 +8,7 @@ namespace bowtie
 
 struct RenderSprite
 {
-	ResourceHandle image;
+	ResourceHandle texture;
 	Matrix4 model;
 };
 

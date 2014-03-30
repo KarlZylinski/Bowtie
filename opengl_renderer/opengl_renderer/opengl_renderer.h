@@ -18,7 +18,7 @@ public:
 	virtual RenderResourceHandle set_up_sprite_rendering_quad();
 
 	// Resource loading
-	virtual RenderResourceHandle load_BMP(TextureResourceData& trd, void* dynamic_data);
+	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
 
 protected:

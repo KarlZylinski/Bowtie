@@ -22,8 +22,8 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 
 	_test_shader = _resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
 	_test_image = _resource_manager.load_image("beer.bmp");
-	_test_sprite = Sprite(*_test_image);
-	_render_interface.create_sprite(_test_sprite);
+	_test_texture = _render_interface.create_texture(*_test_image);
+	_test_sprite = _render_interface.create_sprite(*_test_texture);
 }
 
 void Engine::update()

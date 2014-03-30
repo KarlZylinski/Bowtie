@@ -28,5 +28,7 @@
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\sprite.h" />
     <ClInclude Include="engine\render_sprite.h" />
+    <ClInclude Include="engine\texture.h" />
+    <ClInclude Include="engine\render_texture.h" />
   </ItemGroup>
 </Project>

@@ -69,22 +69,13 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 
 Image* ResourceManager::load_image(const char* filename)
 {
-	RenderResourceData texture = _render_interface.create_render_resource_data(RenderResourceData::Texture);
-	
 	BmpTexture bmp = bmp::load(filename, _allocator);
 	
-	TextureResourceData trd;
-	trd.width = bmp.width;
-	trd.height = bmp.height;
-	trd.texture_data_dynamic_data_offset = 0;
-	trd.texture_data_size = bmp.data_size;
-
-	texture.data = &trd;
-	_render_interface.create_resource(texture, bmp.data, trd.texture_data_size);
-		
 	Image* image = (Image*)_allocator.allocate(sizeof(Image));
-	image->size = Vector2u(bmp.width, bmp.height);
-	image->resoure_handle = texture.handle;
+	image->resolution = Vector2u(bmp.width, bmp.height);
+	image->data = bmp.data;
+	image->data_size = bmp.data_size;
+	image->pixel_format = image::RGB;
 	
 	add_resource(murmur_hash_64(filename, strlen32(filename), 0), RT_Texture, image);
 

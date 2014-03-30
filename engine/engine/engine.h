@@ -24,6 +24,7 @@ private:
 	ResourceManager _resource_manager;
 	ResourceHandle _test_shader;
 	Image* _test_image;
+	Texture* _test_texture;
 	Sprite _test_sprite;
 
 	float _time_elapsed_previous_frame;

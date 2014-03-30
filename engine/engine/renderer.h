@@ -42,7 +42,7 @@ public:
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
 	virtual RenderResourceHandle set_up_sprite_rendering_quad() = 0;
-	virtual RenderResourceHandle load_BMP(TextureResourceData& trd, void* dynamic_data) = 0;
+	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 
 protected:
@@ -50,6 +50,7 @@ protected:
 	void move_unprocessed_commands();
 	void set_active(bool active) { _active = active; }
 		
+	Allocator& _allocator;
 	Queue<RendererCommand> _command_queue;
 	bool _command_queue_populated;
 	std::mutex _command_queue_populated_mutex;
@@ -66,7 +67,6 @@ private:
 	Array<RenderResourceHandle> _sprites;
 	bool _is_setup;
 	bool _active;
-	Allocator& _allocator;
 	void render_world(const View& view, ResourceHandle test_sprite);
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;

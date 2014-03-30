@@ -1,14 +1,14 @@
 #include "sprite.h"
-#include "image.h"
+#include "texture.h"
 
 namespace bowtie
 {
 
-Sprite::Sprite() : _image(nullptr)
+Sprite::Sprite() : _texture(nullptr)
 {
 }
 
-Sprite::Sprite(const Image& image) : _image(&image), _size(image.size)
+Sprite::Sprite(const Texture& texture) : _texture(&texture), _size(texture.resolution)
 {
 }
 
@@ -36,17 +36,17 @@ Matrix4 Sprite::model_matrix() const
 {
 	auto m = Matrix4();
 
-	m[0][0] = _size.x / float(_image->size.x);
-	m[1][1] = _size.y / float(_image->size.y);
+	m[0][0] = _size.x / float(_texture->resolution.x);
+	m[1][1] = _size.y / float(_texture->resolution.y);
 	m[3][0] = _position.x;
 	m[3][1] = _position.y;
 
 	return m;
 }
 
-const Image* Sprite::image() const
+const Texture* Sprite::texture() const
 {
-	return _image;
+	return _texture;
 }
 
 void Sprite::set_render_handle(ResourceHandle handle)

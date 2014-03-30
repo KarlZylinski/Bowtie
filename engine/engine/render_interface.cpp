@@ -18,20 +18,46 @@ RenderInterface::RenderInterface(Renderer& renderer, Allocator& allocator) : _al
 {
 }
 
-ResourceHandle RenderInterface::create_sprite(Sprite& sprite)
+Texture* RenderInterface::create_texture(const Image& image)
+{
+	auto texture_resource = create_render_resource_data(RenderResourceData::Texture);
+
+	auto trd = TextureResourceData();
+	trd.resolution = image.resolution;
+	trd.texture_data_dynamic_data_offset = 0;
+	trd.texture_data_size = image.data_size;
+	trd.pixel_format = image.pixel_format;
+
+	texture_resource.data = &trd;
+
+	create_resource(texture_resource, image.data, image.data_size);
+
+	Texture* texture = (Texture*)_allocator.allocate(sizeof(Texture));
+	texture->pixel_format = image.pixel_format;
+	texture->render_handle = texture_resource.handle;
+	texture->resolution = image.resolution;
+
+	return texture;
+}
+
+Sprite RenderInterface::create_sprite(const Texture& texture)
 {
 	auto sprite_resource = create_render_resource_data(RenderResourceData::Sprite);
 
 	auto sprite_resource_data = SpriteResourceData();
-	sprite_resource_data.image = sprite.image()->resoure_handle;
-	sprite_resource_data.model = sprite.model_matrix();
+	sprite_resource_data.texture = texture.render_handle;
+	
+	Sprite sprite(texture);
 
+	sprite_resource_data.model = sprite.model_matrix();
+	sprite_resource.data = &sprite_resource_data;
+	
 	sprite_resource.data = &sprite_resource_data;
 
 	create_resource(sprite_resource);
-
 	sprite.set_render_handle(sprite_resource.handle);
-	return sprite_resource.handle;
+	
+	return sprite;
 }
 
 RenderResourceData RenderInterface::create_render_resource_data(RenderResourceData::Type type)

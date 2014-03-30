@@ -38,7 +38,7 @@ RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
 {
 	RenderSprite& render_sprite = *(RenderSprite*)_allocator.allocate(sizeof(RenderSprite));
 
-	render_sprite.image = sprite_data.image;
+	render_sprite.texture = sprite_data.texture;
 	render_sprite.model = sprite_data.model;
 
 	return &render_sprite;
@@ -53,7 +53,7 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 	case RenderResourceData::Shader:
 		handle = load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Texture:
-		handle = load_BMP(*(TextureResourceData*)render_resource.data, dynamic_data); break;
+		handle = load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Sprite:
 		handle = create_sprite(*(SpriteResourceData*)render_resource.data); break;
 	default:

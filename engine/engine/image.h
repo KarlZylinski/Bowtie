@@ -6,10 +6,22 @@
 namespace bowtie
 {
 
+namespace image
+{
+
+enum PixelFormat
+{
+	RGB
+};
+
+}
+
 struct Image
 {
-	ResourceHandle resoure_handle;
-	Vector2u size;
+	image::PixelFormat pixel_format;
+	unsigned data_size;
+	void* data;
+	Vector2u resolution;
 };
 
 }

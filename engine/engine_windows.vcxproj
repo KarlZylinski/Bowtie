@@ -27,12 +27,14 @@
     <ClInclude Include="engine\renderer_context.h" />
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_sprite.h" />
+    <ClInclude Include="engine\render_texture.h" />
     <ClInclude Include="engine\resource_handle.h" />
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\sprite.h" />
+    <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\view.h" />
   </ItemGroup>

@@ -2,6 +2,7 @@
 
 #include <foundation/matrix4.h>
 
+#include "image.h"
 #include "resource_handle.h"
 
 namespace bowtie
@@ -27,14 +28,15 @@ struct ShaderResourceData
 
 struct TextureResourceData
 {
+	image::PixelFormat pixel_format;
 	unsigned texture_data_size;
 	unsigned texture_data_dynamic_data_offset;
-	unsigned width, height;
+	Vector2u resolution;
 };
 
 struct SpriteResourceData
 {
-	ResourceHandle image;
+	ResourceHandle texture;
 	Matrix4 model;
 };
 
