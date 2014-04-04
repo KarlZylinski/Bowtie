@@ -21,7 +21,7 @@ public:
 	bool active() const;
 	
 	Texture* create_texture(const Image& image);
-	Sprite create_sprite(const Texture& texture);
+	Sprite create_sprite(const Texture& texture, ResourceHandle render_world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);
 	void dispatch(const RendererCommand& command);

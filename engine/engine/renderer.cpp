@@ -97,7 +97,7 @@ void Renderer::consume_command_queue()
 		case RendererCommand::RenderWorld:
 			{
 				RenderWorldData& rwd = *(RenderWorldData*)command.data;
-				render_world(rwd.view, rwd.test_sprite);
+				render_world(rwd.view, rwd.render_world);
 			}
 			break;
 
@@ -162,13 +162,13 @@ void Renderer::move_unprocessed_commands()
 	array::clear(_unprocessed_commands);
 }
 
-void Renderer::render_world(const View& view, ResourceHandle test_sprite)
+void Renderer::render_world(const View& view, ResourceHandle render_world)
 {
 	assert(_sprite_rendering_quad_handle.type != ResourceHandle::NotInitialized && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
 
 	clear();
 
-	test_draw(view, test_sprite);
+	test_draw(view, render_world);
 
 	flip();
 }

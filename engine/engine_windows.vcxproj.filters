@@ -10,6 +10,7 @@
     <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\image.cpp" />
     <ClCompile Include="engine\sprite.cpp" />
+    <ClCompile Include="engine\render_world.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -30,5 +31,6 @@
     <ClInclude Include="engine\render_sprite.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\render_texture.h" />
+    <ClInclude Include="engine\render_world.h" />
   </ItemGroup>
 </Project>

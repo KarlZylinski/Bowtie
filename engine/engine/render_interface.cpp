@@ -40,13 +40,14 @@ Texture* RenderInterface::create_texture(const Image& image)
 	return texture;
 }
 
-Sprite RenderInterface::create_sprite(const Texture& texture)
+Sprite RenderInterface::create_sprite(const Texture& texture, ResourceHandle render_world)
 {
 	auto sprite_resource = create_render_resource_data(RenderResourceData::Sprite);
 
 	auto sprite_resource_data = SpriteResourceData();
 	sprite_resource_data.texture = texture.render_handle;
-	
+	sprite_resource_data.render_world = render_world;
+
 	Sprite sprite(texture);
 
 	sprite_resource_data.model = sprite.model_matrix();

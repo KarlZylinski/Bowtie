@@ -23,6 +23,7 @@ private:
 	RenderInterface& _render_interface;
 	ResourceManager _resource_manager;
 	ResourceHandle _test_shader;
+	ResourceHandle _test_render_world;
 	Image* _test_image;
 	Texture* _test_texture;
 	Sprite _test_sprite;

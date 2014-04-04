@@ -67,7 +67,7 @@ private:
 	Array<RenderResourceHandle> _sprites;
 	bool _is_setup;
 	bool _active;
-	void render_world(const View& view, ResourceHandle test_sprite);
+	void render_world(const View& view, ResourceHandle render_world);
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;
 	RenderInterface _render_interface;

@@ -4,6 +4,7 @@
 
 #include <engine/render_sprite.h>
 #include <engine/render_texture.h>
+#include <engine/render_world.h>
 
 #include <foundation/memory.h>
 #include <foundation/matrix4.h>
@@ -75,11 +76,16 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
     return program;
 }
 
-void OpenGLRenderer::test_draw(const View& view, ResourceHandle test_sprite_handle)
+void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world)
 {	
 	auto view_projection = view.view_projection();
 		
 	GLuint program = lookup_resource_object(1).render_handle;
+
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world.handle).render_object;
+
+	// GET SPRITES FROM RENDER WORLD. SEE TO IT THAT THE RENDER WORLD IS POPULATED IN WHEN RECEIVING CREATE SPRITE MESSAGE.
+
 	RenderSprite& test_sprite = *(RenderSprite*)lookup_resource_object(test_sprite_handle.handle).render_object;
 	RenderTexture* test_sprite_texture = (RenderTexture*)lookup_resource_object(test_sprite.texture.handle).render_object;
 
@@ -98,9 +104,9 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle test_sprite_hand
 	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
 	GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 1);
-	glUniform1i(texture_sampler_id, test_sprite_texture->render_handle.handle);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, test_sprite_texture->render_handle.handle);
+	glUniform1i(texture_sampler_id, 0);
 
 	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
 

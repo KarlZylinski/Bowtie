@@ -21,9 +21,14 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 	timer::start();
 
 	_test_shader = _resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
-	_test_image = _resource_manager.load_image("beer.bmp");
+	_test_image = _resource_manager.load_image("beer.bmp");	
+
+	auto render_world_data = _render_interface.create_render_resource_data(RenderResourceData::World);
+	_test_render_world = render_world_data.handle;
+	_render_interface.create_resource(render_world_data);
+
 	_test_texture = _render_interface.create_texture(*_test_image);
-	_test_sprite = _render_interface.create_sprite(*_test_texture);
+	_test_sprite = _render_interface.create_sprite(*_test_texture, _test_render_world);
 }
 
 void Engine::update()
@@ -46,7 +51,7 @@ void Engine::update()
 
 	RenderWorldData& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
 	rwd.view = view;
-	rwd.test_sprite = _test_sprite.render_handle();
+	rwd.render_world = _test_render_world;
 	render_world_command.data = &rwd;
 
 	_render_interface.dispatch(render_world_command);

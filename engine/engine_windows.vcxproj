@@ -28,6 +28,7 @@
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_sprite.h" />
     <ClInclude Include="engine\render_texture.h" />
+    <ClInclude Include="engine\render_world.h" />
     <ClInclude Include="engine\resource_handle.h" />
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="engine\image.cpp" />
     <ClCompile Include="engine\renderer.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
+    <ClCompile Include="engine\render_world.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\sprite.cpp" />
     <ClCompile Include="engine\timer.cpp" />

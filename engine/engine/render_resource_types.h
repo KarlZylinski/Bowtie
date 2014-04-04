@@ -12,7 +12,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Shader, Texture, Sprite
+		Shader, Texture, Sprite, World
 	};
 
 	Type type;
@@ -36,6 +36,7 @@ struct TextureResourceData
 
 struct SpriteResourceData
 {
+	ResourceHandle render_world;
 	ResourceHandle texture;
 	Matrix4 model;
 };
