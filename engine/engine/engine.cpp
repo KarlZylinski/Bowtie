@@ -31,6 +31,11 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 	_test_sprite = _render_interface.create_sprite(*_test_texture, _test_render_world);
 }
 
+Engine::~Engine()
+{
+	_allocator.deallocate(_test_texture);
+}
+
 void Engine::update()
 {
 	if (!_render_interface.is_setup())

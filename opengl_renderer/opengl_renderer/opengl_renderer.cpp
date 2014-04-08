@@ -6,6 +6,7 @@
 #include <engine/render_texture.h>
 #include <engine/render_world.h>
 
+#include <foundation/array.h>
 #include <foundation/memory.h>
 #include <foundation/matrix4.h>
 
@@ -76,53 +77,57 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
     return program;
 }
 
-void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world)
+void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_handle)
 {	
 	auto view_projection = view.view_projection();
 		
 	GLuint program = lookup_resource_object(1).render_handle;
 
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world.handle).render_object;
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
 
 	// GET SPRITES FROM RENDER WORLD. SEE TO IT THAT THE RENDER WORLD IS POPULATED IN WHEN RECEIVING CREATE SPRITE MESSAGE.
+	auto& sprites = render_world.sprites();
 
-	RenderSprite& test_sprite = *(RenderSprite*)lookup_resource_object(test_sprite_handle.handle).render_object;
-	RenderTexture* test_sprite_texture = (RenderTexture*)lookup_resource_object(test_sprite.texture.handle).render_object;
+	for (unsigned i = 0; i < array::size(sprites); ++i)
+	{
+		RenderSprite& sprite = *(RenderSprite*)sprites[i].render_object;
+		RenderTexture* sprite_texture = (RenderTexture*)lookup_resource_object(sprite.texture.handle).render_object;
 
-	auto test_image_scale_matrix = Matrix4();
+		auto test_image_scale_matrix = Matrix4();
 	
-	test_image_scale_matrix[0][0] = float(test_sprite_texture->resolution.x);
-	test_image_scale_matrix[1][1] = float(test_sprite_texture->resolution.y);
+		test_image_scale_matrix[0][0] = float(sprite_texture->resolution.x);
+		test_image_scale_matrix[1][1] = float(sprite_texture->resolution.y);
 
-	auto model_matrix = test_sprite.model * test_image_scale_matrix;
-	auto model_view_projection_matrix = model_matrix * view_projection;
+		auto model_matrix = sprite.model * test_image_scale_matrix;
+		auto model_view_projection_matrix = model_matrix * view_projection;
 
-	assert(glIsProgram(program) && "Invalid shader program");
-	glUseProgram(program);
+		assert(glIsProgram(program) && "Invalid shader program");
+		glUseProgram(program);
 
-	GLuint model_view_projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
-	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
+		GLuint model_view_projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
+		glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
-	GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, test_sprite_texture->render_handle.handle);
-	glUniform1i(texture_sampler_id, 0);
+		GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sprite_texture->render_handle.handle);
+		glUniform1i(texture_sampler_id, 0);
 
-	auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
+		auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
 
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0 
-	);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0 
+		);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glDisableVertexAttribArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(0);
+	}
 }
 
 void OpenGLRenderer::clear()

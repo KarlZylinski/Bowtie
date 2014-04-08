@@ -116,6 +116,9 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 			copied_resource->data = _allocator.allocate(sizeof(SpriteResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(SpriteResourceData));			
 			break;
+		case RenderResourceData::World:
+			// No data
+			break;
 		default:
 			assert(!"Unknown resource data type.");
 			break;

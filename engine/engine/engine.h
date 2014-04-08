@@ -15,6 +15,7 @@ class Engine
 {
 public:
 	Engine(Allocator& allocator, RenderInterface& render_interface);
+	~Engine();
 	void update();
 	void resize(const Vector2u& resolution);
 

@@ -15,6 +15,12 @@
 namespace bowtie
 {
 
+struct RendererResourceObject
+{
+	RenderResourceData::Type type;
+	RenderResourceHandle handle;
+};
+
 class Renderer
 {
 public:
@@ -35,6 +41,7 @@ public:
 	bool is_setup() const { return _is_setup; }
 
 	RenderResourceHandle create_sprite(SpriteResourceData& sprite_data);
+	RenderResourceHandle create_world();
 
 	// Renderer API specific
 	virtual void test_draw(const View& view, ResourceHandle test_sprite) = 0;
@@ -60,6 +67,7 @@ protected:
 	std::thread _rendering_thread;
 	Array<ResourceHandle> _free_handles;
 	RenderResourceHandle _resource_lut[num_handles];
+	Array<RendererResourceObject> _resource_objects;
 	Vector2u _resolution;
 	ResourceHandle _sprite_rendering_quad_handle;
 

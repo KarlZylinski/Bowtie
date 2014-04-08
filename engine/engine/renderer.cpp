@@ -7,12 +7,13 @@
 
 #include "render_fence.h"
 #include "render_sprite.h"
+#include "render_world.h"
 
 namespace bowtie
 {
 
 Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _sprites(allocator)
+	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _sprites(allocator), _resource_objects(allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -22,6 +23,19 @@ Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_hand
 
 Renderer::~Renderer()
 {
+	for (unsigned i = 0; i < array::size(_resource_objects); ++i)
+	{
+		auto& resource_object = _resource_objects[i];
+		switch (resource_object.type)
+		{
+		case RenderResourceData::World:
+			MAKE_DELETE(_allocator, RenderWorld, (RenderWorld*)resource_object.handle.render_object);
+			break;
+		default:			
+			_allocator.deallocate(resource_object.handle.render_object);
+			break;
+		}
+	}
 }
 
 void Renderer::add_renderer_command(const RendererCommand& command)
@@ -41,7 +55,17 @@ RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
 	render_sprite.texture = sprite_data.texture;
 	render_sprite.model = sprite_data.model;
 
-	return &render_sprite;
+	RenderResourceHandle sprite_handle = &render_sprite;
+
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(sprite_data.render_world.handle).render_object;
+	render_world.add_sprite(sprite_handle);
+
+	return sprite_handle;
+}
+
+RenderResourceHandle Renderer::create_world()
+{
+	return MAKE_NEW(_allocator, RenderWorld, _allocator);
 }
 
 void Renderer::create_resource(RenderResourceData& render_resource, void* dynamic_data)
@@ -56,6 +80,8 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 		handle = load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Sprite:
 		handle = create_sprite(*(SpriteResourceData*)render_resource.data); break;
+	case RenderResourceData::World:
+		handle = create_world(); break;
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
@@ -65,6 +91,14 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 						
 	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
 	_resource_lut[render_resource.handle.handle] = handle;
+
+	if (handle.type == RenderResourceHandle::Object)
+	{
+		auto rro = RendererResourceObject();
+		rro.handle = handle;
+		rro.type = render_resource.type;
+		array::push_back(_resource_objects, rro);
+	}
 }
 
 void Renderer::consume_command_queue()
