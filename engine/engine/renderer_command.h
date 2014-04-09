@@ -10,7 +10,7 @@ namespace bowtie
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, Resize, SetUpSpriteRenderingQuad };
+	enum Type { Fence, RenderWorld, LoadResource, Resize, SetUpSpriteRenderingQuad, SpriteStateReflection };
 	Type type;
 	void* data;
 	unsigned dynamic_data_size;
@@ -30,6 +30,14 @@ struct ResizeData
 	ResizeData(const Vector2u& resolution) : resolution(resolution) {}
 
 	Vector2u resolution;
+};
+
+struct SpriteStateReflectionData
+{
+	SpriteStateReflectionData(const Matrix4& model) : model(model) {}
+
+	ResourceHandle sprite;
+	Matrix4 model;
 };
 
 }

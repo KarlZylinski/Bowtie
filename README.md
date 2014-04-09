@@ -10,8 +10,8 @@ Todo
 * [x] Resource manager for loading stuff
 * [x] Shader loading
 * [x] Image loading
-* [/] Sprite rendering
+* [x] Sprite rendering
 * [x] Correctly scale sprites
-* [ ] Render world
-* [ ] State reflection of sprites
+* [/] Render world
+* [/] State reflection of sprites
 * [ ] Implement Lua support

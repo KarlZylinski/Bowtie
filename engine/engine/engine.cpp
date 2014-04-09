@@ -49,10 +49,19 @@ void Engine::update()
 
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 	
+	auto test_sprite_state_reflection_command = _render_interface.create_command(RendererCommand::SpriteStateReflection);
+	SpriteStateReflectionData& srd = *(SpriteStateReflectionData*)_allocator.allocate(sizeof(SpriteStateReflectionData));
+	
+	_test_sprite.set_position(Vector2(cos(_time_since_start) * 100.0f, sin(_time_since_start) * 100.0f));
+	srd.model = _test_sprite.model_matrix();
+	srd.sprite = _test_sprite.render_handle();
+
+	test_sprite_state_reflection_command.data = &srd;
+	_render_interface.dispatch(test_sprite_state_reflection_command);
+
 	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
 	
 	View view(Vector2(640,480), Vector2(0,0));
-	view.set_position(cos(_time_since_start) * 100.0f,sin(_time_since_start) * 100.0f);
 
 	RenderWorldData& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
 	rwd.view = view;

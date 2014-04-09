@@ -98,7 +98,7 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_han
 		test_image_scale_matrix[0][0] = float(sprite_texture->resolution.x);
 		test_image_scale_matrix[1][1] = float(sprite_texture->resolution.y);
 
-		auto model_matrix = sprite.model * test_image_scale_matrix;
+		auto model_matrix = test_image_scale_matrix * sprite.model;
 		auto model_view_projection_matrix = model_matrix * view_projection;
 
 		assert(glIsProgram(program) && "Invalid shader program");

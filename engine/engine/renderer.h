@@ -39,10 +39,7 @@ public:
 	void run(RendererContext* context, const Vector2u& resolution);
 	RenderResourceHandle lookup_resource_object(ResourceHandle handle) const;
 	bool is_setup() const { return _is_setup; }
-
-	RenderResourceHandle create_sprite(SpriteResourceData& sprite_data);
-	RenderResourceHandle create_world();
-
+	
 	// Renderer API specific
 	virtual void test_draw(const View& view, ResourceHandle test_sprite) = 0;
 	virtual void clear() = 0;
@@ -72,6 +69,10 @@ protected:
 	ResourceHandle _sprite_rendering_quad_handle;
 
 private:
+	void sprite_state_reflection(const SpriteStateReflectionData& reflection_data);
+	RenderResourceHandle create_sprite(SpriteResourceData& sprite_data);
+	RenderResourceHandle create_world();
+
 	Array<RenderResourceHandle> _sprites;
 	bool _is_setup;
 	bool _active;

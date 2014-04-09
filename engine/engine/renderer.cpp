@@ -155,6 +155,11 @@ void Renderer::consume_command_queue()
 				_resource_lut[_sprite_rendering_quad_handle.handle] = set_up_sprite_rendering_quad();
 			}
 			break;
+		case RendererCommand::SpriteStateReflection:
+			{
+				sprite_state_reflection(*(SpriteStateReflectionData*)command.data);
+			}
+			break;
 		default:
 			assert(!"Command not implemented!");
 			break;
@@ -165,6 +170,12 @@ void Renderer::consume_command_queue()
 			_allocator.deallocate(command.dynamic_data);
 		}
 	}
+}
+
+void Renderer::sprite_state_reflection(const SpriteStateReflectionData& data)
+{
+	RenderSprite& sprite = *(RenderSprite*)lookup_resource_object(data.sprite.handle).render_object;
+	sprite.model = data.model;
 }
 
 ResourceHandle Renderer::create_handle()
