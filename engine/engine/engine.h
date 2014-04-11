@@ -1,5 +1,6 @@
 #pragma once
 
+#include <lua.hpp>
 #include <foundation/vector2u.h>
 #include "resource_manager.h"
 #include "sprite.h"
@@ -28,6 +29,8 @@ private:
 	Image* _test_image;
 	Texture* _test_texture;
 	Sprite _test_sprite;
+	lua_State* _lua_state;
+	int _lua_status;
 
 	float _time_elapsed_previous_frame;
 	float _time_since_start;

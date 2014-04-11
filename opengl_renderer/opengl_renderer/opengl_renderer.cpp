@@ -85,7 +85,6 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_han
 
 	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
 
-	// GET SPRITES FROM RENDER WORLD. SEE TO IT THAT THE RENDER WORLD IS POPULATED IN WHEN RECEIVING CREATE SPRITE MESSAGE.
 	auto& sprites = render_world.sprites();
 
 	for (unsigned i = 0; i < array::size(sprites); ++i)
