@@ -14,7 +14,7 @@ Todo
 * [x] Correctly scale sprites
 * [/] Render world
 * [/] State reflection of sprites
-* [ ] Implement Lua support
+* [/] Implement Lua support
 * - [ ] Create a C++-side world which has a handle to the render world
 * - [ ] Create a world script interface which returns a world ptr
 * - [ ] Create a view script interface which returns a view ptr
