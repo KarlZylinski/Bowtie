@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="script_interfaces">
+      <UniqueIdentifier>{1c8db1cf-c868-48e8-8adf-4899b7efd455}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="game\script_interfaces\script_sprite.cpp">
+      <Filter>script_interfaces</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="game\script_interfaces\script_sprite.h">
+      <Filter>script_interfaces</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -18,7 +18,8 @@
 namespace bowtie
 {
 
-Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resource_manager(allocator, render_interface), _lua_state(luaL_newstate())
+Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface),
+	_resource_manager(allocator, render_interface), _game(allocator, *this)
 {
 	timer::start();
 
@@ -31,41 +32,33 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 
 	_test_texture = _render_interface.create_texture(*_test_image);
 	_test_sprite = _render_interface.create_sprite(*_test_texture, _test_render_world);
-	
-	luaopen_io(_lua_state);
-    luaopen_base(_lua_state);
-    luaopen_table(_lua_state);
-    luaopen_string(_lua_state);
-    luaopen_math(_lua_state);
-	
-	_lua_status = luaL_loadfile(_lua_state, "main.lua");
-	_lua_status = lua_pcall(_lua_state, 0, 0, 0);
-
-	if (_lua_status != 0) {
-		const char* error = lua_tostring(_lua_state, -1);
-		printf("%s", error);
-	}
 }
 
 Engine::~Engine()
 {
-	_allocator.deallocate(_test_texture);
+	if (_game.initialized())
+		_game.deinit();
 
-	lua_close(_lua_state);
+	_allocator.deallocate(_test_texture);
 }
 
 void Engine::update()
 {
 	if (!_render_interface.is_setup())
 		return;
+
+	if (!_game.initialized())
+		_game.init();
 				
 	float time_elapsed = timer::counter();
 	float dt = time_elapsed - _time_elapsed_previous_frame;
 	_time_elapsed_previous_frame = time_elapsed;
 
 	_time_since_start += dt;
-	
+
 	_render_interface.wait_for_fence(_render_interface.create_fence());
+
+	_game.update(dt);
 	
 	auto test_sprite_state_reflection_command = _render_interface.create_command(RendererCommand::SpriteStateReflection);
 	SpriteStateReflectionData& srd = *(SpriteStateReflectionData*)_allocator.allocate(sizeof(SpriteStateReflectionData));

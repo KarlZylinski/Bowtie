@@ -19,47 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\bmp.h" />
-    <ClInclude Include="engine\engine.h" />
-    <ClInclude Include="engine\image.h" />
-    <ClInclude Include="engine\renderer.h" />
-    <ClInclude Include="engine\renderer_command.h" />
-    <ClInclude Include="engine\renderer_context.h" />
-    <ClInclude Include="engine\render_fence.h" />
-    <ClInclude Include="engine\render_sprite.h" />
-    <ClInclude Include="engine\render_texture.h" />
-    <ClInclude Include="engine\render_world.h" />
-    <ClInclude Include="engine\resource_handle.h" />
-    <ClInclude Include="engine\render_interface.h" />
-    <ClInclude Include="engine\render_resource_handle.h" />
-    <ClInclude Include="engine\render_resource_types.h" />
-    <ClInclude Include="engine\resource_manager.h" />
-    <ClInclude Include="engine\sprite.h" />
-    <ClInclude Include="engine\texture.h" />
-    <ClInclude Include="engine\timer.h" />
-    <ClInclude Include="engine\view.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="engine\bmp.cpp" />
-    <ClCompile Include="engine\engine.cpp" />
-    <ClCompile Include="engine\image.cpp" />
-    <ClCompile Include="engine\renderer.cpp" />
-    <ClCompile Include="engine\render_interface.cpp" />
-    <ClCompile Include="engine\render_world.cpp" />
-    <ClCompile Include="engine\resource_manager.cpp" />
-    <ClCompile Include="engine\sprite.cpp" />
-    <ClCompile Include="engine\timer.cpp" />
-    <ClCompile Include="engine\view.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\foundation\foundation_windows.vcxproj">
       <Project>{f1c9e9f9-bfd6-4020-a64c-54734c47b6b4}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="game\game.h" />
+    <ClInclude Include="game\script_interfaces\script_sprite.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="game\game.cpp" />
+    <ClCompile Include="game\script_interfaces\script_sprite.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C2B76C8F-16A3-4454-98FC-625F488FCC04}</ProjectGuid>
-    <RootNamespace>engine</RootNamespace>
-    <ProjectName>engine</ProjectName>
+    <ProjectGuid>{A66C4F50-4EEE-4FC4-9BDC-40E0193D2BDB}</ProjectGuid>
+    <RootNamespace>game</RootNamespace>
+    <ProjectName>game</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -124,7 +99,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
