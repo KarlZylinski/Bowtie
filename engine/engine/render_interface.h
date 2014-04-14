@@ -10,6 +10,7 @@ namespace bowtie
 
 class Allocator;
 class Renderer;
+class World;
 struct Image;
 struct RenderFence;
 class RenderInterface
@@ -21,7 +22,8 @@ public:
 	bool active() const;
 	
 	Texture* create_texture(const Image& image);
-	Sprite create_sprite(const Texture& texture, ResourceHandle render_world);
+	Sprite create_sprite(const Texture& texture, World& world);
+	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);
 	void dispatch(const RendererCommand& command);

@@ -24,7 +24,7 @@ private:
 	Allocator& _allocator;
 	Engine& _engine;
 	bool _initialized;
-	lua_State* _lua_state;
+	lua_State* _lua;
 
 	Game(const Game&);
 	Game& operator=(const Game&);

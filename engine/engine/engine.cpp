@@ -12,6 +12,7 @@
 #include "render_resource_types.h"
 #include "sprite.h"
 #include "timer.h"
+#include "world.h"
 
 #include <stdio.h>
 
@@ -85,6 +86,16 @@ void Engine::update()
 void Engine::resize(const Vector2u& resolution)
 {
 	_render_interface.resize(resolution);
+}
+
+RenderInterface& Engine::render_interface()
+{
+	return _render_interface;
+}
+
+World* Engine::create_world()
+{
+	return MAKE_NEW(_allocator, World, _allocator, _render_interface);
 }
 
 }

@@ -9,9 +9,23 @@
     <ClCompile Include="game\script_interfaces\script_sprite.cpp">
       <Filter>script_interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="game\game.cpp" />
+    <ClCompile Include="game\script_interfaces\script_world.cpp">
+      <Filter>script_interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="game\script_interfaces\script_engine.cpp">
+      <Filter>script_interfaces</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\script_interfaces\script_sprite.h">
+      <Filter>script_interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="game\game.h" />
+    <ClInclude Include="game\script_interfaces\script_world.h">
+      <Filter>script_interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="game\script_interfaces\script_engine.h">
       <Filter>script_interfaces</Filter>
     </ClInclude>
   </ItemGroup>

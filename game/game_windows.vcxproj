@@ -25,11 +25,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\game.h" />
+    <ClInclude Include="game\script_interfaces\script_engine.h" />
     <ClInclude Include="game\script_interfaces\script_sprite.h" />
+    <ClInclude Include="game\script_interfaces\script_world.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\game.cpp" />
+    <ClCompile Include="game\script_interfaces\script_engine.cpp" />
     <ClCompile Include="game\script_interfaces\script_sprite.cpp" />
+    <ClCompile Include="game\script_interfaces\script_world.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A66C4F50-4EEE-4FC4-9BDC-40E0193D2BDB}</ProjectGuid>
@@ -99,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>

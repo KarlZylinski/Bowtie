@@ -38,6 +38,7 @@
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\view.h" />
+    <ClInclude Include="engine\world.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\bmp.cpp" />
@@ -50,6 +51,7 @@
     <ClCompile Include="engine\sprite.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />
+    <ClCompile Include="engine\world.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\foundation_windows.vcxproj">

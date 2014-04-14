@@ -5,6 +5,8 @@
 #include <lua.hpp>
 
 #include "script_interfaces/script_sprite.h"
+#include "script_interfaces/script_world.h"
+#include "script_interfaces/script_engine.h"
 
 namespace bowtie
 {
@@ -55,35 +57,37 @@ void deinit_game(lua_State* lua)
 		assert(!"Failed to call deinit in main.lua.");
 }
 
-Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua_state(luaL_newstate()), _engine(engine), _initialized(false)
+Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
 {
-	load_libs(_lua_state);
-	load_main(_lua_state);
+	load_libs(_lua);
+	load_main(_lua);
 
-	sprite_script_interface::load(_lua_state);
+	engine_script_interface::load(_lua, engine);
+	world_script_interface::load(_lua);
+	sprite_script_interface::load(_lua);
 }
 
 Game::~Game()
 {
-	lua_close(_lua_state);
+	lua_close(_lua);
 }
 
 void Game::init()
 {
 	assert(!_initialized && "init() has already been called once");
 
-	init_game(_lua_state);
+	init_game(_lua);
 	_initialized = true;
 }
 
 void Game::update(float dt)
 {
-	update_game(_lua_state, dt);
+	update_game(_lua, dt);
 }
 
 void Game::deinit()
 {
-	deinit_game(_lua_state);
+	deinit_game(_lua);
 }
 
 bool Game::initialized() const

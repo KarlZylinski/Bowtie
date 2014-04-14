@@ -20,6 +20,8 @@ public:
 	~Engine();
 	void update();
 	void resize(const Vector2u& resolution);
+	RenderInterface& render_interface();
+	World* create_world();
 
 private:
 	Allocator& _allocator;

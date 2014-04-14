@@ -10,6 +10,7 @@
 #include "renderer.h"
 #include "sprite.h"
 #include "image.h"
+#include "world.h"
 
 namespace bowtie
 {
@@ -20,6 +21,8 @@ RenderInterface::RenderInterface(Renderer& renderer, Allocator& allocator) : _al
 
 Texture* RenderInterface::create_texture(const Image& image)
 {
+	if (image.
+
 	auto texture_resource = create_render_resource_data(RenderResourceData::Texture);
 
 	auto trd = TextureResourceData();
@@ -40,13 +43,13 @@ Texture* RenderInterface::create_texture(const Image& image)
 	return texture;
 }
 
-Sprite RenderInterface::create_sprite(const Texture& texture, ResourceHandle render_world)
+Sprite RenderInterface::create_sprite(const Texture& texture, World& world)
 {
 	auto sprite_resource = create_render_resource_data(RenderResourceData::Sprite);
 
 	auto sprite_resource_data = SpriteResourceData();
 	sprite_resource_data.texture = texture.render_handle;
-	sprite_resource_data.render_world = render_world;
+	sprite_resource_data.render_world = world.render_handle();
 
 	Sprite sprite(texture);
 
@@ -59,6 +62,13 @@ Sprite RenderInterface::create_sprite(const Texture& texture, ResourceHandle ren
 	sprite.set_render_handle(sprite_resource.handle);
 	
 	return sprite;
+}
+
+void RenderInterface::create_render_world(World& world)
+{
+	auto render_world_data = create_render_resource_data(RenderResourceData::World);
+	world.set_render_handle(render_world_data.handle);
+	create_resource(render_world_data);
 }
 
 RenderResourceData RenderInterface::create_render_resource_data(RenderResourceData::Type type)
