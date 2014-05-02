@@ -2,16 +2,14 @@
 
 #include "renderer_command.h"
 #include "render_resource_types.h"
-#include "texture.h"
-#include "sprite.h"
-
 namespace bowtie
 {
 
 class Allocator;
 class Renderer;
 class World;
-struct Image;
+class Sprite;
+struct Texture;
 struct RenderFence;
 class RenderInterface
 {
@@ -21,8 +19,8 @@ public:
 	bool is_setup() const;
 	bool active() const;
 	
-	Texture* create_texture(const Image& image);
-	Sprite create_sprite(const Texture& texture, World& world);
+	void create_texture(Texture& texture);
+	void spawn_sprite(World& world, Sprite& sprite);
 	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);

@@ -3,24 +3,28 @@
 #include <stdint.h>
 #include <foundation/hash.h>
 #include "render_resource_types.h"
-#include "image.h"
 
 namespace bowtie
 {
 class RenderInterface;
+struct Texture;
+struct Image;
+class Sprite;
 class ResourceManager
 {
 public:
 	enum ResourceType
 	{
-		RT_Shader, RT_Texture
+		RT_Shader, RT_Image, RT_Sprite, RT_Texture
 	};
 
 	ResourceManager(Allocator& allocator, RenderInterface& render_interface);
 	~ResourceManager();
 
 	ResourceHandle load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
-	Image* load_image(const char* filename);
+	Image& load_image(const char* filename);
+	Sprite& load_sprite_prototype(const char* filename);
+	Texture& load_texture(const char* filename);
 
 	ResourceHandle get(ResourceType type, uint64_t name);
 		

@@ -4,10 +4,6 @@
 namespace bowtie
 {
 
-Sprite::Sprite() : _texture(nullptr)
-{
-}
-
 Sprite::Sprite(const Texture& texture) : _texture(&texture), _size(texture.resolution)
 {
 }

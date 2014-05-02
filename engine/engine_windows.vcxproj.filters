@@ -12,6 +12,7 @@
     <ClCompile Include="engine\sprite.cpp" />
     <ClCompile Include="engine\render_world.cpp" />
     <ClCompile Include="engine\world.cpp" />
+    <ClCompile Include="engine\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />

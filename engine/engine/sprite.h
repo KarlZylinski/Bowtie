@@ -13,7 +13,6 @@ struct Texture;
 class Sprite
 {
 public:
-	Sprite();
 	Sprite(const Texture& texture);
 	void set_position(const Vector2& position);
 	const Vector2& position() const;

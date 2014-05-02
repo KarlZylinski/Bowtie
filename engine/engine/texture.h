@@ -10,6 +10,10 @@ namespace bowtie
 
 struct Texture
 {
+	Texture(Image* image);
+	
+	Image* image;
+
 	image::PixelFormat pixel_format;
 	ResourceHandle render_handle;
 	Vector2u resolution;

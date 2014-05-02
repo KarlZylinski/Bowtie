@@ -103,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>

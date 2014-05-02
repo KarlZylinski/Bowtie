@@ -11,6 +11,8 @@
 
 #include "render_interface.h"
 #include "bmp.h"
+#include "sprite.h"
+#include "texture.h"
 
 
 namespace bowtie
@@ -27,6 +29,11 @@ ResourceManager::~ResourceManager()
 		if(resource_iter->value.type == ResourceHandle::Object)
 			_allocator.deallocate(resource_iter->value.object);
 	}
+}
+
+uint64_t hash_name(const char* name)
+{
+	return murmur_hash_64(name, strlen32(name), 0); 
 }
 
 uint64_t get_shader_name(const char* vertex_shader_filename, const char* fragment_shader_filename)
@@ -67,7 +74,7 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 	return shader_resource.handle;
 }
 
-Image* ResourceManager::load_image(const char* filename)
+Image& ResourceManager::load_image(const char* filename)
 {
 	BmpTexture bmp = bmp::load(filename, _allocator);
 	
@@ -77,9 +84,25 @@ Image* ResourceManager::load_image(const char* filename)
 	image->data_size = bmp.data_size;
 	image->pixel_format = image::RGB;
 	
-	add_resource(murmur_hash_64(filename, strlen32(filename), 0), RT_Texture, image);
+	add_resource(hash_name(filename), RT_Image, image);
 
-	return image;
+	return *image;
+}
+
+Texture& ResourceManager::load_texture(const char* filename)
+{
+	auto& image = load_image(filename);
+	auto texture = MAKE_NEW(_allocator, Texture, &image);
+	_render_interface.create_texture(*texture);
+	add_resource(hash_name(filename), RT_Texture, texture);
+	return *texture;	
+}
+
+Sprite& ResourceManager::load_sprite_prototype(const char* filename)
+{
+	auto sprite = MAKE_NEW(_allocator, Sprite, load_texture(filename));
+	add_resource(hash_name(filename), RT_Sprite, sprite);
+	return *sprite;
 }
 
 uint64_t ResourceManager::get_name(uint64_t name, ResourceManager::ResourceType type)

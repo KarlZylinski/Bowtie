@@ -12,6 +12,7 @@ namespace bowtie
 class Allocator;
 class RenderInterface;
 class Sprite;
+class World;
 
 class Engine
 {
@@ -22,6 +23,7 @@ public:
 	void resize(const Vector2u& resolution);
 	RenderInterface& render_interface();
 	World* create_world();
+	void destroy_world(World& world);
 
 private:
 	Allocator& _allocator;
@@ -29,9 +31,6 @@ private:
 	ResourceManager _resource_manager;
 	ResourceHandle _test_shader;
 	ResourceHandle _test_render_world;
-	Image* _test_image;
-	Texture* _test_texture;
-	Sprite _test_sprite;
 	Game _game;
 
 	float _time_elapsed_previous_frame;

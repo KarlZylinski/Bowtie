@@ -11,6 +11,7 @@
 #include "sprite.h"
 #include "image.h"
 #include "world.h"
+#include "texture.h"
 
 namespace bowtie
 {
@@ -19,9 +20,11 @@ RenderInterface::RenderInterface(Renderer& renderer, Allocator& allocator) : _al
 {
 }
 
-Texture* RenderInterface::create_texture(const Image& image)
+void RenderInterface::create_texture(Texture& texture)
 {
-	if (image.
+	assert(texture.render_handle.type == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
+
+	Image& image = *texture.image;
 
 	auto texture_resource = create_render_resource_data(RenderResourceData::Texture);
 
@@ -35,37 +38,30 @@ Texture* RenderInterface::create_texture(const Image& image)
 
 	create_resource(texture_resource, image.data, image.data_size);
 
-	Texture* texture = (Texture*)_allocator.allocate(sizeof(Texture));
-	texture->pixel_format = image.pixel_format;
-	texture->render_handle = texture_resource.handle;
-	texture->resolution = image.resolution;
-
-	return texture;
+	texture.render_handle = texture_resource.handle;
 }
 
-Sprite RenderInterface::create_sprite(const Texture& texture, World& world)
+void RenderInterface::spawn_sprite(World& world, Sprite& sprite)
 {
-	auto sprite_resource = create_render_resource_data(RenderResourceData::Sprite);
+	assert(sprite.render_handle().type == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned sprite");
+	assert(sprite.texture() != nullptr);
 
-	auto sprite_resource_data = SpriteResourceData();
-	sprite_resource_data.texture = texture.render_handle;
+	auto sprite_rrd = create_render_resource_data(RenderResourceData::Sprite);
+
+	SpriteResourceData sprite_resource_data;
+	sprite_resource_data.texture = sprite.texture()->render_handle;
 	sprite_resource_data.render_world = world.render_handle();
-
-	Sprite sprite(texture);
-
 	sprite_resource_data.model = sprite.model_matrix();
-	sprite_resource.data = &sprite_resource_data;
-	
-	sprite_resource.data = &sprite_resource_data;
+	sprite_rrd.data = &sprite_resource_data;
 
-	create_resource(sprite_resource);
-	sprite.set_render_handle(sprite_resource.handle);
-	
-	return sprite;
+	create_resource(sprite_rrd);
+	sprite.set_render_handle(sprite_rrd.handle);
 }
 
 void RenderInterface::create_render_world(World& world)
 {
+	assert(world.render_handle().type == RenderResourceHandle::NotInitialized);
+
 	auto render_world_data = create_render_resource_data(RenderResourceData::World);
 	world.set_render_handle(render_world_data.handle);
 	create_resource(render_world_data);

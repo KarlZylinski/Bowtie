@@ -5,11 +5,13 @@
 #include <foundation/array.h>
 
 #include "render_interface.h"
+#include "resource_manager.h"
 
 namespace bowtie
 {
 
-World::World(Allocator& allocator, RenderInterface& render_interface) : _sprites(allocator), _render_interface(render_interface)
+World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
+	_sprites(allocator), _render_interface(render_interface), _resource_manager(resource_manager)
 {
 }
 
@@ -20,15 +22,15 @@ void World::set_render_handle(ResourceHandle render_handle)
 	_render_handle = render_handle;
 }
 
-void World::add_sprite(Sprite* sprite)
+void World::spawn_sprite(uint64_t sprite_name)
 {
-	assert(sprite != nullptr);
+	auto sprite = _resource_manager.get<Sprite>(ResourceManager::RT_Sprite, sprite_name);
 
 	array::push_back(_sprites, sprite);
-	_render_interface.create_sprite(/* FUCKER WE NEED TEXTURE HERE*/, *this);
+	_render_interface.spawn_sprite(*this, *sprite);
 }
 
-void World::remove_sprite(Sprite* )
+void World::despawn_sprite(Sprite* )
 {
 
 }
