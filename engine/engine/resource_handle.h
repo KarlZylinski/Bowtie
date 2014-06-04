@@ -11,7 +11,7 @@ struct ResourceHandle
 
 	enum ResourceHandleType
 	{
-		Handle, Object, NotInitialized
+		NotInitialized, Handle, Object
 	};
 
 	ResourceHandleType type;

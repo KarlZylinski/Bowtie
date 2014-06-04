@@ -220,6 +220,9 @@ void Renderer::render_world(const View& view, ResourceHandle render_world)
 
 RenderResourceHandle Renderer::lookup_resource_object(ResourceHandle handle) const
 {
+	assert(handle.type == ResourceHandle::Handle && "Resource is not of handle-type");
+	assert(handle.handle < num_handles && "Handle is out of range");
+
 	return _resource_lut[handle.handle];
 }
 

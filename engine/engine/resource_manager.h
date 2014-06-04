@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 #include <foundation/hash.h>
+#include <foundation/murmur_hash.h>
+#include <foundation/string_utils.h>
 #include "render_resource_types.h"
 
 namespace bowtie
@@ -27,12 +29,17 @@ public:
 	Texture& load_texture(const char* filename);
 
 	ResourceHandle get(ResourceType type, uint64_t name);
-		
+
 	template<class T> T* get(ResourceType type, uint64_t name)
 	{
 		ResourceHandle handle = hash::get(_resources, get_name(name, type), ResourceHandle());
 		assert(handle.type == ResourceHandle::Object && "Trying to get resource as object, which it isn't");
 		return (T*)handle.object;
+	}
+	
+	template<class T> T* get(ResourceType type, const char* name)
+	{
+		return get<T>(type, murmur_hash_64(name, strlen32(name), 0));
 	}
 	
 private:

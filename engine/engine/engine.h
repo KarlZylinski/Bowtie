@@ -29,8 +29,6 @@ private:
 	Allocator& _allocator;
 	RenderInterface& _render_interface;
 	ResourceManager _resource_manager;
-	ResourceHandle _test_shader;
-	ResourceHandle _test_render_world;
 	Game _game;
 
 	float _time_elapsed_previous_frame;

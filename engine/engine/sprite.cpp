@@ -4,13 +4,14 @@
 namespace bowtie
 {
 
-Sprite::Sprite(const Texture& texture) : _texture(&texture), _size(texture.resolution)
+Sprite::Sprite(const Texture& texture) : _texture(&texture), _size(texture.resolution), _render_state_changed(false)
 {
 }
 
 void Sprite::set_position(const Vector2& position)
 {
 	_position = position;
+	_render_state_changed = true;
 }
 
 const Vector2& Sprite::position() const
@@ -21,6 +22,7 @@ const Vector2& Sprite::position() const
 void Sprite::set_size(const Vector2u& size)
 {
 	_size = size;
+	_render_state_changed = true;
 }
 
 const Vector2u& Sprite::size() const
@@ -54,9 +56,17 @@ void Sprite::set_render_handle(ResourceHandle handle)
 
 ResourceHandle Sprite::render_handle() const
 {
-	assert(_render_handle.type != ResourceHandle::NotInitialized && "Trying to get non-initialized sprite render handle.");
-	
 	return _render_handle;
+}
+
+void Sprite::reset_state_changed()
+{
+	_render_state_changed = false;
+}
+
+bool Sprite::state_changed() const
+{
+	return _render_state_changed;
 }
 
 } // namespace bowtie

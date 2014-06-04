@@ -4,6 +4,8 @@
 
 #include <engine/engine.h>
 
+#include "script_interface_helpers.h"
+
 namespace bowtie
 {
 namespace engine_script_interface
@@ -24,7 +26,12 @@ int engine(lua_State* lua)
 void load(lua_State* lua, Engine& e)
 {
 	s_engine = &e;
-	lua_register(lua, "engine", engine);
+	
+	const interface_function functions[] = {
+		{ "engine", engine }
+	};
+
+	script_interface::register_interface(lua, "Engine", functions, 1);
 }
 
 } // namespace engine_script_interface

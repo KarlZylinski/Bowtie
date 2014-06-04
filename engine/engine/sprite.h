@@ -26,11 +26,15 @@ public:
 	void set_render_handle(ResourceHandle handle);
 	ResourceHandle render_handle() const;
 
+	void reset_state_changed();
+	bool state_changed() const;
+
 private:
 	ResourceHandle _render_handle;
 	const Texture* _texture;
 	Vector2 _position;
 	Vector2u _size;
+	bool _render_state_changed;
 };
 
 }

@@ -13,14 +13,18 @@ class World
 {
 public:
 	World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager);
+	~World();
 
 	void set_render_handle(ResourceHandle render_handle);
-	void spawn_sprite(uint64_t name);
+	Sprite* spawn_sprite(const char* name);
 	void despawn_sprite(Sprite* sprite);
+	void update();
+	void draw();
 	ResourceHandle render_handle();
 
 	const Array<Sprite*>& sprites() const;
 private:
+	Allocator& _allocator;
 	Array<Sprite*> _sprites;
 	ResourceHandle _render_handle;
 	RenderInterface& _render_interface;

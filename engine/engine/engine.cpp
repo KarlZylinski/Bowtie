@@ -25,11 +25,7 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 {
 	timer::start();
 
-	_test_shader = _resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
-
-	auto render_world_data = _render_interface.create_render_resource_data(RenderResourceData::World);
-	_test_render_world = render_world_data.handle;
-	_render_interface.create_resource(render_world_data);
+	_resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
 }
 
 Engine::~Engine()
@@ -55,17 +51,6 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 
 	_game.update(dt);
-	
-	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
-	
-	View view(Vector2(640,480), Vector2(0,0));
-
-	RenderWorldData& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
-	rwd.view = view;
-	rwd.render_world = _test_render_world;
-	render_world_command.data = &rwd;
-
-	_render_interface.dispatch(render_world_command);
 }
 
 void Engine::resize(const Vector2u& resolution)
@@ -80,7 +65,9 @@ RenderInterface& Engine::render_interface()
 
 World* Engine::create_world()
 {
-	return MAKE_NEW(_allocator, World, _allocator, _render_interface, _resource_manager);
+	auto world = MAKE_NEW(_allocator, World, _allocator, _render_interface, _resource_manager);
+	_render_interface.create_render_world(*world);
+	return world;
 }
 
 void Engine::destroy_world(World& world)

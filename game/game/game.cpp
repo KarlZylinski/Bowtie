@@ -7,6 +7,7 @@
 #include "script_interfaces/script_sprite.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
+#include "script_interfaces/script_time.h"
 
 namespace bowtie
 {
@@ -63,6 +64,8 @@ Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(l
 	load_main(_lua);
 
 	engine_script_interface::load(_lua, engine);
+	time_script_interface::load(_lua);
+	sprite_script_interface::load(_lua);
 	world_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
 }

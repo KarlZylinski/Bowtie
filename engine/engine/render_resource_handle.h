@@ -11,7 +11,7 @@ struct RenderResourceHandle
 
 	enum RenderResourceHandleType
 	{
-		Handle, Object, NotInitialized
+		NotInitialized, Handle, Object
 	};
 
 	RenderResourceHandleType type;
