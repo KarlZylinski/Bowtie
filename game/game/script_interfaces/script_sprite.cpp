@@ -18,18 +18,15 @@ namespace sprite_script_interface
 int set_position(lua_State* lua)
 {
 	auto& sprite = *(Sprite*)lua_touserdata(lua, 1);
-	auto x = lua_tonumber(lua, 2);
-	auto y = lua_tonumber(lua, 3);
-	sprite.set_position(Vector2((float)x, (float)y));
+	sprite.set_position(script_interface::to_vector(lua, 2));
 	return 0;
 }
 
 int position(lua_State* lua)
 {
 	auto& sprite = *(Sprite*)lua_touserdata(lua, 1);
-	lua_pushnumber(lua, sprite.position().x);
-	lua_pushnumber(lua, sprite.position().y);
-	return 2;
+	script_interface::push_vector(lua, sprite.position());
+	return 1;
 }
 
 void load(lua_State* lua)

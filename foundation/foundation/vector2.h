@@ -19,6 +19,12 @@ namespace bowtie
 			y -= other.y;
 		}
 
+		inline void operator*=(float scalar)
+		{
+			x *= scalar;
+			y *= scalar;
+		}
+
 		float x, y;
 	};
 
@@ -38,6 +44,13 @@ namespace bowtie
 	{
 		Vector2 new_vec = v1;
 		new_vec -= v2;
+		return new_vec;
+	}
+
+	inline Vector2 operator*(const Vector2& v1, float scalar)
+	{
+		Vector2 new_vec = v1;
+		new_vec *= scalar;
 		return new_vec;
 	}
 } // namespace bowtie
