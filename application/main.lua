@@ -6,15 +6,33 @@ function init()
     game.test_sprite = World.spawn_sprite(game.world, "beer.bmp")
 end
 
+function update_test_sprite(dt)
+	local direction = Vector.new()
+
+	if Keyboard.held("Up") then
+		direction.y = -1
+	end
+
+	if Keyboard.held("Down") then
+		direction.y = 1
+	end
+
+	if Keyboard.held("Left") then
+		direction.x = -1
+	end
+
+	if Keyboard.held("Right") then
+		direction.x = 1
+	end
+
+	Sprite.set_position(game.test_sprite, Vector.add(Sprite.position(game.test_sprite), Vector.mul(direction, dt * 400)))
+end
+
 function update(dt)
 	local time = Time.time()
 	local v = Sprite.position(game.test_sprite)
 
-	if (v.x == 0) then
-		v = Vector.new(200, 200)
-	end
-
-	Sprite.set_position(game.test_sprite, Vector.mul(1.00001, v))
+	update_test_sprite(dt)
     World.update(game.world)
     World.draw(game.world)
 end

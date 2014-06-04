@@ -19,6 +19,7 @@ namespace keyboard
 		A = 0x41,
 		Z = 0x5A
 	};
+
 #endif
 
 }

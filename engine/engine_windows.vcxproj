@@ -22,6 +22,7 @@
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\image.h" />
+    <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\renderer.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\renderer_context.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\image.cpp" />
+    <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\renderer.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\render_world.cpp" />

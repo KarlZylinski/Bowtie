@@ -51,6 +51,7 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 
 	_game.update(dt);
+	_keyboard = Keyboard::from_previous_frame(_keyboard);
 }
 
 void Engine::resize(const Vector2u& resolution)
@@ -73,6 +74,21 @@ World* Engine::create_world()
 void Engine::destroy_world(World& world)
 {
 	MAKE_DELETE(_allocator, World, &world);
+}
+
+void Engine::key_pressed(keyboard::Key key)
+{
+	_keyboard.set_key_pressed(key);
+}
+
+void Engine::key_released(keyboard::Key key)
+{
+	_keyboard.set_key_released(key);
+}
+
+const Keyboard& Engine::keyboard() const
+{
+	return _keyboard;
 }
 
 }

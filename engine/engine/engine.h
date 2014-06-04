@@ -1,8 +1,10 @@
 #pragma once
 
+#include <foundation/keyboard.h>
 #include <foundation/vector2u.h>
 #include <game/game.h>
 
+#include "keyboard.h"
 #include "resource_manager.h"
 #include "sprite.h"
 
@@ -24,9 +26,13 @@ public:
 	RenderInterface& render_interface();
 	World* create_world();
 	void destroy_world(World& world);
+	void key_pressed(keyboard::Key key);
+	void key_released(keyboard::Key key);
+	const Keyboard& keyboard() const;
 
 private:
 	Allocator& _allocator;
+	Keyboard _keyboard;
 	RenderInterface& _render_interface;
 	ResourceManager _resource_manager;
 	Game _game;

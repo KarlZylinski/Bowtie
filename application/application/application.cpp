@@ -28,12 +28,14 @@ void window_resized_callback(const Vector2u& resolution)
 	s_engine->resize(resolution);
 }
 
-void key_down_callback(keyboard::Key)
+void key_down_callback(keyboard::Key key)
 {
+	s_engine->key_pressed(key);
 }
 
-void key_up_callback(keyboard::Key)
+void key_up_callback(keyboard::Key key)
 {
+	s_engine->key_released(key);
 }
 
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
