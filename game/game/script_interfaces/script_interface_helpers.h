@@ -19,6 +19,7 @@ namespace script_interface
 void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions);
 Vector2 to_vector(lua_State* lua, int index);
 void push_vector(lua_State* lua, const Vector2& v);
+bool check_errors(lua_State* lua, int error);
 
 }
 

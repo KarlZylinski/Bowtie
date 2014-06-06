@@ -48,11 +48,21 @@ Vector2 to_vector(lua_State* lua, int index)
 
 void push_vector(lua_State* lua, const Vector2& v)
 {
-	lua_newtable(lua);
+	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v.x);
-	lua_setfield(lua, -2, "x");
 	lua_pushnumber(lua, v.y);
-	lua_setfield(lua, -2, "y");
+	int error = lua_pcall(lua, 2, 1, 0);
+	script_interface::check_errors(lua, error);
+}
+
+bool check_errors(lua_State* lua, int error)
+{
+	if (error == 0)
+		return true;
+
+	auto error_str = lua_tostring(lua, -1);
+	printf(error_str);
+	return false;
 }
 
 } // namespace script_interface

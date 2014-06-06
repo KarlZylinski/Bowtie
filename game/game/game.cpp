@@ -4,64 +4,52 @@
 
 #include <lua.hpp>
 
+#include "script_interfaces/script_interface_helpers.h"
 #include "script_interfaces/script_sprite.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
 #include "script_interfaces/script_time.h"
-#include "script_interfaces/script_vector.h"
 
 namespace bowtie
 {
 
-void load_libs(lua_State* lua)
-{
-	luaopen_io(lua);
-	luaopen_base(lua);
-	luaopen_table(lua);
-	luaopen_string(lua);
-	luaopen_math(lua);
-}
-
 void load_main(lua_State* lua)
 {
 	int error = luaL_dofile(lua, "main.lua");
-
-	if (error != 0)
-		assert(!"Could not load main.lua.");
+	script_interface::check_errors(lua, error);
 }
 
 void init_game(lua_State* lua)
 {
 	lua_getglobal(lua, "init");
 	int error = lua_pcall(lua, 0, 0, 0);
-
-	if (error != 0)
-		assert(!"Failed to call init in main.lua.");
+	script_interface::check_errors(lua, error);
 }
 
 void update_game(lua_State* lua, float dt)
 {
 	lua_getglobal(lua, "update");
 	lua_pushnumber(lua, dt);
-
 	int error = lua_pcall(lua, 1, 0, 0);
-
-	if (error != 0)
-		assert(!"Failed to call update in main.lua.");
+	script_interface::check_errors(lua, error);
 }
 
 void deinit_game(lua_State* lua)
 {
 	lua_getglobal(lua, "deinit");
 	int error = lua_pcall(lua, 0, 0, 0);
+	script_interface::check_errors(lua, error);
+}
 
-	if (error != 0)
-		assert(!"Failed to call deinit in main.lua.");
+void load_shared_libs(lua_State* lua)
+{
+	int error = luaL_dofile(lua, "shared/vector2.lua");
+	script_interface::check_errors(lua, error);
 }
 
 Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
 {
-	load_libs(_lua);
+	luaL_openlibs(_lua);
 	load_main(_lua);
 
 	engine_script_interface::load(_lua, engine);
@@ -69,7 +57,8 @@ Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(l
 	sprite_script_interface::load(_lua);
 	world_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
-	vector_script_interface::load(_lua);
+
+	load_shared_libs(_lua);
 }
 
 Game::~Game()

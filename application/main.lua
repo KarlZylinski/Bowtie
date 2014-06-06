@@ -7,7 +7,7 @@ function init()
 end
 
 function update_test_sprite(dt)
-	local direction = Vector.new()
+	local direction = Vector2()
 
 	if Keyboard.held("Up") then
 		direction.y = -1
@@ -25,7 +25,7 @@ function update_test_sprite(dt)
 		direction.x = 1
 	end
 
-	Sprite.set_position(game.test_sprite, Vector.add(Sprite.position(game.test_sprite), Vector.mul(direction, dt * 400)))
+	Sprite.set_position(game.test_sprite, Sprite.position(game.test_sprite) + direction * dt * 400)
 end
 
 function update(dt)
