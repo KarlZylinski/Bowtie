@@ -42,9 +42,17 @@ void OpenGLContextWindows::flip()
 	SwapBuffers(_device_context);
 }
 
+void enable_vsync()
+{
+	typedef bool (APIENTRY *PFNWGLSWAPINTERVALEXTPROC) (int interval);
+	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) wglGetProcAddress("wglSwapIntervalEXT");
+	wglSwapIntervalEXT(-1); 
+}
+
 void OpenGLContextWindows::make_current_for_calling_thread()
 {	
     wglMakeCurrent(_device_context, _rendering_context);
+	enable_vsync();
 }
 
 } // namespace bowtie
