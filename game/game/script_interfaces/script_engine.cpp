@@ -25,29 +25,7 @@ int engine(lua_State* lua)
 
 int load_resource(lua_State* lua)
 {
-	auto resource_type_str = lua_tostring(lua, 1);
-	auto resource_type = ResourceManager::resource_type_from_string(resource_type_str);
-	
-	auto& resource_manager = s_engine->resource_manager();
-
-	switch(resource_type) {
-		case ResourceManager::RT_Image:
-			resource_manager.load_image(lua_tostring(lua, 2));
-			break;
-		
-		case ResourceManager::RT_Shader:
-			resource_manager.load_shader(lua_tostring(lua, 2));
-			break;
-
-		case ResourceManager::RT_Sprite:
-			resource_manager.load_sprite_prototype(lua_tostring(lua, 2));
-			break;
-			
-		case ResourceManager::RT_Texture:
-			resource_manager.load_texture(lua_tostring(lua, 2));
-			break;
-	}
-
+	s_engine->resource_manager().load(lua_tostring(lua, 1), lua_tostring(lua, 2));
 	return 0;
 }
 

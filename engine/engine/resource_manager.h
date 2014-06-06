@@ -25,12 +25,13 @@ public:
 		
 	static const char* resource_type_names[];
 	static ResourceType resource_type_from_string(const char* type);
-	ResourceHandle load_shader(const char* filename);
-	Image& load_image(const char* filename);
-	Sprite& load_sprite_prototype(const char* filename);
-	Texture& load_texture(const char* filename);
-
+	
+	ResourceHandle load(const char* type, const char* filename);
+	ResourceHandle load(ResourceType type, const char* filename);
 	ResourceHandle get(ResourceType type, uint64_t name);
+	ResourceHandle get(const char* type, uint64_t name);
+	ResourceHandle get(const char* type, const char* name);
+	ResourceHandle get(ResourceType type, const char* name);
 
 	template<class T> T* get(ResourceType type, uint64_t name)
 	{
@@ -49,17 +50,21 @@ public:
 	
 private:
 	uint64_t get_name(uint64_t name, ResourceType type);
-
-	ResourceManager(const ResourceManager&);
-	ResourceManager& operator=(const ResourceManager&);
-	
 	void add_resource(uint64_t name, ResourceType type, ResourceHandle resource);
+
+	ResourceHandle load_shader(const char* filename);
+	Image& load_image(const char* filename);
+	Sprite& load_sprite_prototype(const char* filename);
+	Texture& load_texture(const char* filename);
 
 	Allocator& _allocator;
 	RenderInterface& _render_interface;
 
 	Hash<ResourceHandle> _resources;
 	ResourceHandle _default_resources[NumResourceTypes];
+
+	ResourceManager(const ResourceManager&);
+	ResourceManager& operator=(const ResourceManager&);
 };
 
 

@@ -161,6 +161,22 @@ ResourceHandle ResourceManager::get(ResourceType type, uint64_t name)
 	return hash::get(_resources, get_name(name, type), ResourceHandle());
 }
 
+ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
+{
+	switch(type)
+	{
+		case RT_Image: return &load_image(filename);
+		case RT_Shader: return load_shader(filename);
+		case RT_Sprite: return &load_sprite_prototype(filename);
+		case RT_Texture: return &load_texture(filename);
+		default: assert(!"Unknown resource type"); return (unsigned)0;
+	}
+}
+
+ResourceHandle ResourceManager::load(const char* type, const char* filename)
+{
+	return load(resource_type_from_string(type), filename);
+}
 
 void ResourceManager::set_default(ResourceType type, ResourceHandle handle)
 {
