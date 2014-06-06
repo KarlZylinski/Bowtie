@@ -3,10 +3,12 @@ game = {}
 function init()
     local engine = Engine.engine()
     game.world = World.create(engine)
-    game.test_sprite = World.spawn_sprite(game.world, "textures/hill.png")
+    game.hill = World.spawn_sprite(game.world, "textures/hill.png")
+    Sprite.set_position(game.hill, Vector2(50, 50))
+    game.beer = World.spawn_sprite(game.world, "textures/beer.png")
 end
 
-function update_test_sprite(dt)
+function update_beer(dt)
 	local direction = Vector2()
 
 	if Keyboard.held("Up") then
@@ -25,14 +27,11 @@ function update_test_sprite(dt)
 		direction.x = 1
 	end
 
-	Sprite.set_position(game.test_sprite, Sprite.position(game.test_sprite) + direction * dt * 400)
+	Sprite.set_position(game.beer, Sprite.position(game.beer) + direction * dt * 400)
 end
 
 function update(dt)
-	local time = Time.time()
-	local v = Sprite.position(game.test_sprite)
-
-	update_test_sprite(dt)
+	update_beer(dt)
     World.update(game.world)
     World.draw(game.world)
 end

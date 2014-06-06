@@ -22,3 +22,8 @@ Todo
 * - [/] Create sprite script interface
 * - [/] Make sprite SI take a world an manipulate that
 * - [/] Create a rendering interface which takes a world, view and all that jazz and then sends rendering commands using the rendering handles of those
+* [ ] Sorting depending on behind/infront
+* [ ] Mesh based occlusion
+* - [ ] Check if player is in triangle
+* - [ ] Make editor to plot mesh (level editor???)
+* - [ ] Set sort value depending on player occlusion
