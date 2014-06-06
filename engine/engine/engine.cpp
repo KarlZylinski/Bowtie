@@ -26,6 +26,8 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 	timer::start();
 
 	_resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
+	_resource_manager.load_sprite_prototype("textures/beer.png");
+	_resource_manager.load_sprite_prototype("textures/hill.png");
 }
 
 Engine::~Engine()

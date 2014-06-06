@@ -31,7 +31,6 @@ void World::set_render_handle(ResourceHandle render_handle)
 
 Sprite* World::spawn_sprite(const char* sprite_name)
 {
-	_resource_manager.load_sprite_prototype(sprite_name);
 	auto sprite_prototype = _resource_manager.get<Sprite>(ResourceManager::RT_Sprite, sprite_name);
 
 	auto sprite = (Sprite*)_allocator.allocate(sizeof(Sprite));
