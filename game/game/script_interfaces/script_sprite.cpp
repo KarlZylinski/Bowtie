@@ -5,10 +5,9 @@
 #include <lua.hpp>
 
 #include <engine/sprite.h>
+#include <engine/timer.h>
 
 #include "script_interface_helpers.h"
-
-#include <engine/timer.h>
 
 namespace bowtie
 {

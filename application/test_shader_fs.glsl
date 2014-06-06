@@ -8,5 +8,10 @@ out vec4 color;
 
 void main()
 {
-	color = texture(texture_sampler, texcoord);
+	vec4 tex = texture(texture_sampler, texcoord);
+
+	if (tex.a == 0)
+		discard;
+
+	color = tex;
 }

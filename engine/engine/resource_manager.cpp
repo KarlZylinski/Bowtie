@@ -10,7 +10,7 @@
 #include <resource_path.h>
 
 #include "render_interface.h"
-#include "bmp.h"
+#include "png.h"
 #include "sprite.h"
 #include "texture.h"
 
@@ -76,13 +76,13 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 
 Image& ResourceManager::load_image(const char* filename)
 {
-	BmpTexture bmp = bmp::load(filename, _allocator);
+	UncompressedTexture tex = png::load(filename, _allocator);
 	
 	Image* image = (Image*)_allocator.allocate(sizeof(Image));
-	image->resolution = Vector2u(bmp.width, bmp.height);
-	image->data = bmp.data;
-	image->data_size = bmp.data_size;
-	image->pixel_format = image::RGB;
+	image->resolution = Vector2u(tex.width, tex.height);
+	image->data = tex.data;
+	image->data_size = tex.data_size;
+	image->pixel_format = image::RGBA;
 	
 	add_resource(hash_name(filename), RT_Image, image);
 

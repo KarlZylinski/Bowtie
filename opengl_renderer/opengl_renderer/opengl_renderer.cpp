@@ -230,8 +230,12 @@ GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
 	switch(pixel_format)
 	{
 	case image::RGB:
-		gl_pixel_format.format = GL_BGR;
+		gl_pixel_format.format = GL_RGB;
 		gl_pixel_format.internal_format = GL_RGB;
+		break;
+	case image::RGBA:
+		gl_pixel_format.format = GL_RGBA;
+		gl_pixel_format.internal_format = GL_RGBA;
 		break;
 	default: assert(!"Unknown pixel format"); break;
 	}

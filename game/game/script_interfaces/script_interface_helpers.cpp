@@ -24,7 +24,8 @@ void register_interface(lua_State* lua, const char* interface_name, const interf
 	lua_setglobal(lua, interface_name);
 }
 
-double get_field (lua_State* lua, int index, const char *key) {
+double get_field(lua_State* lua, int index, const char *key)
+{
     lua_pushstring(lua, key);
     lua_gettable(lua, index);
 

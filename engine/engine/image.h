@@ -11,7 +11,8 @@ namespace image
 
 enum PixelFormat
 {
-	RGB
+	RGB,
+	RGBA
 };
 
 }

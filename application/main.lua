@@ -3,7 +3,7 @@ game = {}
 function init()
     local engine = Engine.engine()
     game.world = World.create(engine)
-    game.test_sprite = World.spawn_sprite(game.world, "beer.bmp")
+    game.test_sprite = World.spawn_sprite(game.world, "textures/hill.png")
 end
 
 function update_test_sprite(dt)
