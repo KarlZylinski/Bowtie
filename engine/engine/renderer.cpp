@@ -54,6 +54,7 @@ RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
 
 	render_sprite.texture = sprite_data.texture;
 	render_sprite.model = sprite_data.model;
+	render_sprite.shader = sprite_data.shader;
 
 	RenderResourceHandle sprite_handle = &render_sprite;
 

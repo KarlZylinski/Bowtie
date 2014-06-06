@@ -18,6 +18,9 @@
 namespace bowtie
 {
 
+
+const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture" };
+
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
 {
 }
@@ -31,24 +34,58 @@ ResourceManager::~ResourceManager()
 	}
 }
 
+ResourceManager::ResourceType ResourceManager::resource_type_from_string(const char* type)
+{
+	for (unsigned i = 0; i < NumResourceTypes; ++i)
+	{
+		if (strequal(type, resource_type_names[i]))
+			return (ResourceType)i;
+	}
+
+	assert(!"Unknown resource type string");
+	return ResourceType::NumResourceTypes;
+}
+
+
 uint64_t hash_name(const char* name)
 {
 	return murmur_hash_64(name, strlen32(name), 0); 
 }
 
-uint64_t get_shader_name(const char* vertex_shader_filename, const char* fragment_shader_filename)
+ResourceHandle ResourceManager::load_shader(const char* filename)
 {
-	char concatenated_filenames[1024];
-	strcpy(concatenated_filenames, vertex_shader_filename);
-	strcat(concatenated_filenames, fragment_shader_filename);
+	char* shader_source = file::load(filename, _allocator);
 
-	return murmur_hash_64(concatenated_filenames, strlen32(concatenated_filenames), 0);
-}
+	const char* delimiter = "#fragment";
 
-ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename)
-{
-	char* vertex_shader_source = file::load(vertex_shader_filename, _allocator);
-	char* fragment_shader_source = file::load(fragment_shader_filename, _allocator);
+	auto delimiter_len = strlen32(delimiter);
+	auto shader_len = strlen32(shader_source);
+
+	unsigned matched_index = 0;
+	unsigned fragment_start_index = 0;
+	for (; fragment_start_index < shader_len; ++fragment_start_index)
+	{
+		if (shader_source[fragment_start_index] == delimiter[matched_index])
+			++matched_index;
+		else
+			matched_index = 0;
+
+		if (matched_index == delimiter_len)
+			break;
+	}
+
+	++fragment_start_index;
+	assert(matched_index == delimiter_len && fragment_start_index <= shader_len && "Could not find fragment part of shader.");
+
+	unsigned vertex_shader_source_len = fragment_start_index - delimiter_len;
+	char* vertex_shader_source = (char*)_allocator.allocate(vertex_shader_source_len + 1);
+	memcpy(vertex_shader_source, shader_source, vertex_shader_source_len);
+	vertex_shader_source[vertex_shader_source_len] = 0;
+	
+	unsigned fragment_shader_source_len = shader_len - fragment_start_index;
+	char* fragment_shader_source = (char*)_allocator.allocate(fragment_shader_source_len + 1);
+	memcpy(fragment_shader_source, shader_source + fragment_start_index, fragment_shader_source_len);
+	fragment_shader_source[fragment_shader_source_len] = 0;
 	
 	ShaderResourceData srd;
 	unsigned shader_dynamic_data_size = strlen32(vertex_shader_source) + strlen32(fragment_shader_source) + 2;
@@ -66,7 +103,7 @@ ResourceHandle ResourceManager::load_shader(const char* vertex_shader_filename, 
 	shader_resource.data = &srd;
 	
 	_render_interface.create_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
-	add_resource(get_shader_name(vertex_shader_filename, fragment_shader_filename), RT_Shader, shader_resource.handle);
+	add_resource(hash_name(filename), RT_Shader, shader_resource.handle);
 
 	_allocator.deallocate(vertex_shader_source);
 	_allocator.deallocate(fragment_shader_source);
@@ -122,6 +159,20 @@ void ResourceManager::add_resource(uint64_t name, ResourceType type, ResourceHan
 ResourceHandle ResourceManager::get(ResourceType type, uint64_t name)
 {
 	return hash::get(_resources, get_name(name, type), ResourceHandle());
+}
+
+
+void ResourceManager::set_default(ResourceType type, ResourceHandle handle)
+{
+	assert(_default_resources[type].type == ResourceHandle::NotInitialized && "Trying to resassign already assigned default resource.");
+	_default_resources[type] = handle;
+}
+
+ResourceHandle ResourceManager::get_default(ResourceType type) const
+{
+	auto resource = _default_resources[type];
+	assert(resource.type != ResourceHandle::NotInitialized && "No default resource set for this type.");
+	return resource;
 }
 
 }

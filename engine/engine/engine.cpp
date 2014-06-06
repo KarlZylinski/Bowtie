@@ -24,10 +24,6 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 	_resource_manager(allocator, render_interface), _game(allocator, *this)
 {
 	timer::start();
-
-	_resource_manager.load_shader("test_shader_vs.glsl", "test_shader_fs.glsl");
-	_resource_manager.load_sprite_prototype("textures/beer.png");
-	_resource_manager.load_sprite_prototype("textures/hill.png");
 }
 
 Engine::~Engine()
@@ -91,6 +87,11 @@ void Engine::key_released(keyboard::Key key)
 const Keyboard& Engine::keyboard() const
 {
 	return _keyboard;
+}
+
+ResourceManager& Engine::resource_manager()
+{
+	return _resource_manager;
 }
 
 }

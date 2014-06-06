@@ -2,6 +2,13 @@ game = {}
 
 function init()
     local engine = Engine.engine()
+
+    Engine.load_resource("shader", "default.shader")
+	Engine.set_default_resource("shader", "default.shader")
+
+	Engine.load_resource("sprite", "textures/beer.png")
+	Engine.load_resource("sprite", "textures/hill.png")
+
     game.world = World.create(engine)
     game.hill = World.spawn_sprite(game.world, "textures/hill.png")
     Sprite.set_position(game.hill, Vector2(50, 50))

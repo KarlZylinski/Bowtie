@@ -11,6 +11,7 @@ class World;
 class Sprite;
 struct Texture;
 struct RenderFence;
+class ResourceManager;
 class RenderInterface
 {
 public:
@@ -20,7 +21,7 @@ public:
 	bool active() const;
 	
 	void create_texture(Texture& texture);
-	void spawn_sprite(World& world, Sprite& sprite);
+	void spawn_sprite(World& world, Sprite& sprite, ResourceManager& resource_manager);
 	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);

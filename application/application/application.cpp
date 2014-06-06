@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <engine/engine.h>
+#include <engine/resource_manager.h>
 #include <foundation/array.h>
 #include <foundation/temp_allocator.h>
 #include <opengl_renderer/opengl_context_windows.h>

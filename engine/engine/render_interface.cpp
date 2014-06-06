@@ -12,6 +12,7 @@
 #include "image.h"
 #include "world.h"
 #include "texture.h"
+#include "resource_manager.h"
 
 namespace bowtie
 {
@@ -41,7 +42,17 @@ void RenderInterface::create_texture(Texture& texture)
 	texture.render_handle = texture_resource.handle;
 }
 
-void RenderInterface::spawn_sprite(World& world, Sprite& sprite)
+ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Sprite& sprite)
+{
+	auto shader = sprite.shader();
+
+	if (shader.type != ResourceHandle::NotInitialized)
+		return shader;
+
+	return resource_manager.get_default(ResourceManager::RT_Shader);
+}
+
+void RenderInterface::spawn_sprite(World& world, Sprite& sprite, ResourceManager& resource_manager)
 {
 	assert(sprite.render_handle().type == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned sprite");
 	assert(sprite.texture() != nullptr);
@@ -52,6 +63,7 @@ void RenderInterface::spawn_sprite(World& world, Sprite& sprite)
 	sprite_resource_data.texture = sprite.texture()->render_handle;
 	sprite_resource_data.render_world = world.render_handle();
 	sprite_resource_data.model = sprite.model_matrix();
+	sprite_resource_data.shader = get_shader_or_default(resource_manager, sprite);
 	sprite_rrd.data = &sprite_resource_data;
 
 	create_resource(sprite_rrd);

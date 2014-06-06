@@ -29,6 +29,7 @@ public:
 	void key_pressed(keyboard::Key key);
 	void key_released(keyboard::Key key);
 	const Keyboard& keyboard() const;
+	ResourceManager& resource_manager();
 
 private:
 	Allocator& _allocator;

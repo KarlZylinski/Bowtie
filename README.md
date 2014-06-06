@@ -27,3 +27,5 @@ Todo
 * - [ ] Check if player is in triangle
 * - [ ] Make editor to plot mesh (level editor???)
 * - [ ] Set sort value depending on player occlusion
+* [ ] Materials w/ shaders
+* [ ] Split engine and renderer into two

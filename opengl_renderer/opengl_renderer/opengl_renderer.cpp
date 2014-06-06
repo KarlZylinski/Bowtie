@@ -80,35 +80,32 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
 void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_handle)
 {	
 	auto view_projection = view.view_projection();
-		
-	GLuint program = lookup_resource_object(1).render_handle;
-
 	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
 
 	auto& sprites = render_world.sprites();
-
 	for (unsigned i = 0; i < array::size(sprites); ++i)
 	{
 		RenderSprite& sprite = *(RenderSprite*)sprites[i].render_object;
-		RenderTexture* sprite_texture = (RenderTexture*)lookup_resource_object(sprite.texture.handle).render_object;
+		RenderTexture& sprite_texture = *(RenderTexture*)lookup_resource_object(sprite.texture.handle).render_object;
 
-		auto test_image_scale_matrix = Matrix4();
+		auto image_scale_matrix = Matrix4();
 	
-		test_image_scale_matrix[0][0] = float(sprite_texture->resolution.x);
-		test_image_scale_matrix[1][1] = float(sprite_texture->resolution.y);
+		image_scale_matrix[0][0] = float(sprite_texture.resolution.x);
+		image_scale_matrix[1][1] = float(sprite_texture.resolution.y);
 
-		auto model_matrix = test_image_scale_matrix * sprite.model;
+		auto model_matrix = image_scale_matrix * sprite.model;
 		auto model_view_projection_matrix = model_matrix * view_projection;
+		
+		auto shader = lookup_resource_object(sprite.shader.handle).render_handle;
+		assert(glIsProgram(shader) && "Invalid shader program");
+		glUseProgram(shader);
 
-		assert(glIsProgram(program) && "Invalid shader program");
-		glUseProgram(program);
-
-		GLuint model_view_projection_matrix_id = glGetUniformLocation(program, "model_view_projection_matrix");
+		GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
 		glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
-		GLuint texture_sampler_id = glGetUniformLocation(program, "texture_sampler");
+		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sprite_texture->render_handle.handle);
+		glBindTexture(GL_TEXTURE_2D, sprite_texture.render_handle.handle);
 		glUniform1i(texture_sampler_id, 0);
 
 		auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;

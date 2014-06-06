@@ -37,7 +37,7 @@ Sprite* World::spawn_sprite(const char* sprite_name)
 	memcpy(sprite, sprite_prototype, sizeof(Sprite));
 
 	array::push_back(_sprites, sprite);
-	_render_interface.spawn_sprite(*this, *sprite);
+	_render_interface.spawn_sprite(*this, *sprite, _resource_manager);
 
 	return sprite;
 }

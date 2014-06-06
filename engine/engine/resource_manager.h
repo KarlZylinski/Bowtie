@@ -17,13 +17,15 @@ class ResourceManager
 public:
 	enum ResourceType
 	{
-		RT_Shader, RT_Image, RT_Sprite, RT_Texture
+		RT_Shader, RT_Image, RT_Sprite, RT_Texture, NumResourceTypes
 	};
 
 	ResourceManager(Allocator& allocator, RenderInterface& render_interface);
 	~ResourceManager();
-
-	ResourceHandle load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
+		
+	static const char* resource_type_names[];
+	static ResourceType resource_type_from_string(const char* type);
+	ResourceHandle load_shader(const char* filename);
 	Image& load_image(const char* filename);
 	Sprite& load_sprite_prototype(const char* filename);
 	Texture& load_texture(const char* filename);
@@ -41,6 +43,9 @@ public:
 	{
 		return get<T>(type, murmur_hash_64(name, strlen32(name), 0));
 	}
+
+	void set_default(ResourceType type, ResourceHandle handle);
+	ResourceHandle get_default(ResourceType type) const;
 	
 private:
 	uint64_t get_name(uint64_t name, ResourceType type);
@@ -54,6 +59,7 @@ private:
 	RenderInterface& _render_interface;
 
 	Hash<ResourceHandle> _resources;
+	ResourceHandle _default_resources[NumResourceTypes];
 };
 
 

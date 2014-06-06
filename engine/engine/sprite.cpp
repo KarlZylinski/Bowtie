@@ -59,6 +59,17 @@ ResourceHandle Sprite::render_handle() const
 	return _render_handle;
 }
 
+void Sprite::set_shader(ResourceHandle shader)
+{
+	_shader = shader;
+	_render_state_changed = true;
+}
+
+ResourceHandle Sprite::shader() const
+{
+	return _shader;
+}
+
 void Sprite::reset_state_changed()
 {
 	_render_state_changed = false;

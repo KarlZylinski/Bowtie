@@ -25,12 +25,16 @@ public:
 
 	void set_render_handle(ResourceHandle handle);
 	ResourceHandle render_handle() const;
+	
+	void set_shader(ResourceHandle shader);
+	ResourceHandle shader() const;
 
 	void reset_state_changed();
 	bool state_changed() const;
 
 private:
 	ResourceHandle _render_handle;
+	ResourceHandle _shader;
 	const Texture* _texture;
 	Vector2 _position;
 	Vector2u _size;

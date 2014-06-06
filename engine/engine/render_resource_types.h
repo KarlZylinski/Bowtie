@@ -38,6 +38,7 @@ struct SpriteResourceData
 {
 	ResourceHandle render_world;
 	ResourceHandle texture;
+	ResourceHandle shader;
 	Matrix4 model;
 };
 
