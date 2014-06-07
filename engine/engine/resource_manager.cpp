@@ -19,7 +19,7 @@ namespace bowtie
 {
 
 
-const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture" };
+const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font" };
 
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
 {
@@ -54,6 +54,11 @@ uint64_t hash_name(const char* name)
 
 ResourceHandle ResourceManager::load_shader(const char* filename)
 {
+	auto name = hash_name(filename);
+	auto existing = get(RT_Shader, name);
+	if (existing.type != ResourceHandle::NotInitialized)
+		return existing;
+
 	char* shader_source = file::load(filename, _allocator);
 
 	const char* delimiter = "#fragment";
@@ -103,7 +108,7 @@ ResourceHandle ResourceManager::load_shader(const char* filename)
 	shader_resource.data = &srd;
 	
 	_render_interface.create_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
-	add_resource(hash_name(filename), RT_Shader, shader_resource.handle);
+	add_resource(name, RT_Shader, shader_resource.handle);
 
 	_allocator.deallocate(vertex_shader_source);
 	_allocator.deallocate(fragment_shader_source);
@@ -113,6 +118,11 @@ ResourceHandle ResourceManager::load_shader(const char* filename)
 
 Image& ResourceManager::load_image(const char* filename)
 {
+	auto name = hash_name(filename);
+	auto existing = get<Image>(RT_Image, name);
+	if (existing != nullptr)
+		return *existing;
+
 	UncompressedTexture tex = png::load(filename, _allocator);
 	
 	Image* image = (Image*)_allocator.allocate(sizeof(Image));
@@ -121,24 +131,44 @@ Image& ResourceManager::load_image(const char* filename)
 	image->data_size = tex.data_size;
 	image->pixel_format = image::RGBA;
 	
-	add_resource(hash_name(filename), RT_Image, image);
+	add_resource(name, RT_Image, image);
 
 	return *image;
 }
 
 Texture& ResourceManager::load_texture(const char* filename)
 {
+	auto name = hash_name(filename);
+	auto existing = get<Texture>(RT_Texture, name);
+	if (existing != nullptr)
+		return *existing;
+
 	auto& image = load_image(filename);
 	auto texture = MAKE_NEW(_allocator, Texture, &image);
 	_render_interface.create_texture(*texture);
-	add_resource(hash_name(filename), RT_Texture, texture);
+	add_resource(name, RT_Texture, texture);
 	return *texture;	
+}
+
+Font& ResourceManager::load_font(const char* filename)
+{
+	auto name = hash_name(filename);
+	auto existing = get<Font>(RT_Font, name);
+	if (existing != nullptr)
+		return *existing;
+
+	return *(Font*)nullptr;
 }
 
 Sprite& ResourceManager::load_sprite_prototype(const char* filename)
 {
+	auto name = hash_name(filename);
+	auto existing = get<Sprite>(RT_Sprite, name);
+	if (existing != nullptr)
+		return *existing;
+
 	auto sprite = MAKE_NEW(_allocator, Sprite, load_texture(filename));
-	add_resource(hash_name(filename), RT_Sprite, sprite);
+	add_resource(name, RT_Sprite, sprite);
 	return *sprite;
 }
 
@@ -169,6 +199,7 @@ ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
 		case RT_Shader: return load_shader(filename);
 		case RT_Sprite: return &load_sprite_prototype(filename);
 		case RT_Texture: return &load_texture(filename);
+		case RT_Font: return &load_font(filename);
 		default: assert(!"Unknown resource type"); return (unsigned)0;
 	}
 }

@@ -88,13 +88,7 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_han
 		RenderSprite& sprite = *(RenderSprite*)sprites[i].render_object;
 		RenderTexture& sprite_texture = *(RenderTexture*)lookup_resource_object(sprite.texture.handle).render_object;
 
-		auto image_scale_matrix = Matrix4();
-	
-		image_scale_matrix[0][0] = float(sprite_texture.resolution.x);
-		image_scale_matrix[1][1] = float(sprite_texture.resolution.y);
-
-		auto model_matrix = image_scale_matrix * sprite.model;
-		auto model_view_projection_matrix = model_matrix * view_projection;
+		auto model_view_projection_matrix = sprite.model * view_projection;
 		
 		auto shader = lookup_resource_object(sprite.shader.handle).render_handle;
 		assert(glIsProgram(shader) && "Invalid shader program");
@@ -108,17 +102,27 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_han
 		glBindTexture(GL_TEXTURE_2D, sprite_texture.render_handle.handle);
 		glUniform1i(texture_sampler_id, 0);
 
-		auto sprite_rendering_quad = _resource_lut[_sprite_rendering_quad_handle.handle].render_handle;
-
+		auto geometry = lookup_resource_object(sprite.geometry.handle).render_handle;
+		
+		glBindBuffer(GL_ARRAY_BUFFER, geometry);
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad);
 		glVertexAttribPointer(
 			0,
 			3,
 			GL_FLOAT,
 			GL_FALSE,
-			0,
+			5 * sizeof(float),
 			(void*)0 
+		);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(
+			1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			5 * sizeof(float),
+			(void*)(3 * sizeof(float))
 		);
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -141,26 +145,6 @@ void OpenGLRenderer::resize(const Vector2u& resolution)
 	glViewport(0, 0, resolution.x, resolution.y);
 }
 
-RenderResourceHandle OpenGLRenderer::set_up_sprite_rendering_quad()
-{
-	static const GLfloat sprite_rendering_quad_vertices[] = {
-	   0.0f, 0.0f, 0.0f,
-	   1.0f, 0.0f, 0.0f,
-	   0.0f, 1.0f, 0.0f,
-
-	   1.0f, 0.0f, 0.0f,
-	   1.0f, 1.0f, 0.0f,
-	   0.0f, 1.0f, 0.0f
-	};
-	
-	static GLuint sprite_rendering_quad_buffer;
-	glGenBuffers(1, &sprite_rendering_quad_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, sprite_rendering_quad_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(sprite_rendering_quad_vertices), sprite_rendering_quad_vertices, GL_STATIC_DRAW);
-
-	return RenderResourceHandle(sprite_rendering_quad_buffer);
-}
-
 void OpenGLRenderer::run_thread()
 {
 	_context->make_current_for_calling_thread();
@@ -171,6 +155,9 @@ void OpenGLRenderer::run_thread()
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	// 2D needs no depth test.
 	glDisable(GL_DEPTH_TEST);
@@ -260,6 +247,16 @@ RenderResourceHandle OpenGLRenderer::load_texture(TextureResourceData& trd, void
 	render_texture->resolution = trd.resolution;
 
 	return render_texture;
+}
+
+RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometry_data, void* dynamic_data)
+{
+	GLuint geometry_buffer;
+	glGenBuffers(1, &geometry_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
+	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
+
+	return geometry_buffer;
 }
 
 }

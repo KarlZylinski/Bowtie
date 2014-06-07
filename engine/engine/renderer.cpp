@@ -55,6 +55,7 @@ RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
 	render_sprite.texture = sprite_data.texture;
 	render_sprite.model = sprite_data.model;
 	render_sprite.shader = sprite_data.shader;
+	render_sprite.geometry = sprite_data.geometry;
 
 	RenderResourceHandle sprite_handle = &render_sprite;
 
@@ -83,6 +84,8 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 		handle = create_sprite(*(SpriteResourceData*)render_resource.data); break;
 	case RenderResourceData::World:
 		handle = create_world(); break;
+	case RenderResourceData::Geometry:
+		handle = load_geometry(*(GeometryResourceData*)render_resource.data, dynamic_data); break;
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
@@ -150,12 +153,6 @@ void Renderer::consume_command_queue()
 				resize(data.resolution);
 			}
 			break;
-		case RendererCommand::SetUpSpriteRenderingQuad:
-			{
-				_sprite_rendering_quad_handle = create_handle();
-				_resource_lut[_sprite_rendering_quad_handle.handle] = set_up_sprite_rendering_quad();
-			}
-			break;
 		case RendererCommand::SpriteStateReflection:
 			{
 				sprite_state_reflection(*(SpriteStateReflectionData*)command.data);
@@ -166,7 +163,8 @@ void Renderer::consume_command_queue()
 			break;
 		}	
 
-		if(clear_command_data) {
+		if(clear_command_data)
+		{
 			_allocator.deallocate(command.data);
 			_allocator.deallocate(command.dynamic_data);
 		}
@@ -210,8 +208,6 @@ void Renderer::move_unprocessed_commands()
 
 void Renderer::render_world(const View& view, ResourceHandle render_world)
 {
-	assert(_sprite_rendering_quad_handle.type != ResourceHandle::NotInitialized && "_sprite_rendering_quad not initialized. Please set it to a handle of a 1x1 quad which will be used for drawing sprites by implementing Rendering.set_up_sprite_rendering_quad() correctly.");
-
 	clear();
 
 	test_draw(view, render_world);
@@ -234,7 +230,6 @@ void Renderer::run(RendererContext* context, const Vector2u& resolution)
 
 	// Do stuff here which should happen before anything else.
 	_render_interface.resize(resolution);
-	_render_interface.dispatch(_render_interface.create_command(RendererCommand::SetUpSpriteRenderingQuad));
 
 	_is_setup = true;
 }

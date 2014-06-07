@@ -10,6 +10,7 @@ struct RenderSprite
 {
 	ResourceHandle texture;
 	ResourceHandle shader;
+	ResourceHandle geometry;
 	Matrix4 model;
 };
 

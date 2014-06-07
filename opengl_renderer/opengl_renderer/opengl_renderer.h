@@ -15,11 +15,11 @@ public:
 	virtual void clear();
 	virtual void flip();
 	virtual void resize(const Vector2u& resolution);
-	virtual RenderResourceHandle set_up_sprite_rendering_quad();
 
 	// Resource loading
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
+	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data);
 
 protected:
 	virtual void run_thread();

@@ -12,12 +12,13 @@ class RenderInterface;
 struct Texture;
 struct Image;
 class Sprite;
+class Font;
 class ResourceManager
 {
 public:
 	enum ResourceType
 	{
-		RT_Shader, RT_Image, RT_Sprite, RT_Texture, NumResourceTypes
+		RT_Shader, RT_Image, RT_Sprite, RT_Texture, RT_Font, NumResourceTypes
 	};
 
 	ResourceManager(Allocator& allocator, RenderInterface& render_interface);
@@ -35,7 +36,12 @@ public:
 
 	template<class T> T* get(ResourceType type, uint64_t name)
 	{
-		ResourceHandle handle = hash::get(_resources, get_name(name, type), ResourceHandle());
+		auto name_with_type = get_name(name, type);
+
+		if (!hash::has(_resources, name_with_type))
+			return nullptr;
+
+		ResourceHandle handle = hash::get(_resources, name_with_type);
 		assert(handle.type == ResourceHandle::Object && "Trying to get resource as object, which it isn't");
 		return (T*)handle.object;
 	}
@@ -56,6 +62,7 @@ private:
 	Image& load_image(const char* filename);
 	Sprite& load_sprite_prototype(const char* filename);
 	Texture& load_texture(const char* filename);
+	Font& load_font(const char* filename);
 
 	Allocator& _allocator;
 	RenderInterface& _render_interface;

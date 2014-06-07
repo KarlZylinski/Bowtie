@@ -45,9 +45,9 @@ public:
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
-	virtual RenderResourceHandle set_up_sprite_rendering_quad() = 0;
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
+	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data) = 0;
 
 protected:
 	virtual void run_thread() = 0;
@@ -66,7 +66,6 @@ protected:
 	RenderResourceHandle _resource_lut[num_handles];
 	Array<RendererResourceObject> _resource_objects;
 	Vector2u _resolution;
-	ResourceHandle _sprite_rendering_quad_handle;
 
 private:
 	void sprite_state_reflection(const SpriteStateReflectionData& reflection_data);

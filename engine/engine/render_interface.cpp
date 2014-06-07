@@ -64,6 +64,24 @@ void RenderInterface::spawn_sprite(World& world, Sprite& sprite, ResourceManager
 	sprite_resource_data.render_world = world.render_handle();
 	sprite_resource_data.model = sprite.model_matrix();
 	sprite_resource_data.shader = get_shader_or_default(resource_manager, sprite);
+
+	auto geometry = sprite.geometry();
+
+	if (geometry.type == ResourceHandle::NotInitialized)
+	{
+		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
+		GeometryResourceData geometry_data;
+		geometry_data.size = sizeof(float) * 5 * 6;
+		geometry_rrd.data = &geometry_data;
+		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
+		memcpy(geometry_dynamic_data, sprite.geometry_data(), geometry_data.size);
+		create_resource(geometry_rrd, (void*)geometry_dynamic_data, geometry_data.size);
+		sprite_resource_data.geometry = geometry_rrd.handle;
+		sprite.set_geometry(geometry_rrd.handle);
+	}
+	else
+		sprite_resource_data.geometry = geometry;
+
 	sprite_rrd.data = &sprite_resource_data;
 
 	create_resource(sprite_rrd);
@@ -133,6 +151,10 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 		case RenderResourceData::Sprite:
 			copied_resource->data = _allocator.allocate(sizeof(SpriteResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(SpriteResourceData));			
+			break;
+		case RenderResourceData::Geometry:
+			copied_resource->data = _allocator.allocate(sizeof(GeometryResourceData));
+			memcpy(copied_resource->data, resource.data, sizeof(GeometryResourceData));
 			break;
 		case RenderResourceData::World:
 			// No data

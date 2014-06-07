@@ -12,7 +12,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Shader, Texture, Sprite, World
+		Shader, Texture, Sprite, World, Geometry
 	};
 
 	Type type;
@@ -39,7 +39,13 @@ struct SpriteResourceData
 	ResourceHandle render_world;
 	ResourceHandle texture;
 	ResourceHandle shader;
+	ResourceHandle geometry;
 	Matrix4 model;
+};
+
+struct GeometryResourceData
+{
+	unsigned size;
 };
 
 } // namespace bowtie
