@@ -259,4 +259,11 @@ RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometr
 	return geometry_buffer;
 }
 
+void OpenGLRenderer::update_geometry(SpriteGeometryReflectionData& geometry_data, void* dynamic_data)
+{
+	auto geometry_handle = lookup_resource_object(geometry_data.geometry.handle).render_handle;
+	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
+	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
+}
+
 }

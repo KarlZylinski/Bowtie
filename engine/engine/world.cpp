@@ -57,25 +57,49 @@ const Array<Sprite*>& World::sprites() const
 	return _sprites;
 }
 
+void update_sprite_state(Allocator& allocator, RenderInterface& render_interface, Sprite& sprite)
+{
+	auto state_changed_command = render_interface.create_command(RendererCommand::SpriteStateReflection);
+		
+	auto& scd = *(SpriteStateReflectionData*)allocator.allocate(sizeof(SpriteStateReflectionData));
+	scd.model = sprite.model_matrix();
+	scd.sprite = sprite.render_handle();
+	state_changed_command.data = &scd;
+
+	sprite.reset_state_changed();
+
+	render_interface.dispatch(state_changed_command);
+}
+
+void update_sprite_geometry(Allocator& allocator, RenderInterface& render_interface, Sprite& sprite)
+{
+	auto geometry_changed_command = render_interface.create_command(RendererCommand::SpriteGeometryReflection);
+		
+	auto& sgr = *(SpriteGeometryReflectionData*)allocator.allocate(sizeof(SpriteGeometryReflectionData));
+	sgr.geometry = sprite.geometry();
+	sgr.size = Sprite::geometry_size;
+	
+	geometry_changed_command.data = &sgr;
+	geometry_changed_command.dynamic_data_size = Sprite::geometry_size;
+	geometry_changed_command.dynamic_data = allocator.allocate(Sprite::geometry_size);
+	memcpy(geometry_changed_command.dynamic_data, sprite.geometry_data(), Sprite::geometry_size);
+
+	sprite.reset_geometry_changed();
+
+	render_interface.dispatch(geometry_changed_command);
+}
+
 void World::update()
 {
 	for (unsigned i = 0; i < array::size(_sprites); ++i)
 	{
 		auto sprite = _sprites[i];
 		
-		if (!sprite->state_changed())
-			continue;
-
-		auto state_changed_command = _render_interface.create_command(RendererCommand::SpriteStateReflection);
+		if (sprite->state_changed())
+			update_sprite_state(_allocator, _render_interface, *sprite);
 		
-		auto& scd = *(SpriteStateReflectionData*)_allocator.allocate(sizeof(SpriteStateReflectionData));
-		scd.model = sprite->model_matrix();
-		scd.sprite = sprite->render_handle();
-		state_changed_command.data = &scd;
-
-		sprite->reset_state_changed();
-
-		_render_interface.dispatch(state_changed_command);
+		if (sprite->geometry_changed())
+			update_sprite_geometry(_allocator, _render_interface, *sprite);
 	}
 }
 

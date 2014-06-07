@@ -53,6 +53,8 @@ public:
 
 	ResourceHandle geometry() const;
 	void set_geometry(ResourceHandle geometry);
+	void reset_geometry_changed();
+	bool geometry_changed() const;
 
 	const float* geometry_data() const;
 
@@ -66,6 +68,7 @@ private:
 	Vector2u _size;
 	Rect _rect;
 	bool _render_state_changed;
+	bool _geometry_changed;
 
 	void update_geometry();
 

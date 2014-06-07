@@ -20,6 +20,7 @@ public:
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
 	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data);
+	virtual void update_geometry(SpriteGeometryReflectionData& geometry_data, void* dynamic_data);
 
 protected:
 	virtual void run_thread();

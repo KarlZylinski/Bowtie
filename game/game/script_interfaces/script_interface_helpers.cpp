@@ -37,7 +37,7 @@ double get_field(lua_State* lua, int index, const char *key)
     return result;
 }
 
-Vector2 to_vector(lua_State* lua, int index)
+Vector2 to_vector2(lua_State* lua, int index)
 {
 	assert(lua_istable(lua, index));
 
@@ -47,7 +47,26 @@ Vector2 to_vector(lua_State* lua, int index)
 	return Vector2(x_value, y_value);
 }
 
-void push_vector(lua_State* lua, const Vector2& v)
+Vector2u to_vector2u(lua_State* lua, int index)
+{
+	assert(lua_istable(lua, index));
+
+	auto x_value = (unsigned)get_field(lua, index, "x");
+	auto y_value = (unsigned)get_field(lua, index, "y");
+
+	return Vector2u(x_value, y_value);
+}
+
+void push_vector2(lua_State* lua, const Vector2& v)
+{
+	lua_getglobal(lua, "Vector2");
+	lua_pushnumber(lua, v.x);
+	lua_pushnumber(lua, v.y);
+	int error = lua_pcall(lua, 2, 1, 0);
+	script_interface::check_errors(lua, error);
+}
+
+void push_vector2(lua_State* lua, const Vector2u& v)
 {
 	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v.x);

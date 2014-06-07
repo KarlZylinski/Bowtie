@@ -158,6 +158,11 @@ void Renderer::consume_command_queue()
 				sprite_state_reflection(*(SpriteStateReflectionData*)command.data);
 			}
 			break;
+		case RendererCommand::SpriteGeometryReflection:
+			{
+				update_geometry(*(SpriteGeometryReflectionData*)command.data, command.dynamic_data);
+			}
+			break;
 		default:
 			assert(!"Command not implemented!");
 			break;

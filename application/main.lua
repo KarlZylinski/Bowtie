@@ -15,6 +15,8 @@ function init()
     Sprite.set_position(game.hill, Vector2(50, 50))
     game.beer = World.spawn_sprite(game.world, "textures/beer.png")
     game.text = World.spawn_sprite(game.world, "fonts/stolen.png")
+    Sprite.set_position(game.text, Vector2(200,200))
+    Sprite.set_rect(game.text, Vector2(128,64), Vector2(32,32))
 end
 
 function update_beer(dt)
