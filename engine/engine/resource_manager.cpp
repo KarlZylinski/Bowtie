@@ -9,6 +9,7 @@
 #include <foundation/temp_allocator.h>
 #include <resource_path.h>
 
+#include "font.h"
 #include "render_interface.h"
 #include "png.h"
 #include "sprite.h"
@@ -157,7 +158,9 @@ Font& ResourceManager::load_font(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	return *(Font*)nullptr;
+	auto font = MAKE_NEW(_allocator, Font, const_cast<const Texture&>(load_texture(filename)));
+	add_resource(name, RT_Font, font);
+	return *font;
 }
 
 Sprite& ResourceManager::load_sprite_prototype(const char* filename)

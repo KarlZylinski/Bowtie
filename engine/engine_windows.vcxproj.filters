@@ -15,6 +15,8 @@
     <ClCompile Include="engine\texture.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
+    <ClCompile Include="engine\font.cpp" />
+    <ClCompile Include="engine\text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -39,5 +41,7 @@
     <ClInclude Include="engine\world.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\png.h" />
+    <ClInclude Include="engine\font.h" />
+    <ClInclude Include="engine\text.h" />
   </ItemGroup>
 </Project>

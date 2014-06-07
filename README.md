@@ -29,3 +29,6 @@ Todo
 * - [ ] Set sort value depending on player occlusion
 * [ ] Materials w/ shaders
 * [ ] Split engine and renderer into two
+* [ ] Text rendering
+* - [ ] Create geometry for text
+* - [ ] Update geometry when text or font changes

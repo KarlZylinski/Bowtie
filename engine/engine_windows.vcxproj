@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\engine.h" />
+    <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\png.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\sprite.h" />
+    <ClInclude Include="engine\text.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\view.h" />
@@ -45,6 +47,7 @@
   <ItemGroup>
     <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\engine.cpp" />
+    <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\image.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
@@ -53,6 +56,7 @@
     <ClCompile Include="engine\render_world.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\sprite.cpp" />
+    <ClCompile Include="engine\text.cpp" />
     <ClCompile Include="engine\texture.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />
