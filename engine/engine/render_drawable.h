@@ -6,11 +6,12 @@
 namespace bowtie
 {
 
-struct RenderSprite
+struct RenderDrawable
 {
 	ResourceHandle texture;
 	ResourceHandle shader;
 	ResourceHandle geometry;
+	unsigned num_vertices;
 	Matrix4 model;
 };
 

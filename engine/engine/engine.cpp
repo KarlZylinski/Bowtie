@@ -11,11 +11,8 @@
 #include "render_interface.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
-#include "sprite.h"
-#include "texture.h"
 #include "timer.h"
 #include "world.h"
-
 
 namespace bowtie
 {

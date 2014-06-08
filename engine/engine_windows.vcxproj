@@ -20,16 +20,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\bmp.h" />
+    <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\png.h" />
+    <ClInclude Include="engine\rect.h" />
     <ClInclude Include="engine\renderer.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\renderer_context.h" />
+    <ClInclude Include="engine\render_drawable.h" />
     <ClInclude Include="engine\render_fence.h" />
-    <ClInclude Include="engine\render_sprite.h" />
     <ClInclude Include="engine\render_texture.h" />
     <ClInclude Include="engine\render_world.h" />
     <ClInclude Include="engine\resource_handle.h" />
@@ -46,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\bmp.cpp" />
+    <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\image.cpp" />

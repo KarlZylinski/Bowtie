@@ -12,7 +12,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Shader, Texture, Sprite, World, Geometry
+		Shader, Texture, Drawable, World, Geometry
 	};
 
 	Type type;
@@ -34,12 +34,13 @@ struct TextureResourceData
 	Vector2u resolution;
 };
 
-struct SpriteResourceData
+struct DrawableResourceData
 {
 	ResourceHandle render_world;
 	ResourceHandle texture;
 	ResourceHandle shader;
 	ResourceHandle geometry;
+	unsigned num_vertices;
 	Matrix4 model;
 };
 

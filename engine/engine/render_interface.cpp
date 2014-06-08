@@ -8,7 +8,7 @@
 
 #include "render_fence.h"
 #include "renderer.h"
-#include "sprite.h"
+#include "drawable.h"
 #include "image.h"
 #include "world.h"
 #include "texture.h"
@@ -42,9 +42,9 @@ void RenderInterface::create_texture(Texture& texture)
 	texture.render_handle = texture_resource.handle;
 }
 
-ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Sprite& sprite)
+ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable& drawable)
 {
-	auto shader = sprite.shader();
+	auto shader = drawable.shader();
 
 	if (shader.type != ResourceHandle::NotInitialized)
 		return shader;
@@ -52,40 +52,47 @@ ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Sprite& 
 	return resource_manager.get_default(ResourceManager::RT_Shader);
 }
 
-void RenderInterface::spawn_sprite(World& world, Sprite& sprite, ResourceManager& resource_manager)
+void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
 {
-	assert(sprite.render_handle().type == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned sprite");
-	assert(sprite.texture() != nullptr);
+	assert(drawable.render_handle().type == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
+	assert(drawable.texture() != nullptr);
 
-	auto sprite_rrd = create_render_resource_data(RenderResourceData::Sprite);
+	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
 
-	SpriteResourceData sprite_resource_data;
-	sprite_resource_data.texture = sprite.texture()->render_handle;
-	sprite_resource_data.render_world = world.render_handle();
-	sprite_resource_data.model = sprite.model_matrix();
-	sprite_resource_data.shader = get_shader_or_default(resource_manager, sprite);
+	DrawableResourceData drawable_resource_data;
 
-	auto geometry = sprite.geometry();
+	auto texture = drawable.texture();
+	
+	if (texture != nullptr)
+		drawable_resource_data.texture = texture->render_handle;
+
+	drawable_resource_data.render_world = world.render_handle();
+	drawable_resource_data.model = drawable.model_matrix();
+	drawable_resource_data.shader = get_shader_or_default(resource_manager, drawable);
+
+	auto geometry = drawable.geometry();
 
 	if (geometry.type == ResourceHandle::NotInitialized)
 	{
 		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
 		GeometryResourceData geometry_data;
-		geometry_data.size = sizeof(float) * 5 * 6;
+		geometry_data.size = drawable.geometry_size();
 		geometry_rrd.data = &geometry_data;
 		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
-		memcpy(geometry_dynamic_data, sprite.geometry_data(), geometry_data.size);
+		memcpy(geometry_dynamic_data, drawable.geometry_data(), geometry_data.size);
 		create_resource(geometry_rrd, (void*)geometry_dynamic_data, geometry_data.size);
-		sprite_resource_data.geometry = geometry_rrd.handle;
-		sprite.set_geometry(geometry_rrd.handle);
+		drawable_resource_data.geometry = geometry_rrd.handle;
+		drawable.set_geometry(geometry_rrd.handle);
 	}
 	else
-		sprite_resource_data.geometry = geometry;
+		drawable_resource_data.geometry = geometry;
 
-	sprite_rrd.data = &sprite_resource_data;
+	drawable_resource_data.num_vertices = drawable.geometry_size() / (sizeof(float) * 5);
 
-	create_resource(sprite_rrd);
-	sprite.set_render_handle(sprite_rrd.handle);
+	drawable_rrd.data = &drawable_resource_data;
+
+	create_resource(drawable_rrd);
+	drawable.set_render_handle(drawable_rrd.handle);
 }
 
 void RenderInterface::create_render_world(World& world)
@@ -148,9 +155,9 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 			copied_resource->data = _allocator.allocate(sizeof(TextureResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
 			break;
-		case RenderResourceData::Sprite:
-			copied_resource->data = _allocator.allocate(sizeof(SpriteResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(SpriteResourceData));			
+		case RenderResourceData::Drawable:
+			copied_resource->data = _allocator.allocate(sizeof(DrawableResourceData));
+			memcpy(copied_resource->data, resource.data, sizeof(DrawableResourceData));			
 			break;
 		case RenderResourceData::Geometry:
 			copied_resource->data = _allocator.allocate(sizeof(GeometryResourceData));

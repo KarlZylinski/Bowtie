@@ -12,12 +12,12 @@ class RenderWorld
 public:
 	RenderWorld(Allocator& allocator);
 
-	void add_sprite(RenderResourceHandle sprite);
-	void remove_sprite(RenderResourceHandle sprite);
+	void add_drawable(RenderResourceHandle drawable);
+	void remove_drawable(RenderResourceHandle drawable);
 
-	const Array<RenderResourceHandle>& sprites() const;
+	const Array<RenderResourceHandle>& drawables() const;
 private:
-	Array<RenderResourceHandle> _sprites;
+	Array<RenderResourceHandle> _drawables;
 };
 
 };

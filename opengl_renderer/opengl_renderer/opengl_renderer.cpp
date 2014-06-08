@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include <engine/render_sprite.h>
+#include <engine/render_drawable.h>
 #include <engine/render_texture.h>
 #include <engine/render_world.h>
 
@@ -77,32 +77,35 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
     return program;
 }
 
-void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_handle)
+void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 {	
 	auto view_projection = view.view_projection();
 	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
 
-	auto& sprites = render_world.sprites();
-	for (unsigned i = 0; i < array::size(sprites); ++i)
+	auto& drawables = render_world.drawables();
+	for (unsigned i = 0; i < array::size(drawables); ++i)
 	{
-		RenderSprite& sprite = *(RenderSprite*)sprites[i].render_object;
-		RenderTexture& sprite_texture = *(RenderTexture*)lookup_resource_object(sprite.texture.handle).render_object;
+		RenderDrawable& drawable = *(RenderDrawable*)drawables[i].render_object;
 
-		auto model_view_projection_matrix = sprite.model * view_projection;
+		auto model_view_projection_matrix = drawable.model * view_projection;
 		
-		auto shader = lookup_resource_object(sprite.shader.handle).render_handle;
+		auto shader = lookup_resource_object(drawable.shader.handle).render_handle;
 		assert(glIsProgram(shader) && "Invalid shader program");
 		glUseProgram(shader);
 
 		GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
 		glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
-		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sprite_texture.render_handle.handle);
-		glUniform1i(texture_sampler_id, 0);
+		if (drawable.texture.type != ResourceHandle::NotInitialized)
+		{
+			RenderTexture& drawable_texture = *(RenderTexture*)lookup_resource_object(drawable.texture.handle).render_object;
+			GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.handle);
+			glUniform1i(texture_sampler_id, 0);
+		}
 
-		auto geometry = lookup_resource_object(sprite.geometry.handle).render_handle;
+		auto geometry = lookup_resource_object(drawable.geometry.handle).render_handle;
 		
 		glBindBuffer(GL_ARRAY_BUFFER, geometry);
 		glEnableVertexAttribArray(0);
@@ -125,7 +128,7 @@ void OpenGLRenderer::test_draw(const View& view, ResourceHandle render_world_han
 			(void*)(3 * sizeof(float))
 		);
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES, 0, drawable.num_vertices);
 		glDisableVertexAttribArray(0);
 	}
 }
@@ -259,9 +262,10 @@ RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometr
 	return geometry_buffer;
 }
 
-void OpenGLRenderer::update_geometry(SpriteGeometryReflectionData& geometry_data, void* dynamic_data)
+void OpenGLRenderer::update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
 {
-	auto geometry_handle = lookup_resource_object(geometry_data.geometry.handle).render_handle;
+	auto& drawable = *(RenderDrawable*)lookup_resource_object(geometry_data.drawable.handle).render_object;
+	auto geometry_handle = lookup_resource_object(drawable.geometry.handle).render_handle;
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 }

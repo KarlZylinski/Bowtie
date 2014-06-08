@@ -17,6 +17,7 @@
     <ClCompile Include="engine\png.cpp" />
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\text.cpp" />
+    <ClCompile Include="engine\drawable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\renderer.h" />
@@ -34,7 +35,6 @@
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\sprite.h" />
-    <ClInclude Include="engine\render_sprite.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\render_texture.h" />
     <ClInclude Include="engine\render_world.h" />
@@ -43,5 +43,8 @@
     <ClInclude Include="engine\png.h" />
     <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\text.h" />
+    <ClInclude Include="engine\drawable.h" />
+    <ClInclude Include="engine\render_drawable.h" />
+    <ClInclude Include="engine\rect.h" />
   </ItemGroup>
 </Project>

@@ -5,23 +5,23 @@
 namespace bowtie
 {
 
-RenderWorld::RenderWorld(Allocator& allocator) : _sprites(allocator)
+RenderWorld::RenderWorld(Allocator& allocator) : _drawables(allocator)
 {
 }
 
-void RenderWorld::add_sprite(RenderResourceHandle sprite)
+void RenderWorld::add_drawable(RenderResourceHandle drawable)
 {
-	array::push_back(_sprites, sprite);
+	array::push_back(_drawables, drawable);
 }
 
-void RenderWorld::remove_sprite(RenderResourceHandle )
+void RenderWorld::remove_drawable(RenderResourceHandle )
 {
 
 }
 
-const Array<RenderResourceHandle>& RenderWorld::sprites() const
+const Array<RenderResourceHandle>& RenderWorld::drawables() const
 {
-	return _sprites;
+	return _drawables;
 }
 
 } // namespace bowtie

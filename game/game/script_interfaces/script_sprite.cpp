@@ -31,7 +31,7 @@ int position(lua_State* lua)
 int set_rect(lua_State* lua)
 {
 	auto& sprite = *(Sprite*)lua_touserdata(lua, 1);
-	sprite.set_rect(Rect(script_interface::to_vector2u(lua, 2), script_interface::to_vector2u(lua, 3)));
+	sprite.set_rect(Rect(script_interface::to_vector2(lua, 2), script_interface::to_vector2(lua, 3)));
 	return 0;
 }
 

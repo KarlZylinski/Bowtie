@@ -7,8 +7,11 @@ namespace bowtie
 {
 
 class Sprite;
+class Drawable;
 class RenderInterface;
 class ResourceManager;
+class Text;
+class Font;
 class World
 {
 public:
@@ -18,14 +21,15 @@ public:
 	void set_render_handle(ResourceHandle render_handle);
 	Sprite* spawn_sprite(const char* name);
 	void despawn_sprite(Sprite* sprite);
+	Text* spawn_text(const Font& font, const char* text);
 	void update();
 	void draw();
 	ResourceHandle render_handle();
 
-	const Array<Sprite*>& sprites() const;
+	const Array<Drawable*>& drawables() const;
 private:
 	Allocator& _allocator;
-	Array<Sprite*> _sprites;
+	Array<Drawable*> _drawables;
 	ResourceHandle _render_handle;
 	RenderInterface& _render_interface;
 	ResourceManager& _resource_manager;

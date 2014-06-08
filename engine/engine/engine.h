@@ -6,14 +6,13 @@
 
 #include "keyboard.h"
 #include "resource_manager.h"
-#include "sprite.h"
 
 namespace bowtie
 {
 
 class Allocator;
 class RenderInterface;
-class Sprite;
+class Drawable;
 class World;
 
 class Engine

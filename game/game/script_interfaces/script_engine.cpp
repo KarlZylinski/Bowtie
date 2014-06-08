@@ -25,8 +25,14 @@ int engine(lua_State* lua)
 
 int load_resource(lua_State* lua)
 {
-	s_engine->resource_manager().load(lua_tostring(lua, 1), lua_tostring(lua, 2));
-	return 0;
+	auto resource = s_engine->resource_manager().load(lua_tostring(lua, 1), lua_tostring(lua, 2));
+
+	if (resource.type == ResourceHandle::Handle)
+		lua_pushnumber(lua, resource.handle);
+	else
+		lua_pushlightuserdata(lua, resource.object);
+
+	return 1;
 }
 
 int set_default_resource(lua_State* lua)

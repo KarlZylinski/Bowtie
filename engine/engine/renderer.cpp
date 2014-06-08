@@ -6,14 +6,14 @@
 #include <foundation/queue.h>
 
 #include "render_fence.h"
-#include "render_sprite.h"
+#include "render_drawable.h"
 #include "render_world.h"
 
 namespace bowtie
 {
 
 Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _sprites(allocator), _resource_objects(allocator)
+	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _resource_objects(allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -48,21 +48,22 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 	notify_command_queue_populated();
 }
 
-RenderResourceHandle Renderer::create_sprite(SpriteResourceData& sprite_data)
+RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_data)
 {
-	RenderSprite& render_sprite = *(RenderSprite*)_allocator.allocate(sizeof(RenderSprite));
+	RenderDrawable& drawable = *(RenderDrawable*)_allocator.allocate(sizeof(RenderDrawable));
 
-	render_sprite.texture = sprite_data.texture;
-	render_sprite.model = sprite_data.model;
-	render_sprite.shader = sprite_data.shader;
-	render_sprite.geometry = sprite_data.geometry;
+	drawable.texture = drawable_data.texture;
+	drawable.model = drawable_data.model;
+	drawable.shader = drawable_data.shader;
+	drawable.geometry = drawable_data.geometry;
+	drawable.num_vertices = drawable_data.num_vertices;
 
-	RenderResourceHandle sprite_handle = &render_sprite;
+	RenderResourceHandle drawable_handle = &drawable;
 
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(sprite_data.render_world.handle).render_object;
-	render_world.add_sprite(sprite_handle);
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(drawable_data.render_world.handle).render_object;
+	render_world.add_drawable(drawable_handle);
 
-	return sprite_handle;
+	return drawable_handle;
 }
 
 RenderResourceHandle Renderer::create_world()
@@ -80,8 +81,8 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 		handle = load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Texture:
 		handle = load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
-	case RenderResourceData::Sprite:
-		handle = create_sprite(*(SpriteResourceData*)render_resource.data); break;
+	case RenderResourceData::Drawable:
+		handle = create_drawable(*(DrawableResourceData*)render_resource.data); break;
 	case RenderResourceData::World:
 		handle = create_world(); break;
 	case RenderResourceData::Geometry:
@@ -153,14 +154,14 @@ void Renderer::consume_command_queue()
 				resize(data.resolution);
 			}
 			break;
-		case RendererCommand::SpriteStateReflection:
+		case RendererCommand::DrawableStateReflection:
 			{
-				sprite_state_reflection(*(SpriteStateReflectionData*)command.data);
+				drawable_state_reflection(*(DrawableStateReflectionData*)command.data);
 			}
 			break;
-		case RendererCommand::SpriteGeometryReflection:
+		case RendererCommand::DrawableGeometryReflection:
 			{
-				update_geometry(*(SpriteGeometryReflectionData*)command.data, command.dynamic_data);
+				update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
 			}
 			break;
 		default:
@@ -176,10 +177,10 @@ void Renderer::consume_command_queue()
 	}
 }
 
-void Renderer::sprite_state_reflection(const SpriteStateReflectionData& data)
+void Renderer::drawable_state_reflection(const DrawableStateReflectionData& data)
 {
-	RenderSprite& sprite = *(RenderSprite*)lookup_resource_object(data.sprite.handle).render_object;
-	sprite.model = data.model;
+	RenderDrawable& drawable = *(RenderDrawable*)lookup_resource_object(data.drawble.handle).render_object;
+	drawable.model = data.model;
 }
 
 ResourceHandle Renderer::create_handle()
@@ -211,11 +212,11 @@ void Renderer::move_unprocessed_commands()
 	array::clear(_unprocessed_commands);
 }
 
-void Renderer::render_world(const View& view, ResourceHandle render_world)
+void Renderer::render_world(const View& view, ResourceHandle render_world_handle)
 {
 	clear();
 
-	test_draw(view, render_world);
+	draw(view, render_world_handle);
 
 	flip();
 }

@@ -41,14 +41,14 @@ public:
 	bool is_setup() const { return _is_setup; }
 	
 	// Renderer API specific
-	virtual void test_draw(const View& view, ResourceHandle test_sprite) = 0;
+	virtual void draw(const View& view, ResourceHandle render_world_handle) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
 	virtual void resize(const Vector2u& size) = 0;
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data) = 0;
-	virtual void update_geometry(SpriteGeometryReflectionData& geometry_data, void* dynamic_data) = 0;
+	virtual void update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data) = 0;
 
 protected:
 	virtual void run_thread() = 0;
@@ -69,11 +69,10 @@ protected:
 	Vector2u _resolution;
 
 private:
-	void sprite_state_reflection(const SpriteStateReflectionData& reflection_data);
-	RenderResourceHandle create_sprite(SpriteResourceData& sprite_data);
+	void drawable_state_reflection(const DrawableStateReflectionData& reflection_data);
+	RenderResourceHandle create_drawable(DrawableResourceData& drawable_data);
 	RenderResourceHandle create_world();
 
-	Array<RenderResourceHandle> _sprites;
 	bool _is_setup;
 	bool _active;
 	void render_world(const View& view, ResourceHandle render_world);

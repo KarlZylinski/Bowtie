@@ -8,7 +8,7 @@ namespace bowtie
 class Allocator;
 class Renderer;
 class World;
-class Sprite;
+class Drawable;
 struct Texture;
 struct RenderFence;
 class ResourceManager;
@@ -21,7 +21,7 @@ public:
 	bool active() const;
 	
 	void create_texture(Texture& texture);
-	void spawn_sprite(World& world, Sprite& sprite, ResourceManager& resource_manager);
+	void spawn(World& world, Drawable& drawable, ResourceManager& resource_manager);
 	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);
