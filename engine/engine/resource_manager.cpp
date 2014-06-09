@@ -169,7 +169,7 @@ Font& ResourceManager::load_font(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	auto font = MAKE_NEW(_allocator, Font, const_cast<const Texture&>(load_texture(filename)), 16, 16);
+	auto font = MAKE_NEW(_allocator, Font, const_cast<const Texture&>(load_texture(filename)), 32, 4);
 	add_resource(name, resource_type::Font, font);
 	return *font;
 }

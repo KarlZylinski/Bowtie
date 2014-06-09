@@ -20,7 +20,9 @@ Vector2u Font::char_size() const
 
 Rect Font::char_uv(char c) const
 {
-	auto char_coord = Vector2u(c % _columns, c / _rows);
+	auto x = c % _columns;
+	auto y = (c / _columns) % _rows;
+	auto char_coord = Vector2u(x, y);
 	auto char_size = this->char_size();
 	auto char_pos = char_coord * char_size;
 	auto char_uv_min = Vector2(char_pos.x / (float)_texture.resolution.x, char_pos.y / (float)_texture.resolution.y);

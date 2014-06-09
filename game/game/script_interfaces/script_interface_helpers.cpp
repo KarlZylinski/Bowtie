@@ -75,6 +75,39 @@ void push_vector2(lua_State* lua, const Vector2u& v)
 	script_interface::check_errors(lua, error);
 }
 
+Vector4 to_vector4(lua_State* lua, int index)
+{
+	assert(lua_istable(lua, index));
+
+	auto x_value = (float)get_field(lua, index, "x");
+	auto y_value = (float)get_field(lua, index, "y");
+	auto z_value = (float)get_field(lua, index, "z");
+	auto w_value = (float)get_field(lua, index, "w");
+
+	return Vector4(x_value, y_value, z_value, w_value);
+}
+
+void push_vector4(lua_State* lua, const Vector4& v)
+{
+	lua_getglobal(lua, "Vector4");
+	lua_pushnumber(lua, v.x);
+	lua_pushnumber(lua, v.y);
+	lua_pushnumber(lua, v.z);
+	lua_pushnumber(lua, v.w);
+	int error = lua_pcall(lua, 4, 1, 0);
+	script_interface::check_errors(lua, error);
+}
+
+Color to_color(lua_State* lua, int index)
+{
+	return to_vector4(lua, index);
+}
+
+void push_color(lua_State* lua, const Color& c)
+{
+	push_vector4(lua, c);
+}
+
 bool check_errors(lua_State* lua, int error)
 {
 	if (error == 0)

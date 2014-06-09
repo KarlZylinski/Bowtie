@@ -2,6 +2,8 @@
 
 #include "drawable.h"
 
+#include <foundation/vector4.h>
+
 namespace bowtie
 {
 
@@ -18,9 +20,10 @@ public:
 	virtual unsigned geometry_size() const;
 	virtual const Texture* texture() const;
 
-private:
-	void update_geometry();
+protected:
+	virtual void update_geometry();
 
+private:
 	Allocator& _allocator;
 	const Font& _font;
 	char* _text;

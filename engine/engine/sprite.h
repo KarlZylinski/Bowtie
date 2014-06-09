@@ -15,7 +15,7 @@ class Allocator;
 class Sprite : public Drawable
 {
 public:
-	static const unsigned s_geometry_size = sizeof(float) * 5 * 6;
+	static const unsigned s_geometry_size = sizeof(float) * 9 * 6;
 
 	Sprite(const Texture& texture);
 
@@ -26,9 +26,10 @@ public:
 	virtual const float* geometry_data() const;
 	virtual unsigned geometry_size() const;
 
-private:
-	void update_geometry();
+protected:
+	virtual void update_geometry();
 
+private:
 	float _geometry_data[s_geometry_size];
 	const Texture* _texture;
 	Rect _rect;

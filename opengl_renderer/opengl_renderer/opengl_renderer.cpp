@@ -114,7 +114,7 @@ void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 			3,
 			GL_FLOAT,
 			GL_FALSE,
-			5 * sizeof(float),
+			9 * sizeof(float),
 			(void*)0 
 		);
 
@@ -124,8 +124,18 @@ void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 			2,
 			GL_FLOAT,
 			GL_FALSE,
-			5 * sizeof(float),
+			9 * sizeof(float),
 			(void*)(3 * sizeof(float))
+		);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(
+			2,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			9 * sizeof(float),
+			(void*)(5 * sizeof(float))
 		);
 
 		glDrawArrays(GL_TRIANGLES, 0, drawable.num_vertices);

@@ -22,6 +22,9 @@
     <ClCompile Include="game\script_interfaces\script_time.cpp">
       <Filter>script_interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="game\script_interfaces\script_drawable.cpp">
+      <Filter>script_interfaces</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\script_interfaces\script_sprite.h">
@@ -38,6 +41,9 @@
       <Filter>script_interfaces</Filter>
     </ClInclude>
     <ClInclude Include="game\script_interfaces\script_time.h">
+      <Filter>script_interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="game\script_interfaces\script_drawable.h">
       <Filter>script_interfaces</Filter>
     </ClInclude>
   </ItemGroup>

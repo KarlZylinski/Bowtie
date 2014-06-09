@@ -5,6 +5,7 @@
 #include <lua.hpp>
 
 #include "script_interfaces/script_interface_helpers.h"
+#include "script_interfaces/script_drawable.h"
 #include "script_interfaces/script_sprite.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
@@ -43,8 +44,8 @@ void deinit_game(lua_State* lua)
 
 void load_shared_libs(lua_State* lua)
 {
-	int error = luaL_dofile(lua, "shared/vector2.lua");
-	script_interface::check_errors(lua, error);
+	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector2.lua"));
+	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector4.lua"));
 }
 
 Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
@@ -54,6 +55,7 @@ Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(l
 
 	engine_script_interface::load(_lua, engine);
 	time_script_interface::load(_lua);
+	drawable_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
 	world_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);

@@ -3,6 +3,10 @@
 namespace bowtie
 {
 
+Drawable::Drawable() : _color(1,1,1,1)
+{
+}
+
 Drawable::~Drawable()
 {
 }
@@ -57,17 +61,6 @@ const Vector2& Drawable::position() const
 	return _position;
 }
 
-void Drawable::set_size(const Vector2u& size)
-{
-	_size = size;
-	_render_state_changed = true;
-}
-
-const Vector2u& Drawable::size() const
-{
-	return _size;
-}
-
 Matrix4 Drawable::model_matrix() const
 {
 	auto m = Matrix4();
@@ -82,6 +75,7 @@ void Drawable::set_geometry(ResourceHandle geometry)
 {
 	assert (_geometry.type == ResourceHandle::NotInitialized && "Drawable already has geometry set");
 	_geometry = geometry;
+	set_geometry_changed();
 }
 
 void Drawable::reset_geometry_changed()
@@ -92,6 +86,17 @@ void Drawable::reset_geometry_changed()
 bool Drawable::geometry_changed() const
 {
 	return _geometry_changed;
+}
+
+void Drawable::set_color(const Vector4& color)
+{
+	_color = color;
+	update_geometry();
+}
+
+const Vector4& Drawable::color() const
+{
+	return _color;
 }
 
 }

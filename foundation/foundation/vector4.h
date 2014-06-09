@@ -15,8 +15,13 @@ namespace bowtie
 			w += other.w;
 		}
 						
-		float x, y, z, w;
+		union { float x, r; };
+		union { float y, g; };
+		union { float z, b; };
+		union { float w, a; };
 	};
+
+	typedef Vector4 Color;
 
 	inline Vector4 operator-(const Vector4& v)
 	{

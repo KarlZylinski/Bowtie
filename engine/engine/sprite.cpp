@@ -7,7 +7,6 @@ namespace bowtie
 
 Sprite::Sprite(const Texture& texture) : _texture(&texture)
 {
-	set_size(texture.resolution);
 	_rect = Rect(Vector2(), Vector2((float)_texture->resolution.x, (float)_texture->resolution.y));
 	update_geometry();
 }
@@ -25,23 +24,31 @@ void Sprite::update_geometry()
 	auto u_max = (_rect.position.x + w) / tex_w;
 	auto v_max = (_rect.position.y + h) / tex_h;
 
-	float geometry[30] = {
-	   0.0f, 0.0f, 0.0f,
-	   u_min, v_min,
-	   w, 0.0f, 0.0f,
-	   u_max, v_min,
-	   0.0f, h, 0.0f,
-	   u_min, v_max,
+	auto color = Drawable::color();
 
-	   w, 0.0f, 0.0f,
-	   u_max, v_min,
-	   w, h, 0.0f,
-	   u_max, v_max,
-	   0.0f, h, 0.0f,
-	   u_min, v_max
+	float geometry[54] = {
+		0.0f, 0.0f, 0.0f,
+		u_min, v_min,
+		color.x, color.y, color.z, color.w,
+		w, 0.0f, 0.0f,
+		u_max, v_min,
+		color.x, color.y, color.z, color.w,
+		0.0f, h, 0.0f,
+		u_min, v_max,
+		color.x, color.y, color.z, color.w,
+
+		w, 0.0f, 0.0f,
+		u_max, v_min,
+		color.x, color.y, color.z, color.w,
+		w, h, 0.0f,
+		u_max, v_max,
+		color.x, color.y, color.z, color.w,
+		0.0f, h, 0.0f,
+		u_min, v_max,
+		color.x, color.y, color.z, color.w
 	};
 
-	memcpy((void*)_geometry_data, geometry, sizeof(float) * 5 * 6);
+	memcpy((void*)_geometry_data, geometry, s_geometry_size);
 	set_geometry_changed();
 }
 

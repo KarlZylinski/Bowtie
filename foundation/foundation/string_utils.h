@@ -18,6 +18,9 @@ inline bool strequal(const char* str1, const char* str2)
 
 inline unsigned strlen32(const char* str)
 {
+	if (str == 0)
+		return 0;
+
 	return unsigned(strlen(str));
 }
 
