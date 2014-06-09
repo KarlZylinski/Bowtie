@@ -32,7 +32,7 @@ void World::set_render_handle(ResourceHandle render_handle)
 
 Sprite* World::spawn_sprite(const char* sprite_name)
 {
-	auto sprite_prototype = _resource_manager.get<Sprite>(ResourceManager::RT_Sprite, sprite_name);
+	auto sprite_prototype = _resource_manager.get<Sprite>(resource_type::Sprite, sprite_name);
 
 	auto sprite = MAKE_NEW(_allocator, Sprite, *sprite_prototype);
 

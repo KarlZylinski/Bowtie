@@ -8,7 +8,13 @@ class Allocator;
 namespace file
 {
 
-char* load(const char* filename, Allocator& allocator);
+struct LoadedFile
+{
+	unsigned char* data;
+	unsigned size;
+};
+
+LoadedFile load(const char* filename, Allocator& allocator);
 
 }
 }

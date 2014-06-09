@@ -39,6 +39,7 @@
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\resource_manager.h" />
+    <ClInclude Include="engine\resource_type.h" />
     <ClInclude Include="engine\sprite.h" />
     <ClInclude Include="engine\text.h" />
     <ClInclude Include="engine\texture.h" />

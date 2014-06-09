@@ -12,6 +12,7 @@ Text::Text(const Font& font, Allocator& allocator) : _font(font), _allocator(all
 Text::~Text()
 {
 	_allocator.deallocate(_geometry);
+	_allocator.deallocate(_text);
 }
 
 void Text::set_text(const char* text)
@@ -29,6 +30,7 @@ void Text::update_geometry()
 {
 	auto text_len = strlen32(_text);
 	auto size_of_char_geometry = sizeof(float) * 5 * 6;
+	_allocator.deallocate(_geometry);
 	_geometry = (float*)_allocator.allocate((unsigned)size_of_char_geometry * text_len);
 	
 	auto size = _font.char_size();

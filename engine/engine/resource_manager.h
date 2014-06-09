@@ -5,6 +5,7 @@
 #include <foundation/murmur_hash.h>
 #include <foundation/string_utils.h>
 #include "render_resource_types.h"
+#include "resource_type.h"
 
 namespace bowtie
 {
@@ -16,11 +17,6 @@ class Font;
 class ResourceManager
 {
 public:
-	enum ResourceType
-	{
-		RT_Shader, RT_Image, RT_Sprite, RT_Texture, RT_Font, NumResourceTypes
-	};
-
 	ResourceManager(Allocator& allocator, RenderInterface& render_interface);
 	~ResourceManager();
 		
@@ -68,7 +64,7 @@ private:
 	RenderInterface& _render_interface;
 
 	Hash<ResourceHandle> _resources;
-	ResourceHandle _default_resources[NumResourceTypes];
+	ResourceHandle _default_resources[resource_type::NumResourceTypes];
 
 	ResourceManager(const ResourceManager&);
 	ResourceManager& operator=(const ResourceManager&);

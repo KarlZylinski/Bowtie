@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 
+#include <foundation/file.h>
 #include <foundation/memory.h>
 #include "resource_path.h"
 
@@ -500,19 +501,12 @@ int decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width,
 
 UncompressedTexture load(const char* filename, Allocator& allocator)
 {
-	FILE *f = fopen(filename, "rb");
-	fseek(f, 0, SEEK_END);
-	long fsize = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	auto png_file = (unsigned char*)allocator.allocate(fsize + 1);
-	fread(png_file, fsize, 1, f);
-	fclose(f);
-
-	png_file[fsize] = 0;
+	auto png_file = file::load(filename, allocator);
 	std::vector<unsigned char> decoded_png;
 	unsigned long width, height;
-	decodePNG(decoded_png, width, height, png_file, fsize + 1);
+	decodePNG(decoded_png, width, height, png_file.data, png_file.size);
+
+	allocator.deallocate(png_file.data);
 	
 	auto texture = UncompressedTexture();
 

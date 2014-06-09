@@ -49,7 +49,7 @@ ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable
 	if (shader.type != ResourceHandle::NotInitialized)
 		return shader;
 
-	return resource_manager.get_default(ResourceManager::RT_Shader);
+	return resource_manager.get_default(resource_type::Shader);
 }
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
