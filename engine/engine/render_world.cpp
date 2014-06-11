@@ -5,7 +5,7 @@
 namespace bowtie
 {
 
-RenderWorld::RenderWorld(Allocator& allocator) : _drawables(allocator)
+RenderWorld::RenderWorld(Allocator& allocator, RenderResourceHandle render_target) : _drawables(allocator), _render_target(render_target)
 {
 }
 
@@ -17,6 +17,11 @@ void RenderWorld::add_drawable(RenderResourceHandle drawable)
 void RenderWorld::remove_drawable(RenderResourceHandle )
 {
 
+}
+
+RenderResourceHandle RenderWorld::render_target() const
+{
+	return _render_target;
 }
 
 const Array<RenderResourceHandle>& RenderWorld::drawables() const

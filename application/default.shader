@@ -24,7 +24,7 @@ in vec4 vertex_color;
 
 uniform sampler2D texture_sampler;
 
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 void main()
 {

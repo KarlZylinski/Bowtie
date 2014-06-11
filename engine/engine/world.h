@@ -12,6 +12,7 @@ class RenderInterface;
 class ResourceManager;
 class Text;
 class Font;
+class View;
 class World
 {
 public:
@@ -23,7 +24,7 @@ public:
 	void despawn_sprite(Sprite* sprite);
 	Text* spawn_text(const Font& font, const char* text);
 	void update();
-	void draw();
+	void draw(const View& view);
 	ResourceHandle render_handle();
 
 	const Array<Drawable*>& drawables() const;

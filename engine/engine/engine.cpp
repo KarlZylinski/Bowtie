@@ -46,6 +46,9 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 
 	_game.update(dt);
+	
+	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
+
 	_keyboard = Keyboard::from_previous_frame(_keyboard);
 }
 

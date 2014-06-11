@@ -47,5 +47,6 @@
     <ClInclude Include="engine\render_drawable.h" />
     <ClInclude Include="engine\rect.h" />
     <ClInclude Include="engine\resource_type.h" />
+    <ClInclude Include="engine\render_target.h" />
   </ItemGroup>
 </Project>

@@ -103,11 +103,9 @@ void World::update()
 	}
 }
 
-void World::draw()
+void World::draw(const View& view)
 {
 	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
-	
-	View view(Vector2(640,480), Vector2(-200,-200));
 
 	auto& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
 	rwd.view = view;

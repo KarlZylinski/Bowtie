@@ -55,7 +55,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		Engine engine(allocator, renderer.render_interface());
 		s_engine = &engine;
 
-		auto resolution = Vector2u(640, 480);
+		auto resolution = Vector2u(1280, 720);
 		Window window(instance, resolution, &create_render_context_callback, &window_resized_callback,
 			&key_down_callback, &key_up_callback);
 		

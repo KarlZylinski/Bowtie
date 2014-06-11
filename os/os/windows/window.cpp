@@ -25,7 +25,11 @@ Window::Window(HINSTANCE instance, const Vector2u& resolution, WindowCreatedCall
     wc.style = CS_OWNDC;
     assert(RegisterClass(&wc) && "Failed to register windows window class");
     _window_open = true;
-	HWND hwnd = CreateWindow("Bowtie", "Bowtie", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, resolution.x, resolution.y, 0, 0, instance, this);
+	int border_width = GetSystemMetrics(SM_CXFIXEDFRAME);
+	int h_border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) + border_width;
+	int v_border_thickness = GetSystemMetrics(SM_CYSIZEFRAME) + border_width;
+	int caption_thickness = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER);
+	HWND hwnd = CreateWindow("Bowtie", "Bowtie", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, resolution.x + 2 * h_border_thickness, resolution.y + 2 * v_border_thickness + caption_thickness, 0, 0, instance, this);
 	SetWindowLong(hwnd, GWLP_USERDATA, (long)this);
 }
 

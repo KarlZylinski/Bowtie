@@ -14,7 +14,7 @@
 #include "png.h"
 #include "sprite.h"
 #include "texture.h"
-
+#include "shader_utils.h"
 
 namespace bowtie
 {
@@ -72,48 +72,19 @@ ResourceHandle ResourceManager::load_shader(const char* filename)
 
 	auto shader_source = file::load(filename, _allocator);
 
-	const char* delimiter = "#fragment";
-
-	auto delimiter_len = strlen32(delimiter);
-	auto shader_len = shader_source.size;
-
-	unsigned matched_index = 0;
-	unsigned fragment_start_index = 0;
-	for (; fragment_start_index < shader_len; ++fragment_start_index)
-	{
-		if (shader_source.data[fragment_start_index] == delimiter[matched_index])
-			++matched_index;
-		else
-			matched_index = 0;
-
-		if (matched_index == delimiter_len)
-			break;
-	}
-
-	++fragment_start_index;
-	assert(matched_index == delimiter_len && fragment_start_index <= shader_len && "Could not find fragment part of shader.");
-
-	unsigned vertex_shader_source_len = fragment_start_index - delimiter_len;
-	char* vertex_shader_source = (char*)_allocator.allocate(vertex_shader_source_len + 1);
-	memcpy(vertex_shader_source, shader_source.data, vertex_shader_source_len);
-	vertex_shader_source[vertex_shader_source_len] = 0;
-	
-	unsigned fragment_shader_source_len = shader_len - fragment_start_index;
-	char* fragment_shader_source = (char*)_allocator.allocate(fragment_shader_source_len + 1);
-	memcpy(fragment_shader_source, shader_source.data + fragment_start_index, fragment_shader_source_len);
-	fragment_shader_source[fragment_shader_source_len] = 0;
+	auto split_shader = shader_utils::split_shader(shader_source, _allocator);
 	
 	ShaderResourceData srd;
-	unsigned shader_dynamic_data_size = strlen32(vertex_shader_source) + strlen32(fragment_shader_source) + 2;
+	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
 	unsigned shader_dynamic_data_offset = 0;
 	void* shader_resource_dynamic_data = _allocator.allocate(shader_dynamic_data_size);
 
 	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
-	strcpy((char*)shader_resource_dynamic_data, vertex_shader_source);
-	shader_dynamic_data_offset += strlen32(vertex_shader_source) + 1;
+	strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
+	shader_dynamic_data_offset += split_shader.vertex_source_len;
 
 	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
-	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), fragment_shader_source);
+	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
 
 	RenderResourceData shader_resource = _render_interface.create_render_resource_data(RenderResourceData::Shader);
 	shader_resource.data = &srd;
@@ -121,8 +92,8 @@ ResourceHandle ResourceManager::load_shader(const char* filename)
 	_render_interface.create_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
 	add_resource(name, resource_type::Shader, shader_resource.handle);
 
-	_allocator.deallocate(vertex_shader_source);
-	_allocator.deallocate(fragment_shader_source);
+	_allocator.deallocate(split_shader.vertex_source);
+	_allocator.deallocate(split_shader.fragment_source);
 	_allocator.deallocate(shader_source.data);
 
 	return shader_resource.handle;

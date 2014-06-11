@@ -3,7 +3,7 @@
 #include <foundation/vector2u.h>
 
 #include "image.h"
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 
 namespace bowtie
 {
@@ -11,7 +11,7 @@ namespace bowtie
 struct RenderTexture
 {
 	image::PixelFormat pixel_format;
-	ResourceHandle render_handle;
+	RenderResourceHandle render_handle;
 	Vector2u resolution;
 };
 

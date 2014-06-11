@@ -10,14 +10,16 @@ namespace bowtie
 class RenderWorld
 {
 public:
-	RenderWorld(Allocator& allocator);
+	RenderWorld(Allocator& allocator, RenderResourceHandle render_target);
 
 	void add_drawable(RenderResourceHandle drawable);
 	void remove_drawable(RenderResourceHandle drawable);
+	RenderResourceHandle render_target() const;
 
 	const Array<RenderResourceHandle>& drawables() const;
 private:
 	Array<RenderResourceHandle> _drawables;
+	RenderResourceHandle _render_target;
 };
 
 };

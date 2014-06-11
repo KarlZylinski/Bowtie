@@ -2,6 +2,7 @@
 
 #include <foundation/vector2.h>
 #include <foundation/matrix4.h>
+#include "rect.h"
 
 namespace bowtie
 {
@@ -9,7 +10,7 @@ namespace bowtie
 class View
 {
 public:
-	View(const Vector2& size, const Vector2& position);
+	View(const Rect& rect);
 	View();
 	
 	const Vector2& size() const;
@@ -21,6 +22,9 @@ public:
 	void move(const Vector2& distance);
 	void move(float x, float y);
 
+	const Rect& rect() const;
+	void set_rect(const Rect& rect);
+
 	Matrix4 projection() const;
 	Matrix4 view() const;
 	Matrix4 view_projection() const;
@@ -28,8 +32,7 @@ public:
 private:
 	void calculate_projection();
 
-	Vector2 _size;
-	Vector2 _position;
+	Rect _rect;
 };
 
 }

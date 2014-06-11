@@ -3,7 +3,7 @@
 namespace bowtie
 {
 
-View::View(const Vector2& size, const Vector2& position) : _size(size), _position(-position)
+View::View(const Rect& rect) : _rect(rect)
 {
 	
 }
@@ -15,39 +15,39 @@ View::View()
 	
 const Vector2& View::size() const
 {
-	return _size;
+	return _rect.size;
 }
 
 void View::set_size(const Vector2& size)
 {
-	_size = size;
+	_rect.size = size;
 }
 
 const Vector2& View::position() const
 {
-	return _position;
+	return _rect.position;
 }
 
 void View::set_position(const Vector2& position)
 {
-	_position = -position;
+	_rect.position = -position;
 }
 
 void View::set_position(float x, float y)
 {
-	_position.x = -x;
-	_position.y = -y;
+	_rect.position.x = -x;
+	_rect.position.y = -y;
 }
 
 void View::move(const Vector2& distance)
 {
-	_position -= distance;
+	_rect.position -= distance;
 }
 
 void View::move(float x, float y)
 {
-	_position.x -= x;
-	_position.y -= y;
+	_rect.position.x -= x;
+	_rect.position.y -= y;
 }
 
 Matrix4 View::projection() const
@@ -57,13 +57,13 @@ Matrix4 View::projection() const
 	auto near_plane = 0.0f;
 	auto far_plane = 1.0f;
 	
-	projection_matrix[0][0] = 2.0f/(_size.x - 1.0f);
+	projection_matrix[0][0] = 2.0f/(_rect.size.x - 1.0f);
 	projection_matrix[0][1] = 0;
 	projection_matrix[0][2] = 0;
 	projection_matrix[0][3] = 0;
 	
 	projection_matrix[1][0] = 0;
-	projection_matrix[1][1] = -2.0f/(_size.y - 1.0f);
+	projection_matrix[1][1] = -2.0f/(_rect.size.y - 1.0f);
 	projection_matrix[1][2] = 0;
 	projection_matrix[1][3] = 0;
 
@@ -99,8 +99,8 @@ Matrix4 View::view() const
 	view_matrix[2][2] = 1;
 	view_matrix[2][3] = 0;
 	
-	view_matrix[3][0] = _position.x;
-	view_matrix[3][1] = _position.y;
+	view_matrix[3][0] = _rect.position.x;
+	view_matrix[3][1] = _rect.position.y;
 	view_matrix[3][2] = 0;
 	view_matrix[3][3] = 1;
 	
@@ -110,6 +110,16 @@ Matrix4 View::view() const
 Matrix4 View::view_projection() const
 {
 	return view() * projection();
+}
+
+const Rect& View::rect() const
+{
+	return _rect;
+}
+
+void View::set_rect(const Rect& rect)
+{
+	_rect = rect;
 }
 
 } // namespace bowtie

@@ -13,7 +13,7 @@ namespace bowtie
 {
 
 Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _resource_objects(allocator)
+	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _resource_objects(allocator), _render_targets(allocator), _rendered_worlds(allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -68,7 +68,7 @@ RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_da
 
 RenderResourceHandle Renderer::create_world()
 {
-	return MAKE_NEW(_allocator, RenderWorld, _allocator);
+	return MAKE_NEW(_allocator, RenderWorld, _allocator, create_render_target());
 }
 
 void Renderer::create_resource(RenderResourceData& render_resource, void* dynamic_data)
@@ -87,6 +87,13 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 		handle = create_world(); break;
 	case RenderResourceData::Geometry:
 		handle = load_geometry(*(GeometryResourceData*)render_resource.data, dynamic_data); break;
+	case RenderResourceData::Target:
+		{
+			auto render_target = create_render_target();
+			handle = render_target;
+			array::push_back(_render_targets, render_target);
+		}
+		break;
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
@@ -151,7 +158,7 @@ void Renderer::consume_command_queue()
 			{
 				ResizeData& data = *(ResizeData*)command.data;
 				_resolution = data.resolution;
-				resize(data.resolution);
+				resize(data.resolution, _render_targets);
 			}
 			break;
 		case RendererCommand::DrawableStateReflection:
@@ -162,6 +169,12 @@ void Renderer::consume_command_queue()
 		case RendererCommand::DrawableGeometryReflection:
 			{
 				update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
+			}
+			break;
+		case RendererCommand::CombineRenderedWorlds:
+			{
+				combine_rendered_worlds(_rendered_worlds);
+				array::clear(_rendered_worlds);
 			}
 			break;
 		default:
@@ -214,11 +227,11 @@ void Renderer::move_unprocessed_commands()
 
 void Renderer::render_world(const View& view, ResourceHandle render_world_handle)
 {
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
+	set_render_target(*(RenderTarget*)render_world.render_target().render_object);
 	clear();
-
 	draw(view, render_world_handle);
-
-	flip();
+	array::push_back(_rendered_worlds, render_world_handle);
 }
 
 RenderResourceHandle Renderer::lookup_resource_object(ResourceHandle handle) const

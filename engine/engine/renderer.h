@@ -11,9 +11,12 @@
 #include "renderer_command.h"
 #include "render_resource_types.h"
 #include "renderer_context.h"
+#include "render_world.h"
 
 namespace bowtie
 {
+
+struct RenderTarget;
 
 struct RendererResourceObject
 {
@@ -42,13 +45,17 @@ public:
 	
 	// Renderer API specific
 	virtual void draw(const View& view, ResourceHandle render_world_handle) = 0;
+	virtual void set_render_target(const RenderTarget& render_target) = 0;
 	virtual void clear() = 0;
 	virtual void flip() = 0;
-	virtual void resize(const Vector2u& size) = 0;
+
+	virtual void combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds) = 0;
+	virtual void resize(const Vector2u& size, Array<RenderTarget*>& render_targets) = 0;
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data) = 0;
 	virtual void update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data) = 0;
+	virtual RenderTarget* create_render_target() = 0;
 
 protected:
 	virtual void run_thread() = 0;
@@ -77,8 +84,10 @@ private:
 	bool _active;
 	void render_world(const View& view, ResourceHandle render_world);
 	Array<RendererCommand> _unprocessed_commands;
+	Array<RenderTarget*> _render_targets;
 	std::mutex _unprocessed_commands_mutex;
 	RenderInterface _render_interface;
+	Array<ResourceHandle> _rendered_worlds; // filled each frame with all rendered world, in order
 };
 
 }
