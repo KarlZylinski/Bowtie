@@ -2,10 +2,10 @@
 
 #include <cassert>
 
-#include <engine/render_drawable.h>
-#include <engine/render_target.h>
-#include <engine/render_texture.h>
-#include <engine/render_world.h>
+#include <renderer/render_drawable.h>
+#include <renderer/render_target.h>
+#include <renderer/render_texture.h>
+#include <renderer/render_world.h>
 #include <engine/shader_utils.h>
 
 #include <foundation/array.h>
@@ -236,7 +236,7 @@ void OpenGLRenderer::run_thread()
 
 	set_active(true);
 
-	while (active())
+	while (is_active())
 	{
 		{
 			std::unique_lock<std::mutex> command_queue_populated_lock(_command_queue_populated_mutex);

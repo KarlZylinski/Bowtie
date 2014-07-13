@@ -2,11 +2,12 @@
 
 #include "renderer_command.h"
 #include "render_resource_types.h"
+
 namespace bowtie
 {
 
 class Allocator;
-class Renderer;
+class IRenderer;
 class World;
 class Drawable;
 struct Texture;
@@ -15,10 +16,10 @@ class ResourceManager;
 class RenderInterface
 {
 public:
-	RenderInterface(Renderer& renderer, Allocator& allocator);
+	RenderInterface(IRenderer& renderer, Allocator& allocator);
 	
 	bool is_setup() const;
-	bool active() const;
+	bool is_active() const;
 	
 	void create_texture(Texture& texture);
 	void spawn(World& world, Drawable& drawable, ResourceManager& resource_manager);
@@ -35,8 +36,8 @@ public:
 
 private:
 	Allocator& _allocator;
-	Renderer& _renderer;
-
+	IRenderer& _renderer;
+	
 	RenderInterface(const RenderInterface&);
 	RenderInterface& operator=(const RenderInterface&);
 };

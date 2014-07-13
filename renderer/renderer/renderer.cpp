@@ -2,10 +2,10 @@
 
 #include <cassert>
 
+#include <engine/render_fence.h>
 #include <foundation/array.h>
 #include <foundation/queue.h>
 
-#include "render_fence.h"
 #include "render_drawable.h"
 #include "render_world.h"
 

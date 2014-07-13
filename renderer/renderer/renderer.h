@@ -4,12 +4,13 @@
 #include <mutex>
 #include <thread>
 
+#include <engine/irenderer.h>
+#include <engine/renderer_command.h>
+#include <engine/render_interface.h>
+#include <engine/render_resource_types.h>
 #include <foundation/collection_types.h>
 
 #include "render_resource_handle.h"
-#include "render_interface.h"
-#include "renderer_command.h"
-#include "render_resource_types.h"
 #include "renderer_context.h"
 #include "render_world.h"
 
@@ -24,7 +25,7 @@ struct RendererResourceObject
 	RenderResourceHandle handle;
 };
 
-class Renderer
+class Renderer : public IRenderer
 {
 public:
 	static const unsigned num_handles = 4000;
@@ -32,7 +33,7 @@ public:
 	Renderer(Allocator& allocator);
 	virtual ~Renderer();
 	
-	bool active() const { return _active; }
+	bool is_active() const { return _active; }
 	const Vector2u& resolution() const { return _resolution; }
 	void add_renderer_command(const RendererCommand& command);
 	void create_resource(RenderResourceData& render_resource, void* dynamic_data);

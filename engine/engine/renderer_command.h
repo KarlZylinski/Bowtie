@@ -1,9 +1,8 @@
 #pragma once
 
-#include <foundation/vector2u.h>
-
-#include "resource_handle.h"
 #include "view.h"
+#include "resource_handle.h"
+#include <foundation/vector2u.h>
 
 namespace bowtie
 {

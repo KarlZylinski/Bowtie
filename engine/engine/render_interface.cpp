@@ -6,24 +6,24 @@
 
 #include <foundation/memory.h>
 
-#include "render_fence.h"
-#include "renderer.h"
 #include "drawable.h"
+#include "irenderer.h"
 #include "image.h"
-#include "world.h"
-#include "texture.h"
+#include "render_fence.h"
 #include "resource_manager.h"
+#include "texture.h"
+#include "world.h"
 
 namespace bowtie
 {
 
-RenderInterface::RenderInterface(Renderer& renderer, Allocator& allocator) : _allocator(allocator), _renderer(renderer)
+RenderInterface::RenderInterface(IRenderer& renderer, Allocator& allocator) : _allocator(allocator), _renderer(renderer)
 {
 }
 
 void RenderInterface::create_texture(Texture& texture)
 {
-	assert(texture.render_handle.type == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
+	assert(texture.render_handle.type == ResourceHandle::NotInitialized && "Trying to create already created texture");
 
 	Image& image = *texture.image;
 
@@ -54,7 +54,7 @@ ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
 {
-	assert(drawable.render_handle().type == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
+	assert(drawable.render_handle().type == ResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
 	assert(drawable.texture() != nullptr);
 
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
@@ -97,7 +97,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 
 void RenderInterface::create_render_world(World& world)
 {
-	assert(world.render_handle().type == RenderResourceHandle::NotInitialized);
+	assert(world.render_handle().type == ResourceHandle::NotInitialized);
 
 	auto render_world_data = create_render_resource_data(RenderResourceData::World);
 	world.set_render_handle(render_world_data.handle);
@@ -123,9 +123,9 @@ bool RenderInterface::is_setup() const
 	return _renderer.is_setup();
 }
 
-bool RenderInterface::active() const
+bool RenderInterface::is_active() const
 {
-	return _renderer.active();
+	return _renderer.is_active();
 }
 
 void RenderInterface::dispatch(const RendererCommand& command)

@@ -37,6 +37,9 @@
     <ProjectReference Include="..\os\os_windows.vcxproj">
       <Project>{ee0cf23b-fec0-4b55-a8df-d901d7bd9b73}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\renderer\renderer_windows.vcxproj.vcxproj">
+      <Project>{d6836398-0790-4b6d-8a0f-e299f5e306fc}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CD931A2C-E99D-44F2-9E23-0E6B6916A213}</ProjectGuid>
@@ -122,7 +125,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\opengl_renderer;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\opengl_renderer;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\game;$(BOWTIE_SOURCE)\renderer</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530 %(AdditionalOptions)</AdditionalOptions>

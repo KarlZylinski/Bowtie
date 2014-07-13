@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="engine\renderer.cpp" />
+    <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\timer.cpp" />
@@ -8,6 +10,7 @@
     <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\image.cpp" />
     <ClCompile Include="engine\sprite.cpp" />
+    <ClCompile Include="engine\render_world.cpp" />
     <ClCompile Include="engine\world.cpp" />
     <ClCompile Include="engine\texture.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
@@ -15,32 +18,35 @@
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\text.cpp" />
     <ClCompile Include="engine\drawable.cpp" />
-    <ClCompile Include="engine\shader_utils.cpp" />
-    <ClCompile Include="engine\render_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\renderer.h" />
+    <ClInclude Include="engine\render_interface.h" />
+    <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\engine.h" />
+    <ClInclude Include="engine\renderer_command.h" />
+    <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
+    <ClInclude Include="engine\renderer_context.h" />
     <ClInclude Include="engine\resource_handle.h" />
+    <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\sprite.h" />
     <ClInclude Include="engine\texture.h" />
+    <ClInclude Include="engine\render_texture.h" />
+    <ClInclude Include="engine\render_world.h" />
     <ClInclude Include="engine\world.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\png.h" />
     <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\text.h" />
     <ClInclude Include="engine\drawable.h" />
+    <ClInclude Include="engine\render_drawable.h" />
     <ClInclude Include="engine\rect.h" />
     <ClInclude Include="engine\resource_type.h" />
-    <ClInclude Include="engine\shader_utils.h" />
-    <ClInclude Include="engine\render_resource_types.h" />
-    <ClInclude Include="engine\irenderer.h" />
-    <ClInclude Include="engine\render_fence.h" />
-    <ClInclude Include="engine\render_interface.h" />
-    <ClInclude Include="engine\renderer_command.h" />
+    <ClInclude Include="engine\render_target.h" />
   </ItemGroup>
 </Project>

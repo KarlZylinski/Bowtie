@@ -1,7 +1,7 @@
 #pragma once
 
 #include <foundation/matrix4.h>
-#include "resource_handle.h"
+#include <engine/resource_handle.h>
 
 namespace bowtie
 {

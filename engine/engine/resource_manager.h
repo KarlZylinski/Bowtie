@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cassert>
 #include <stdint.h>
+
 #include <foundation/hash.h>
 #include <foundation/murmur_hash.h>
 #include <foundation/string_utils.h>
-#include "render_resource_types.h"
-#include "resource_type.h"
+
+#include "resource_handle.h"
 
 namespace bowtie
 {
