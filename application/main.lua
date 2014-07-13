@@ -1,5 +1,3 @@
-require "shared/console"
-
 game = {}
 
 function init()
@@ -15,9 +13,6 @@ function init()
     game.hill = World.spawn_sprite(game.world, "textures/hill.png")
     Drawable.set_position(game.hill, Vector2(50, 50))
     game.beer = World.spawn_sprite(game.world, "textures/beer.png")
-
-    game.console = Console()
-    game.console:write("PANG PUNG")
 end
 
 function update_beer(dt)
@@ -42,8 +37,6 @@ function update_beer(dt)
 	Drawable.set_position(game.beer, Drawable.position(game.beer) + direction * dt * 400)
 end
 
-local t = 0
-
 function update(dt)
 	local pos = Drawable.position(game.beer)
 
@@ -53,9 +46,10 @@ function update(dt)
 
 	update_beer(dt)
     World.update(game.world)
-   	game.console:update(dt)
+end
+
+function draw()
     World.draw(game.world, Vector2(0,0), Vector2(1280,720))
-    game.console:draw()
 end
 
 function deinit()

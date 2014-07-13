@@ -4,6 +4,8 @@
 
 #include <lua.hpp>
 
+#include "script_console.h"
+
 namespace bowtie
 {
 namespace script_interface
@@ -114,7 +116,7 @@ bool check_errors(lua_State* lua, int error)
 		return true;
 
 	auto error_str = lua_tostring(lua, -1);
-	printf(error_str);
+	console::write(error_str);
 	return false;
 }
 

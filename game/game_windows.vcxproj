@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\game.h" />
+    <ClInclude Include="game\script_interfaces\script_console.h" />
     <ClInclude Include="game\script_interfaces\script_drawable.h" />
     <ClInclude Include="game\script_interfaces\script_engine.h" />
     <ClInclude Include="game\script_interfaces\script_interface_helpers.h" />
@@ -34,6 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\game.cpp" />
+    <ClCompile Include="game\script_interfaces\script_console.cpp" />
     <ClCompile Include="game\script_interfaces\script_drawable.cpp" />
     <ClCompile Include="game\script_interfaces\script_engine.cpp" />
     <ClCompile Include="game\script_interfaces\script_interface_helpers.cpp" />

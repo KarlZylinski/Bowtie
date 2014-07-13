@@ -11,7 +11,7 @@ end
 
 function Console:write(message)
 	local text = World.spawn_text(self.world, self.font, message)
-	Drawable.set_position(text, Vector2(0,0))
+	Drawable.set_position(text, Vector2(0, #self.rows * 30))
 	table.insert(self.rows, text)
 end
 
@@ -20,7 +20,7 @@ function Console:update(dt)
 end
 
 function Console:draw()
-	World.draw(self.world, Vector2(0,0), Vector2(1280,720))
+	World.draw(self.world, Vector2(0, 0), Vector2(1280, 720))
 end
 
 return Console

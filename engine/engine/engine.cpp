@@ -46,6 +46,7 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 
 	_game.update(dt);
+	_game.draw();
 	
 	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
 

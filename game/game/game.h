@@ -16,6 +16,7 @@ public:
 
 	void init();
 	void update(float dt);
+	void draw();
 	void deinit();
 
 	bool initialized() const;
