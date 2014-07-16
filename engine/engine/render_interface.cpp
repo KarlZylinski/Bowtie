@@ -177,6 +177,11 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 	dispatch(rc);
 }
 
+void RenderInterface::deallocate_processed_commands(Allocator& allocator)
+{
+	_renderer.deallocate_processed_commands(allocator);
+}
+
 RenderFence& RenderInterface::create_fence()
 {
 	auto fence_command = create_command(RendererCommand::Fence);

@@ -44,6 +44,7 @@ void Engine::update()
 	_time_since_start += dt;
 
 	_render_interface.wait_for_fence(_render_interface.create_fence());
+	_render_interface.deallocate_processed_commands(_allocator);
 
 	_game.update(dt);
 	_game.draw();

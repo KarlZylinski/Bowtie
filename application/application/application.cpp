@@ -44,9 +44,10 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	memory_globals::init();
 	Allocator& allocator = memory_globals::default_allocator();
 	s_allocator = &allocator;
-
+	
+	Allocator* renderer_allocator = memory_globals::new_allocator();
 	{
-		OpenGLRenderer renderer(allocator);
+		OpenGLRenderer renderer(*renderer_allocator, allocator);
 		s_renderer = &renderer;
 
 		OpenGLContextWindows context;
@@ -65,6 +66,6 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			engine.update();
 		}
 	}
-
+	memory_globals::destroy_allocator(renderer_allocator);
 	memory_globals::shutdown();
 }

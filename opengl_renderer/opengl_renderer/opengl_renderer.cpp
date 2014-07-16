@@ -18,7 +18,7 @@
 namespace bowtie
 {
 
-OpenGLRenderer::OpenGLRenderer(Allocator& allocator) : Renderer(allocator)
+OpenGLRenderer::OpenGLRenderer(Allocator& renderer_allocator, Allocator& render_interface_allocator) : Renderer(renderer_allocator, render_interface_allocator)
 {
 }
 

@@ -8,7 +8,7 @@ namespace bowtie
 class OpenGLRenderer : public Renderer
 {
 public:
-	OpenGLRenderer(Allocator& allocator);
+	OpenGLRenderer(Allocator& renderer_allocator, Allocator& render_interface_allocator);
 	~OpenGLRenderer();
 	
 	virtual void draw(const View& view, ResourceHandle render_world);

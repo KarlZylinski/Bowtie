@@ -30,12 +30,13 @@ class Renderer : public IRenderer
 public:
 	static const unsigned num_handles = 4000;
 
-	Renderer(Allocator& allocator);
+	Renderer(Allocator& renderer_allocator, Allocator& render_interface_allocator);
 	virtual ~Renderer();
 	
 	bool is_active() const { return _active; }
 	const Vector2u& resolution() const { return _resolution; }
 	void add_renderer_command(const RendererCommand& command);
+	void deallocate_processed_commands(Allocator& allocator);
 	void create_resource(RenderResourceData& render_resource, void* dynamic_data);
 	void consume_command_queue();
 	ResourceHandle create_handle();
@@ -57,14 +58,14 @@ public:
 	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data) = 0;
 	virtual void update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data) = 0;
 	virtual RenderTarget* create_render_target() = 0;
-
+	
 protected:
 	virtual void run_thread() = 0;
 	void move_unprocessed_commands();
 	void set_active(bool active) { _active = active; }
 		
 	Allocator& _allocator;
-	Queue<RendererCommand> _command_queue;
+	Array<RendererCommand> _command_queue;
 	bool _command_queue_populated;
 	std::mutex _command_queue_populated_mutex;
 	std::condition_variable _wait_for_command_queue_populated;
@@ -85,8 +86,10 @@ private:
 	bool _active;
 	void render_world(const View& view, ResourceHandle render_world);
 	Array<RendererCommand> _unprocessed_commands;
-	Array<RenderTarget*> _render_targets;
 	std::mutex _unprocessed_commands_mutex;
+	Array<RendererCommand> _processed_commands;
+	std::mutex _processed_commands_mutex;
+	Array<RenderTarget*> _render_targets;
 	RenderInterface _render_interface;
 	Array<ResourceHandle> _rendered_worlds; // filled each frame with all rendered world, in order
 };

@@ -13,7 +13,7 @@ class Text : public Drawable
 {
 public:
 	Text(const Font& font, Allocator& allocator);
-	~Text();
+	virtual ~Text();
 
 	void set_text(const char* text);
 	virtual const float* geometry_data() const;

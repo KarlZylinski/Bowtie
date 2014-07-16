@@ -14,7 +14,7 @@ namespace
 	lua_State* s_lua;
 }
 
-void load(lua_State* lua)
+void init(lua_State* lua)
 {
 	s_lua = lua;
 	lua_getglobal(lua, "Console");

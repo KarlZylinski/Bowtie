@@ -83,7 +83,7 @@ void Game::init()
 
 	init_game(_lua);
 	_initialized = true;
-	console::load(_lua);
+	console::init(_lua);
 }
 
 void Game::update(float dt)
@@ -113,6 +113,7 @@ void Game::draw()
 void Game::deinit()
 {
 	deinit_game(_lua);
+	lua_gc(_lua, LUA_GCCOLLECT, 0);
 }
 
 bool Game::initialized() const

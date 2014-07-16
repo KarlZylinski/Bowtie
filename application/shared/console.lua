@@ -9,6 +9,11 @@ function Console:init()
 	self.rows = {}
 end
 
+function Console:deinit()    
+    local engine = Engine.engine()
+    World.destroy(engine, self.world)
+end
+
 function Console:write(message)
 	local text = World.spawn_text(self.world, self.font, message)
 	Drawable.set_position(text, Vector2(0, #self.rows * 30))

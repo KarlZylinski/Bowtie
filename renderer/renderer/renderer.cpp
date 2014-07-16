@@ -12,8 +12,8 @@
 namespace bowtie
 {
 
-Renderer::Renderer(Allocator& allocator) : _command_queue(allocator), _free_handles(allocator), _allocator(allocator), _unprocessed_commands(allocator),
-	_render_interface(*this, allocator), _context(nullptr), _is_setup(false), _resource_objects(allocator), _render_targets(allocator), _rendered_worlds(allocator)
+Renderer::Renderer(Allocator& renderer_allocator, Allocator& render_interface_allocator) : _allocator(renderer_allocator), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
+	_processed_commands(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _is_setup(false), _resource_objects(_allocator), _render_targets(_allocator), _rendered_worlds(_allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -31,7 +31,7 @@ Renderer::~Renderer()
 		case RenderResourceData::World:
 			MAKE_DELETE(_allocator, RenderWorld, (RenderWorld*)resource_object.handle.render_object);
 			break;
-		default:			
+		default:
 			_allocator.deallocate(resource_object.handle.render_object);
 			break;
 		}
@@ -46,6 +46,26 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 	}
 
 	notify_command_queue_populated();
+}
+
+void Renderer::deallocate_processed_commands(Allocator& allocator)
+{
+	std::lock_guard<std::mutex> queue_lock(_processed_commands_mutex);
+
+	for (unsigned i = 0; i < array::size(_processed_commands); ++i)
+	{
+		const RendererCommand& rc = _processed_commands[i];
+				
+		bool clear_command_data = rc.type != RendererCommand::Fence;
+
+		if (!clear_command_data)
+			continue;
+		
+		allocator.deallocate(rc.data);
+		allocator.deallocate(rc.dynamic_data);
+	}
+
+	array::clear(_processed_commands);
 }
 
 RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_data)
@@ -117,12 +137,9 @@ void Renderer::consume_command_queue()
 {
 	move_unprocessed_commands();
 
-	while (queue::size(_command_queue) > 0)
+	for (unsigned i = 0; i < array::size(_command_queue); ++i)
 	{
-		RendererCommand& command = _command_queue[0];
-		queue::pop_front(_command_queue);
-		
-		bool clear_command_data = true;
+		RendererCommand& command = _command_queue[i];
 
 		switch(command.type)
 		{
@@ -135,7 +152,6 @@ void Renderer::consume_command_queue()
 					std::lock_guard<std::mutex> fence_lock(fence.mutex);
 					fence.processed = true;
 					fence.fence_processed.notify_all();
-					clear_command_data = false;
 				}
 			}
 			break;
@@ -180,14 +196,16 @@ void Renderer::consume_command_queue()
 		default:
 			assert(!"Command not implemented!");
 			break;
-		}	
-
-		if(clear_command_data)
-		{
-			_allocator.deallocate(command.data);
-			_allocator.deallocate(command.dynamic_data);
 		}
+
 	}
+	
+	std::lock_guard<std::mutex> queue_lock(_processed_commands_mutex);
+
+	for (unsigned i = 0; i < array::size(_command_queue); ++i)
+		array::push_back(_processed_commands, _command_queue[i]);
+
+	array::clear(_command_queue);
 }
 
 void Renderer::drawable_state_reflection(const DrawableStateReflectionData& data)
@@ -220,8 +238,8 @@ void Renderer::move_unprocessed_commands()
 	std::lock_guard<std::mutex> queue_lock(_unprocessed_commands_mutex);
 
 	for(unsigned i = 0; i < array::size(_unprocessed_commands); ++i)
-		queue::push_back(_command_queue, _unprocessed_commands[i]);
-
+		array::push_back(_command_queue, _unprocessed_commands[i]);		
+		
 	array::clear(_unprocessed_commands);
 }
 
