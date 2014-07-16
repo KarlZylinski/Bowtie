@@ -6,16 +6,18 @@
 
 namespace {
 	using namespace bowtie;
+	
+	// If we need to align the memory allocation we pad the header with this
+	// value after storing the size. That way we can 
+	const uint32_t HEADER_PAD_VALUE = 0xffffffffu;
+	const uint32_t ALLOCATION_MARKER = 0xfffffffeu;
 
 	// Header stored at the beginning of a memory allocation to indicate the
 	// size of the allocated data.
 	struct Header {
+		uint32_t marker;
 		uint32_t size;
 	};
-
-	// If we need to align the memory allocation we pad the header with this
-	// value after storing the size. That way we can 
-	const uint32_t HEADER_PAD_VALUE = 0xffffffffu;
 
 	// Given a pointer to the header, returns a pointer to the data that follows it.
 	inline void *data_pointer(Header *header, uint32_t align) {
@@ -27,9 +29,9 @@ namespace {
 	inline Header *header(void *data)
 	{
 		uint32_t *p = (uint32_t *)data;
-		while (p[-1] == HEADER_PAD_VALUE)
+		while (p[-1] != ALLOCATION_MARKER)
 			--p;
-		return (Header *)p - 1;
+		return (Header *)memory::pointer_sub(p, sizeof(uint32_t));
 	}
 
 	// Stores the size in the header and pads with HEADER_PAD_VALUE up to the
@@ -37,6 +39,7 @@ namespace {
 	inline void fill(Header *header, void *data, uint32_t size)
 	{
 		header->size = size;
+		header->marker = ALLOCATION_MARKER;
 		uint32_t *p = (uint32_t *)(header + 1);
 		while (p < data)
 			*p++ = HEADER_PAD_VALUE;
@@ -55,7 +58,7 @@ namespace {
 
 		// Returns the size to allocate from malloc() for a given size and align.		
 		static inline uint32_t size_with_padding(uint32_t size, uint32_t align) {
-			return size + align + sizeof(Header);
+			return alignof(Header) + sizeof(Header) + align + size;
 		}
 
 	public:
@@ -68,10 +71,12 @@ namespace {
 		}
 
 		virtual void *allocate(uint32_t size, uint32_t align) {
-			const uint32_t ts = size_with_padding(size, align);
-			Header *h = (Header *)malloc(ts);
+			const uint32_t ts = size_with_padding(size, align);			
+			void *raw = malloc(ts);
+			Header *h = (Header *)memory::align_forward(raw, alignof(Header));
 			void *p = data_pointer(h, align);
 			fill(h, p, ts);
+			assert(h->marker == ALLOCATION_MARKER);
 			_total_allocated += ts;
 			return p;
 		}
@@ -81,6 +86,8 @@ namespace {
 				return;
 
 			Header *h = header(p);
+			assert(h->marker == ALLOCATION_MARKER);
+			assert(_total_allocated >= h->size);
 			_total_allocated -= h->size;
 			free(h);
 		}
@@ -211,13 +218,13 @@ namespace {
 	};
 
 	struct MemoryGlobals {
-		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator) + sizeof(ScratchAllocator);
+		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator);// + sizeof(ScratchAllocator);
 		char buffer[ALLOCATOR_MEMORY];
 
 		MallocAllocator *default_allocator;
-		ScratchAllocator *default_scratch_allocator;
+		//ScratchAllocator *default_scratch_allocator;
 
-		MemoryGlobals() : default_allocator(0), default_scratch_allocator(0) {}
+		MemoryGlobals() : default_allocator(0)/*, default_scratch_allocator(0)*/ {}
 	};
 
 	MemoryGlobals _memory_globals;
@@ -231,21 +238,29 @@ namespace bowtie
 			char *p = _memory_globals.buffer;
 			_memory_globals.default_allocator = new (p) MallocAllocator();
 			p += sizeof(MallocAllocator);
-			_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
+			//_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
 		}
 
 		Allocator &default_allocator() {
 			return *_memory_globals.default_allocator;
 		}
 
-		Allocator &default_scratch_allocator() {
+		/*Allocator &default_scratch_allocator() {
 			return *_memory_globals.default_scratch_allocator;
-		}
-
+		}*/
+		
 		void shutdown() {
-			_memory_globals.default_scratch_allocator->~ScratchAllocator();
+			//_memory_globals.default_scratch_allocator->~ScratchAllocator();
 			_memory_globals.default_allocator->~MallocAllocator();
 			_memory_globals = MemoryGlobals();
+		}
+
+		Allocator* new_allocator() {
+			return new MallocAllocator();
+		}
+		
+		void destroy_allocator(Allocator* allocator) {
+			delete allocator;
 		}
 	}
 }

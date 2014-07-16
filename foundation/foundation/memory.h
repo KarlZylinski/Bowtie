@@ -14,7 +14,7 @@ namespace bowtie
 	{
 	public:
 		/// Default alignment for memory allocations.
-		static const uint32_t DEFAULT_ALIGN = 4;
+		static const uint32_t DEFAULT_ALIGN = 8;
 
 		Allocator() {}
 		virtual ~Allocator() {}
@@ -73,10 +73,13 @@ namespace bowtie
 		///
 		/// If there is not enough memory in the buffer to match requests for scratch
 		/// memory, memory from the default_allocator will be returned instead.
-		Allocator &default_scratch_allocator();
+		//Allocator &default_scratch_allocator();
 
 		/// Shuts down the global memory allocators created by init().
 		void shutdown();
+
+		Allocator* new_allocator();
+		void destroy_allocator(Allocator* allocator);
 	}
 
 	namespace memory {
