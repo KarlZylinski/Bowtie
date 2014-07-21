@@ -13,7 +13,7 @@ namespace bowtie
 {
 
 Renderer::Renderer(Allocator& renderer_allocator, Allocator& render_interface_allocator) : _allocator(renderer_allocator), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
-	_processed_commands(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _is_setup(false), _resource_objects(_allocator), _render_targets(_allocator), _rendered_worlds(_allocator)
+	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _is_setup(false), _resource_objects(_allocator), _render_targets(_allocator), _rendered_worlds(_allocator)
 {
 	array::set_capacity(_free_handles, num_handles);
 
@@ -50,22 +50,15 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 
 void Renderer::deallocate_processed_commands(Allocator& allocator)
 {
-	std::lock_guard<std::mutex> queue_lock(_processed_commands_mutex);
+	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 
-	for (unsigned i = 0; i < array::size(_processed_commands); ++i)
+	for (unsigned i = 0; i < array::size(_processed_memory); ++i)
 	{
-		const RendererCommand& rc = _processed_commands[i];
-				
-		bool clear_command_data = rc.type != RendererCommand::Fence;
-
-		if (!clear_command_data)
-			continue;
-		
-		allocator.deallocate(rc.data);
-		allocator.deallocate(rc.dynamic_data);
+		void* ptr = _processed_memory[i];
+		allocator.deallocate(ptr);
 	}
 
-	array::clear(_processed_commands);
+	array::clear(_processed_memory);
 }
 
 RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_data)
@@ -117,8 +110,6 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 	default:
 		assert(!"Unknown render resource type"); return;
 	}
-	_allocator.deallocate(render_resource.data);
-
 	assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
 						
 	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
@@ -131,6 +122,9 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 		rro.type = render_resource.type;
 		array::push_back(_resource_objects, rro);
 	}
+	
+	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
+	array::push_back(_processed_memory, render_resource.data);
 }
 
 void Renderer::consume_command_queue()
@@ -200,10 +194,18 @@ void Renderer::consume_command_queue()
 
 	}
 	
-	std::lock_guard<std::mutex> queue_lock(_processed_commands_mutex);
+	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 
-	for (unsigned i = 0; i < array::size(_command_queue); ++i)
-		array::push_back(_processed_commands, _command_queue[i]);
+	for (unsigned i = 0; i < array::size(_command_queue); ++i) {
+		const auto& command = _command_queue[i];
+		auto dont_free = command.type == RendererCommand::Fence;
+
+		if (dont_free)
+			continue;
+
+		array::push_back(_processed_memory, command.data);
+		array::push_back(_processed_memory, command.dynamic_data);
+	}
 
 	array::clear(_command_queue);
 }

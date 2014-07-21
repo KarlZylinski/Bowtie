@@ -4,18 +4,25 @@
 #include <assert.h>
 #include <new>
 
+#define TRACING 0
+
 namespace {
 	using namespace bowtie;
-	
+
 	// If we need to align the memory allocation we pad the header with this
 	// value after storing the size. That way we can 
 	const uint32_t HEADER_PAD_VALUE = 0xffffffffu;
-	const uint32_t ALLOCATION_MARKER = 0xfffffffeu;
+	
+	#if defined(TRACING)
+		const uint32_t TRACING_MARKER = 0xfffffffeu;
+	#endif
 
 	// Header stored at the beginning of a memory allocation to indicate the
 	// size of the allocated data.
 	struct Header {
-		uint32_t marker;
+		#if defined(TRACING)
+			uint32_t tracing_marker;
+		#endif
 		uint32_t size;
 	};
 
@@ -29,9 +36,9 @@ namespace {
 	inline Header *header(void *data)
 	{
 		uint32_t *p = (uint32_t *)data;
-		while (p[-1] != ALLOCATION_MARKER)
+		while (p[-1] == HEADER_PAD_VALUE)
 			--p;
-		return (Header *)memory::pointer_sub(p, sizeof(uint32_t));
+		return (Header *)memory::pointer_sub(p, sizeof(Header));
 	}
 
 	// Stores the size in the header and pads with HEADER_PAD_VALUE up to the
@@ -39,8 +46,10 @@ namespace {
 	inline void fill(Header *header, void *data, uint32_t size)
 	{
 		header->size = size;
-		header->marker = ALLOCATION_MARKER;
-		uint32_t *p = (uint32_t *)(header + 1);
+		#if defined(TRACING)
+			header->tracing_marker = TRACING_MARKER;
+		#endif
+		uint32_t *p = (uint32_t *)memory::pointer_add(header, sizeof(Header));
 		while (p < data)
 			*p++ = HEADER_PAD_VALUE;
 	}
@@ -54,29 +63,35 @@ namespace {
 	/// MallocAllocator.)
 	class MallocAllocator : public Allocator
 	{
+		uint32_t _total_allocations;
 		uint32_t _total_allocated;
+		char* _name;
 
 		// Returns the size to allocate from malloc() for a given size and align.		
 		static inline uint32_t size_with_padding(uint32_t size, uint32_t align) {
-			return alignof(Header) + sizeof(Header) + align + size;
+			return size + align*2 + sizeof(Header);
 		}
 
 	public:
-		MallocAllocator() : _total_allocated(0) {}
+		MallocAllocator(const char* name) : _total_allocated(0), _total_allocations(0) {
+			_name = (char*)allocate((uint32_t)strlen(name) + 1, DEFAULT_ALIGN);
+			strcpy(_name, name);
+		}
 
 		~MallocAllocator() {
 			// Check that we don't have any memory leaks when allocator is
 			// destroyed.
-			assert(_total_allocated == 0);
+			assert(_total_allocated - strlen(_name) == 0);
+			assert(_total_allocations - 1 == 0);
+			deallocate((void*)_name);
 		}
 
 		virtual void *allocate(uint32_t size, uint32_t align) {
-			const uint32_t ts = size_with_padding(size, align);			
-			void *raw = malloc(ts);
-			Header *h = (Header *)memory::align_forward(raw, alignof(Header));
+			const uint32_t ts = size_with_padding(size, align);
+			Header *h = (Header *)memory::align_forward(malloc(ts), DEFAULT_ALIGN);
 			void *p = data_pointer(h, align);
 			fill(h, p, ts);
-			assert(h->marker == ALLOCATION_MARKER);
+			++_total_allocations;
 			_total_allocated += ts;
 			return p;
 		}
@@ -84,10 +99,15 @@ namespace {
 		virtual void deallocate(void *p) {
 			if (!p)
 				return;
-
+				
 			Header *h = header(p);
-			assert(h->marker == ALLOCATION_MARKER);
 			assert(_total_allocated >= h->size);
+			#if defined(TRACING)
+				assert(h->tracing_marker == TRACING_MARKER);
+			#endif
+			h->tracing_marker = 0;
+			--_total_allocations;
+			assert(_total_allocations >= 0);
 			_total_allocated -= h->size;
 			free(h);
 		}
@@ -218,13 +238,13 @@ namespace {
 	};
 
 	struct MemoryGlobals {
-		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator);// + sizeof(ScratchAllocator);
+		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator) + sizeof(ScratchAllocator);
 		char buffer[ALLOCATOR_MEMORY];
 
 		MallocAllocator *default_allocator;
-		//ScratchAllocator *default_scratch_allocator;
+		ScratchAllocator *default_scratch_allocator;
 
-		MemoryGlobals() : default_allocator(0)/*, default_scratch_allocator(0)*/ {}
+		MemoryGlobals() : default_allocator(0), default_scratch_allocator(0) {}
 	};
 
 	MemoryGlobals _memory_globals;
@@ -236,27 +256,27 @@ namespace bowtie
 	{
 		void init(uint32_t temporary_memory) {
 			char *p = _memory_globals.buffer;
-			_memory_globals.default_allocator = new (p) MallocAllocator();
+			_memory_globals.default_allocator = new (p) MallocAllocator("default allocator");
 			p += sizeof(MallocAllocator);
-			//_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
+			_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
 		}
 
 		Allocator &default_allocator() {
 			return *_memory_globals.default_allocator;
 		}
 
-		/*Allocator &default_scratch_allocator() {
+		Allocator &default_scratch_allocator() {
 			return *_memory_globals.default_scratch_allocator;
-		}*/
+		}
 		
 		void shutdown() {
-			//_memory_globals.default_scratch_allocator->~ScratchAllocator();
+			_memory_globals.default_scratch_allocator->~ScratchAllocator();
 			_memory_globals.default_allocator->~MallocAllocator();
 			_memory_globals = MemoryGlobals();
 		}
 
-		Allocator* new_allocator() {
-			return new MallocAllocator();
+		Allocator* new_allocator(const char* name) {
+			return new MallocAllocator(name);
 		}
 		
 		void destroy_allocator(Allocator* allocator) {

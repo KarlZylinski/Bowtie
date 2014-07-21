@@ -45,7 +45,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	Allocator& allocator = memory_globals::default_allocator();
 	s_allocator = &allocator;
 	
-	Allocator* renderer_allocator = memory_globals::new_allocator();
+	Allocator* renderer_allocator = memory_globals::new_allocator("renderer allocator");
 	{
 		OpenGLRenderer renderer(*renderer_allocator, allocator);
 		s_renderer = &renderer;
@@ -61,7 +61,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			&key_down_callback, &key_up_callback);
 		
 		while(window.is_open())
-		{			
+		{
 			window.dispatch_messages();
 			engine.update();
 		}

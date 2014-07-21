@@ -87,8 +87,8 @@ private:
 	void render_world(const View& view, ResourceHandle render_world);
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;
-	Array<RendererCommand> _processed_commands;
-	std::mutex _processed_commands_mutex;
+	Array<void*> _processed_memory;
+	std::mutex _processed_memory_mutex;
 	Array<RenderTarget*> _render_targets;
 	RenderInterface _render_interface;
 	Array<ResourceHandle> _rendered_worlds; // filled each frame with all rendered world, in order
