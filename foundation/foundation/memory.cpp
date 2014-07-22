@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <new>
 
-//#define TRACING 0
+#define TRACING 1
 
 namespace {
 	using namespace bowtie;
@@ -74,16 +74,16 @@ namespace {
 
 	public:
 		MallocAllocator(const char* name) : _total_allocated(0), _total_allocations(0) {
-			_name = (char*)allocate((uint32_t)strlen(name) + 1, DEFAULT_ALIGN);
+			_name = (char*)malloc(strlen(name) + 1);
 			strcpy(_name, name);
 		}
 
 		~MallocAllocator() {
 			// Check that we don't have any memory leaks when allocator is
 			// destroyed.
-			assert(_total_allocated - strlen(_name) == 0);
-			assert(_total_allocations - 1 == 0);
-			deallocate((void*)_name);
+			assert(_total_allocated == 0);
+			assert(_total_allocations == 0);
+			free(_name);
 		}
 
 		virtual void *allocate(uint32_t size, uint32_t align) {

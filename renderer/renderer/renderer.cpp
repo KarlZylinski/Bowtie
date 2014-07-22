@@ -8,6 +8,7 @@
 
 #include "render_drawable.h"
 #include "render_world.h"
+#include "render_target.h"
 
 namespace bowtie
 {
@@ -30,6 +31,9 @@ Renderer::~Renderer()
 		{
 		case RenderResourceData::World:
 			MAKE_DELETE(_allocator, RenderWorld, (RenderWorld*)resource_object.handle.render_object);
+			break;
+		case RenderResourceData::Target:
+			MAKE_DELETE(_allocator, RenderTarget, (RenderTarget*)resource_object.handle.render_object);
 			break;
 		default:
 			_allocator.deallocate(resource_object.handle.render_object);

@@ -2,11 +2,18 @@
 
 #include <foundation/array.h>
 
+#include "render_target.h"
+
 namespace bowtie
 {
 
-RenderWorld::RenderWorld(Allocator& allocator, RenderResourceHandle render_target) : _drawables(allocator), _render_target(render_target)
+RenderWorld::RenderWorld(Allocator& allocator, RenderResourceHandle render_target) : _allocator(allocator), _drawables(allocator), _render_target(render_target)
 {
+}
+
+RenderWorld::~RenderWorld()
+{
+	MAKE_DELETE(_allocator, RenderTarget, (RenderTarget*)_render_target.render_object);
 }
 
 void RenderWorld::add_drawable(RenderResourceHandle drawable)

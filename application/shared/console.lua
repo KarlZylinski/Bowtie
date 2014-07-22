@@ -3,15 +3,15 @@ require "shared/class"
 Console = class(Console)
 
 function Console:init()
-    local engine = Engine.engine()
-    self.world = World.create(engine)
+	local engine = Engine.engine()
+	self.world = World.create(engine)
 	self.font = Engine.load_resource("font", "fonts/stolen.png")
 	self.rows = {}
 end
 
-function Console:deinit()    
-    local engine = Engine.engine()
-    World.destroy(engine, self.world)
+function Console:deinit()
+	local engine = Engine.engine()
+	World.destroy(engine, self.world)
 end
 
 function Console:write(message)
