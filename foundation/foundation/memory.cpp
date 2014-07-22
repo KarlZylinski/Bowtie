@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <new>
 
-#define TRACING 0
+//#define TRACING 0
 
 namespace {
 	using namespace bowtie;
