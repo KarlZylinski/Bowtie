@@ -4,6 +4,7 @@
 #include <engine/resource_manager.h>
 #include <foundation/array.h>
 #include <foundation/temp_allocator.h>
+#include <renderer/renderer.h>
 #include <opengl_renderer/opengl_context_windows.h>
 #include <opengl_renderer/opengl_renderer.h>
 #include <os/windows/window.h>
@@ -13,7 +14,7 @@ using namespace bowtie;
 namespace
 {
 	Engine* s_engine;
-	OpenGLRenderer* s_renderer;
+	Renderer* s_renderer;
 	OpenGLContextWindows* s_context;
 	Allocator* s_allocator;
 }
@@ -47,7 +48,10 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	
 	Allocator* renderer_allocator = memory_globals::new_allocator("renderer allocator");
 	{
-		OpenGLRenderer renderer(*renderer_allocator, allocator);
+		RenderResourceLookupTable render_resource_lookup_table;
+
+		OpenGLRenderer opengl_renderer(*renderer_allocator, render_resource_lookup_table);
+		Renderer renderer(opengl_renderer, *renderer_allocator, allocator, render_resource_lookup_table);
 		s_renderer = &renderer;
 
 		OpenGLContextWindows context;

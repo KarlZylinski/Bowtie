@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="renderer\iconcrete_renderer.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="renderer\renderer_context.h" />
     <ClInclude Include="renderer\render_drawable.h" />
+    <ClInclude Include="renderer\render_resource_lookup_table.h" />
     <ClInclude Include="renderer\render_target.h" />
     <ClInclude Include="renderer\render_texture.h" />
     <ClInclude Include="renderer\render_world.h" />
@@ -29,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="renderer\renderer.cpp" />
+    <ClCompile Include="renderer\render_resource_lookup_table.cpp" />
     <ClCompile Include="renderer\render_world.cpp" />
   </ItemGroup>
   <ItemGroup>

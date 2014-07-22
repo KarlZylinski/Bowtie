@@ -9,13 +9,17 @@
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
+#include "iconcrete_renderer.h"
 
 namespace bowtie
 {
 
-Renderer::Renderer(Allocator& renderer_allocator, Allocator& render_interface_allocator) : _allocator(renderer_allocator), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
-	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _is_setup(false), _resource_objects(_allocator), _render_targets(_allocator), _rendered_worlds(_allocator)
+Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
+	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _render_resource_lookup_table(render_resource_lookup_table), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
+	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _resource_objects(_allocator),
+	_render_targets(_allocator), _rendered_worlds(_allocator)
 {
+	auto num_handles = RenderResourceLookupTable::num_handles;
 	array::set_capacity(_free_handles, num_handles);
 
 	for(unsigned handle = num_handles; handle > 0; --handle)
@@ -24,6 +28,10 @@ Renderer::Renderer(Allocator& renderer_allocator, Allocator& render_interface_al
 
 Renderer::~Renderer()
 {
+	_active = false;
+	notify_command_queue_populated();
+	_thread.join();
+
 	for (unsigned i = 0; i < array::size(_resource_objects); ++i)
 	{
 		auto& resource_object = _resource_objects[i];
@@ -40,6 +48,11 @@ Renderer::~Renderer()
 			break;
 		}
 	}
+}
+
+bool Renderer::is_active() const
+{
+	return _active;
 }
 
 void Renderer::add_renderer_command(const RendererCommand& command)
@@ -77,7 +90,7 @@ RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_da
 
 	RenderResourceHandle drawable_handle = &drawable;
 
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(drawable_data.render_world.handle).render_object;
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource(drawable_data.render_world).render_object;
 	render_world.add_drawable(drawable_handle);
 
 	return drawable_handle;
@@ -85,7 +98,7 @@ RenderResourceHandle Renderer::create_drawable(DrawableResourceData& drawable_da
 
 RenderResourceHandle Renderer::create_world()
 {
-	return MAKE_NEW(_allocator, RenderWorld, _allocator, create_render_target());
+	return MAKE_NEW(_allocator, RenderWorld, _allocator, _concrete_renderer.create_render_target());
 }
 
 void Renderer::create_resource(RenderResourceData& render_resource, void* dynamic_data)
@@ -95,18 +108,18 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 	switch(render_resource.type)
 	{
 	case RenderResourceData::Shader:
-		handle = load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
+		handle = _concrete_renderer.load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Texture:
-		handle = load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
+		handle = _concrete_renderer.load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Drawable:
 		handle = create_drawable(*(DrawableResourceData*)render_resource.data); break;
 	case RenderResourceData::World:
 		handle = create_world(); break;
 	case RenderResourceData::Geometry:
-		handle = load_geometry(*(GeometryResourceData*)render_resource.data, dynamic_data); break;
+		handle = _concrete_renderer.load_geometry(*(GeometryResourceData*)render_resource.data, dynamic_data); break;
 	case RenderResourceData::Target:
 		{
-			auto render_target = create_render_target();
+			auto render_target = _concrete_renderer.create_render_target();
 			handle = render_target;
 			array::push_back(_render_targets, render_target);
 		}
@@ -117,7 +130,7 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 	assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
 						
 	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
-	_resource_lut[render_resource.handle.handle] = handle;
+	_render_resource_lookup_table.set(render_resource.handle, handle);
 
 	if (handle.type == RenderResourceHandle::Object)
 	{
@@ -129,6 +142,11 @@ void Renderer::create_resource(RenderResourceData& render_resource, void* dynami
 	
 	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 	array::push_back(_processed_memory, render_resource.data);
+}
+
+void Renderer::flip()
+{
+	_context->flip();
 }
 
 void Renderer::consume_command_queue()
@@ -171,8 +189,7 @@ void Renderer::consume_command_queue()
 		case RendererCommand::Resize:
 			{
 				ResizeData& data = *(ResizeData*)command.data;
-				_resolution = data.resolution;
-				resize(data.resolution, _render_targets);
+				_concrete_renderer.resize(data.resolution, _render_targets);
 			}
 			break;
 		case RendererCommand::DrawableStateReflection:
@@ -182,13 +199,14 @@ void Renderer::consume_command_queue()
 			break;
 		case RendererCommand::DrawableGeometryReflection:
 			{
-				update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
+				_concrete_renderer.update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
 			}
 			break;
 		case RendererCommand::CombineRenderedWorlds:
 			{
-				combine_rendered_worlds(_rendered_worlds);
+				_concrete_renderer.combine_rendered_worlds(_rendered_worlds);
 				array::clear(_rendered_worlds);
+				flip();
 			}
 			break;
 		default:
@@ -216,7 +234,7 @@ void Renderer::consume_command_queue()
 
 void Renderer::drawable_state_reflection(const DrawableStateReflectionData& data)
 {
-	RenderDrawable& drawable = *(RenderDrawable*)lookup_resource_object(data.drawble.handle).render_object;
+	RenderDrawable& drawable = *(RenderDrawable*)lookup_resource(data.drawble).render_object;
 	drawable.model = data.model;
 }
 
@@ -249,32 +267,51 @@ void Renderer::move_unprocessed_commands()
 	array::clear(_unprocessed_commands);
 }
 
+const Vector2u& Renderer::resolution() const
+{
+	return _concrete_renderer.resolution();
+}
+
 void Renderer::render_world(const View& view, ResourceHandle render_world_handle)
 {
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
-	set_render_target(*(RenderTarget*)render_world.render_target().render_object);
-	clear();
-	draw(view, render_world_handle);
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource(render_world_handle).render_object;
+	_concrete_renderer.set_render_target(*(RenderTarget*)render_world.render_target().render_object);
+	_concrete_renderer.clear();
+	_concrete_renderer.draw(view, render_world_handle);
 	array::push_back(_rendered_worlds, render_world_handle);
 }
 
-RenderResourceHandle Renderer::lookup_resource_object(ResourceHandle handle) const
+RenderResourceHandle Renderer::lookup_resource(ResourceHandle handle) const
 {
-	assert(handle.type == ResourceHandle::Handle && "Resource is not of handle-type");
-	assert(handle.handle < num_handles && "Handle is out of range");
+	return _render_resource_lookup_table.lookup(handle);
+}
 
-	return _resource_lut[handle.handle];
+void Renderer::thread()
+{
+	_context->make_current_for_calling_thread();
+	_concrete_renderer.initialize_thread();
+	_active = true;
+
+	while (_active)
+	{
+		{
+			std::unique_lock<std::mutex> command_queue_populated_lock(_command_queue_populated_mutex);
+			_wait_for_command_queue_populated.wait(command_queue_populated_lock, [&]{return _command_queue_populated;});
+			_command_queue_populated = false;
+		}
+
+		consume_command_queue();
+	}
 }
 
 void Renderer::run(RendererContext* context, const Vector2u& resolution)
 {
 	_context = context;
-	_rendering_thread = std::thread(&Renderer::run_thread, this);
+	_thread = std::thread(&Renderer::thread, this);
 
 	// Do stuff here which should happen before anything else.
 	_render_interface.resize(resolution);
-
-	_is_setup = true;
+	_setup = true;
 }
 
 }

@@ -1,36 +1,41 @@
 #pragma once
 
-#include <renderer/renderer.h>
+#include <foundation/vector2u.h>
+#include <renderer/iconcrete_renderer.h>
+#include <renderer/render_resource_lookup_table.h>
 
 namespace bowtie
 {
 
-class OpenGLRenderer : public Renderer
+class OpenGLRenderer : public IConcreteRenderer
 {
 public:
-	OpenGLRenderer(Allocator& renderer_allocator, Allocator& render_interface_allocator);
+	OpenGLRenderer(Allocator& allocator, RenderResourceLookupTable& render_resource_lookup_table);
 	~OpenGLRenderer();
 	
-	virtual void draw(const View& view, ResourceHandle render_world);
-	virtual void set_render_target(const RenderTarget& render_target);
-	virtual void clear();
-	virtual void flip();
-	virtual void resize(const Vector2u& resolution, Array<RenderTarget*>& render_targets);
-	virtual void combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds);
+	void clear();
+	void combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds);
+	RenderTarget* create_render_target();
+	void draw(const View& view, ResourceHandle render_world);
+	void initialize_thread();
+	bool is_active() const;
+	RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);
+	RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
+	RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data);
+	void update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data);
+	void resize(const Vector2u& resolution, Array<RenderTarget*>& render_targets);
+	const Vector2u& resolution() const;
+	void set_render_target(const RenderTarget& render_target);
 
-	// Resource loading
-	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);
-	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data);
-	virtual RenderResourceHandle load_geometry(GeometryResourceData& geometry_data, void* dynamic_data);
-	virtual void update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data);
-	virtual RenderTarget* create_render_target();
-
-protected:
-	virtual void run_thread();
-	
 private:
+	RenderResourceHandle lookup_resource(ResourceHandle handle) const;
+
+	bool _active;
+	Allocator& _allocator;
+	RenderResourceLookupTable& _render_resource_lookup_table;
 	RenderResourceHandle _fullscreen_rendering_quad;
 	RenderResourceHandle _rendered_worlds_combining_shader;
+	Vector2u _resolution;
 
 	// Disabled stuff
 	OpenGLRenderer(OpenGLRenderer&);

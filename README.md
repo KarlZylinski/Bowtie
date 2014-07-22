@@ -32,3 +32,4 @@ Todo
 * [ ] Text rendering
     * [x] Create geometry for text
     * [ ] Update geometry when text or font changes
+* [ ] Make sure to remove hacks from combine_rendered_worlds and split it into multiple methods

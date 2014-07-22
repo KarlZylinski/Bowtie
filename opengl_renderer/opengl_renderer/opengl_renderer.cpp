@@ -2,11 +2,14 @@
 
 #include <cassert>
 
+#include <engine/shader_utils.h>
+#include <engine/view.h>
+#include <engine/renderer_command.h>
+#include <engine/render_resource_types.h>
 #include <renderer/render_drawable.h>
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
 #include <renderer/render_world.h>
-#include <engine/shader_utils.h>
 
 #include <foundation/array.h>
 #include <foundation/file.h>
@@ -18,15 +21,13 @@
 namespace bowtie
 {
 
-OpenGLRenderer::OpenGLRenderer(Allocator& renderer_allocator, Allocator& render_interface_allocator) : Renderer(renderer_allocator, render_interface_allocator)
+OpenGLRenderer::OpenGLRenderer(Allocator& allocator, RenderResourceLookupTable& render_resource_lookup_table)
+	: _allocator(allocator), _render_resource_lookup_table(render_resource_lookup_table)
 {
 }
 
 OpenGLRenderer::~OpenGLRenderer()
 {
-	set_active(false);
-	notify_command_queue_populated();
-	_rendering_thread.join();
 }
 
 GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type)
@@ -89,7 +90,7 @@ void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 {	
 	auto view_projection = view.view_projection();
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource_object(render_world_handle.handle).render_object;
+	RenderWorld& render_world = *(RenderWorld*)lookup_resource(render_world_handle).render_object;
 
 	auto& drawables = render_world.drawables();
 	for (unsigned i = 0; i < array::size(drawables); ++i)
@@ -98,7 +99,7 @@ void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 
 		auto model_view_projection_matrix = drawable.model * view_projection;
 		
-		auto shader = lookup_resource_object(drawable.shader.handle).render_handle;
+		auto shader = lookup_resource(drawable.shader).render_handle;
 		assert(glIsProgram(shader) && "Invalid shader program");
 		glUseProgram(shader);
 
@@ -107,14 +108,14 @@ void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 		
 		if (drawable.texture.type != ResourceHandle::NotInitialized)
 		{
-			RenderTexture& drawable_texture = *(RenderTexture*)lookup_resource_object(drawable.texture.handle).render_object;
+			RenderTexture& drawable_texture = *(RenderTexture*)lookup_resource(drawable.texture).render_object;
 			GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
 			glUniform1i(texture_sampler_id, 0);
 		}
 
-		auto geometry = lookup_resource_object(drawable.geometry.handle).render_handle;
+		auto geometry = lookup_resource(drawable.geometry).render_handle;
 		
 		glBindBuffer(GL_ARRAY_BUFFER, geometry);
 		glEnableVertexAttribArray(0);
@@ -152,19 +153,20 @@ void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
 	}
 }
 
+const Vector2u& OpenGLRenderer::resolution() const
+{
+	return _resolution;
+}
+
 void OpenGLRenderer::clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void OpenGLRenderer::flip()
-{
-	_context->flip();
-}
-
 void OpenGLRenderer::resize(const Vector2u& resolution, Array<RenderTarget*>&)
 {
-	glViewport(0, 0, resolution.x, resolution.y);
+	_resolution = resolution;
+	glViewport(0, 0, _resolution.x, _resolution.y);
 }
 
 GLuint load_shader_internal(const char* vertex_source, const char* fragment_source)
@@ -192,10 +194,8 @@ GLuint load_shader_internal(const char* vertex_source, const char* fragment_sour
 	return program;
 }
 
-void OpenGLRenderer::run_thread()
+void OpenGLRenderer::initialize_thread()
 {
-	_context->make_current_for_calling_thread();
-
 	int extension_load_error = gl3wInit();
 	assert(extension_load_error == 0);
 		
@@ -233,19 +233,6 @@ void OpenGLRenderer::run_thread()
 	_allocator.deallocate(shader_source.data);
 	_allocator.deallocate(split_shader.vertex_source);
 	_allocator.deallocate(split_shader.fragment_source);
-
-	set_active(true);
-
-	while (is_active())
-	{
-		{
-			std::unique_lock<std::mutex> command_queue_populated_lock(_command_queue_populated_mutex);
-			_wait_for_command_queue_populated.wait(command_queue_populated_lock, [&]{return _command_queue_populated;});
-			_command_queue_populated = false;
-		}
-
-		consume_command_queue();
-	}
 }
 
 RenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data, void* dynamic_data)
@@ -320,8 +307,8 @@ RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometr
 
 void OpenGLRenderer::update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
 {
-	auto& drawable = *(RenderDrawable*)lookup_resource_object(geometry_data.drawable.handle).render_object;
-	auto geometry_handle = lookup_resource_object(drawable.geometry.handle).render_handle;
+	auto& drawable = *(RenderDrawable*)lookup_resource(geometry_data.drawable).render_object;
+	auto geometry_handle = lookup_resource(drawable.geometry).render_handle;
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 }
@@ -362,7 +349,7 @@ void OpenGLRenderer::combine_rendered_worlds(const Array<ResourceHandle>& render
 	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
 	{
 		auto rw_handle = rendered_worlds[i];
-		auto& rw = *(RenderWorld*)lookup_resource_object(rw_handle.handle).render_object;
+		auto& rw = *(RenderWorld*)lookup_resource(rw_handle).render_object;
 		auto& rt = *(RenderTarget*)rw.render_target().render_object;
 		
 		if (i == 0)
@@ -397,7 +384,11 @@ void OpenGLRenderer::combine_rendered_worlds(const Array<ResourceHandle>& render
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
-	flip();
+}
+
+RenderResourceHandle OpenGLRenderer::lookup_resource(ResourceHandle handle) const
+{
+	return _render_resource_lookup_table.lookup(handle);
 }
 
 }
