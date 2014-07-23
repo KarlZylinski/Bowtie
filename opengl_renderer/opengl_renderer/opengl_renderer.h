@@ -14,9 +14,9 @@ public:
 	~OpenGLRenderer();
 	
 	void clear();
-	void combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds);
+	void combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds);
 	RenderTarget* create_render_target();
-	void draw(const View& view, ResourceHandle render_world);
+	void draw(const View& view, const RenderWorld& render_world);
 	void initialize_thread();
 	bool is_active() const;
 	RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data);

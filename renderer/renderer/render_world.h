@@ -8,16 +8,17 @@ namespace bowtie
 {
 
 class Allocator;
+struct RenderTarget;
 class RenderWorld
 {
 public:
-	RenderWorld(Allocator& allocator, RenderResourceHandle render_target);
+	RenderWorld(Allocator& allocator, RenderTarget& render_target);
 	~RenderWorld();
 
 	void add_drawable(RenderResourceHandle drawable);
 	void remove_drawable(RenderResourceHandle drawable);
-	RenderResourceHandle render_target() const;
-
+	const RenderTarget& render_target() const;
+	RenderTarget& render_target();
 	const Array<RenderResourceHandle>& drawables() const;
 private:
 	RenderWorld& operator=(const RenderWorld&);
@@ -25,7 +26,7 @@ private:
 
 	Allocator& _allocator;
 	Array<RenderResourceHandle> _drawables;
-	RenderResourceHandle _render_target;
+	RenderTarget& _render_target;
 };
 
 };

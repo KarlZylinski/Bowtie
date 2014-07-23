@@ -6,8 +6,8 @@ namespace bowtie
 struct RenderResourceHandle
 {
 	RenderResourceHandle() : type(NotInitialized) {}
-	RenderResourceHandle(unsigned h) : render_handle(h), type(Handle) {}
-	RenderResourceHandle(void* p) : render_object(p), type(Object) {}
+	explicit RenderResourceHandle(unsigned h) : render_handle(h), type(Handle) {}
+	explicit RenderResourceHandle(void* p) : render_object(p), type(Object) {}
 
 	enum RenderResourceHandleType
 	{

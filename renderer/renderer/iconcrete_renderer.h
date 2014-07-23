@@ -10,6 +10,7 @@ namespace bowtie
 struct DrawableGeometryReflectionData;
 struct GeometryResourceData;
 struct RenderTarget;
+class RenderWorld;
 struct ShaderResourceData;
 struct TextureResourceData;
 class View;
@@ -20,9 +21,9 @@ class IConcreteRenderer
 public:
 	virtual ~IConcreteRenderer() {}
 	virtual void clear() = 0;
-	virtual void combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds) = 0;
+	virtual void combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds) = 0;
 	virtual RenderTarget* create_render_target() = 0;
-	virtual void draw(const View& view, ResourceHandle render_world_handle) = 0;
+	virtual void draw(const View& view, const RenderWorld& render_world) = 0;
 	virtual void initialize_thread() = 0;
 	virtual RenderResourceHandle load_texture(TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResourceHandle load_shader(ShaderResourceData& shader_data, void* dynamic_data) = 0;

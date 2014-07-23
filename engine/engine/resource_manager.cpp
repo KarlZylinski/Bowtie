@@ -114,7 +114,7 @@ Image& ResourceManager::load_image(const char* filename)
 	image->data_size = tex.data_size;
 	image->pixel_format = image::RGBA;
 	
-	add_resource(name, resource_type::Image, image);
+	add_resource(name, resource_type::Image, ResourceHandle(image));
 
 	return *image;
 }
@@ -129,7 +129,7 @@ Texture& ResourceManager::load_texture(const char* filename)
 	auto& image = load_image(filename);
 	auto texture = MAKE_NEW(_allocator, Texture, &image);
 	_render_interface.create_texture(*texture);
-	add_resource(name, resource_type::Texture, texture);
+	add_resource(name, resource_type::Texture, ResourceHandle(texture));
 	return *texture;	
 }
 
@@ -141,7 +141,7 @@ Font& ResourceManager::load_font(const char* filename)
 		return *existing;
 
 	auto font = MAKE_NEW(_allocator, Font, const_cast<const Texture&>(load_texture(filename)), 32, 4);
-	add_resource(name, resource_type::Font, font);
+	add_resource(name, resource_type::Font, ResourceHandle(font));
 	return *font;
 }
 
@@ -153,7 +153,7 @@ Sprite& ResourceManager::load_sprite_prototype(const char* filename)
 		return *existing;
 
 	auto sprite = MAKE_NEW(_allocator, Sprite, load_texture(filename));
-	add_resource(name, resource_type::Sprite, sprite);
+	add_resource(name, resource_type::Sprite, ResourceHandle(sprite));
 	return *sprite;
 }
 
@@ -180,12 +180,12 @@ ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
 {
 	switch(type)
 	{
-		case resource_type::Image: return &load_image(filename);
+		case resource_type::Image: return ResourceHandle(&load_image(filename));
 		case resource_type::Shader: return load_shader(filename);
-		case resource_type::Sprite: return &load_sprite_prototype(filename);
-		case resource_type::Texture: return &load_texture(filename);
-		case resource_type::Font: return &load_font(filename);
-		default: assert(!"Unknown resource type"); return (unsigned)0;
+		case resource_type::Sprite: return ResourceHandle(&load_sprite_prototype(filename));
+		case resource_type::Texture: return ResourceHandle(&load_texture(filename));
+		case resource_type::Font: return ResourceHandle(&load_font(filename));
+		default: assert(!"Unknown resource type"); return ResourceHandle();
 	}
 }
 

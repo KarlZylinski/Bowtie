@@ -87,10 +87,9 @@ void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 	glViewport(0, 0, _resolution.x, _resolution.y);
 }
 
-void OpenGLRenderer::draw(const View& view, ResourceHandle render_world_handle)
+void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 {	
 	auto view_projection = view.view_projection();
-	RenderWorld& render_world = *(RenderWorld*)lookup_resource(render_world_handle).render_object;
 
 	auto& drawables = render_world.drawables();
 	for (unsigned i = 0; i < array::size(drawables); ++i)
@@ -223,12 +222,12 @@ void OpenGLRenderer::initialize_thread()
 	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fullscreen_quad_data), fullscreen_quad_data, GL_STATIC_DRAW);
 
-	_fullscreen_rendering_quad = quad_vertexbuffer;
+	_fullscreen_rendering_quad = RenderResourceHandle(quad_vertexbuffer);
 
 	auto shader_source = file::load("rendered_world_combining.shader", _allocator);
 	auto split_shader = shader_utils::split_shader(shader_source, _allocator);
 
-	_rendered_worlds_combining_shader = load_shader_internal(split_shader.vertex_source, split_shader.fragment_source);
+	_rendered_worlds_combining_shader = RenderResourceHandle(load_shader_internal(split_shader.vertex_source, split_shader.fragment_source));
 
 	_allocator.deallocate(shader_source.data);
 	_allocator.deallocate(split_shader.vertex_source);
@@ -239,7 +238,7 @@ RenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data
 {
 	auto vertex_source = (char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset);
 	auto fragment_source = (char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset);
-	return load_shader_internal(vertex_source, fragment_source);
+	return RenderResourceHandle(load_shader_internal(vertex_source, fragment_source));
 }
 
 struct GLPixelFormat {
@@ -284,7 +283,7 @@ RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const
 	
 	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
 	render_texture->pixel_format = pf;
-	render_texture->render_handle = texture_id;
+	render_texture->render_handle = RenderResourceHandle(texture_id);
 	render_texture->resolution = resolution;
 
 	return render_texture;
@@ -292,7 +291,8 @@ RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const
 
 RenderResourceHandle OpenGLRenderer::load_texture(TextureResourceData& trd, void* dynamic_data)
 {
-	return create_texture(_allocator, trd.pixel_format, trd.resolution, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
+	auto texture = create_texture(_allocator, trd.pixel_format, trd.resolution, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
+	return RenderResourceHandle(texture);
 }
 
 RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometry_data, void* dynamic_data)
@@ -302,7 +302,7 @@ RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometr
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 
-	return geometry_buffer;
+	return RenderResourceHandle(geometry_buffer);
 }
 
 void OpenGLRenderer::update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
@@ -326,7 +326,7 @@ RenderTarget* OpenGLRenderer::create_render_target()
 	GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, draw_buffers);
 
-	return MAKE_NEW(_allocator, RenderTarget, texture_id, fb);
+	return MAKE_NEW(_allocator, RenderTarget, RenderResourceHandle(texture_id), RenderResourceHandle(fb));
 }
 
 void glCheckError()
@@ -338,7 +338,7 @@ void glCheckError()
 	}
 }
 
-void OpenGLRenderer::combine_rendered_worlds(const Array<ResourceHandle>& rendered_worlds)
+void OpenGLRenderer::combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, _resolution.x, _resolution.y);
@@ -348,9 +348,8 @@ void OpenGLRenderer::combine_rendered_worlds(const Array<ResourceHandle>& render
 
 	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
 	{
-		auto rw_handle = rendered_worlds[i];
-		auto& rw = *(RenderWorld*)lookup_resource(rw_handle).render_object;
-		auto& rt = *(RenderTarget*)rw.render_target().render_object;
+		auto& rw = *rendered_worlds[i];
+		auto& rt = rw.render_target();
 		
 		if (i == 0)
 		{
