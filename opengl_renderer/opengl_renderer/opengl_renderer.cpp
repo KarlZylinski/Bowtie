@@ -1,7 +1,5 @@
 #include "opengl_renderer.h"
-
 #include <cassert>
-
 #include <foundation/array.h>
 #include <foundation/file.h>
 #include <foundation/memory.h>
@@ -14,9 +12,31 @@
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
 #include <renderer/render_world.h>
+#include "gl3w.h"
 
 namespace bowtie
 {
+
+////////////////////////////////
+// Implementation fordward decl.
+
+namespace
+{
+
+struct GLPixelFormat;
+
+GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type);
+RenderResourceHandle create_fullscreen_rendering_quad();
+RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data);
+RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution);
+void initialize_gl();
+GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format);
+GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders);
+RenderResourceHandle load_rendered_worlds_combining_shader(Allocator& allocator);
+GLuint load_shader_internal(const char* vertex_source, const char* fragment_source);
+void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut);
+
+}
 
 ////////////////////////////////
 // Public interface.
@@ -103,7 +123,7 @@ void OpenGLRenderer::initialize_thread()
 	_rendered_worlds_combining_shader = load_rendered_worlds_combining_shader(_allocator);
 }
 
-RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometry_data, void* dynamic_data)
+RenderResourceHandle OpenGLRenderer::load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data)
 {
 	GLuint geometry_buffer;
 	glGenBuffers(1, &geometry_buffer);
@@ -113,20 +133,20 @@ RenderResourceHandle OpenGLRenderer::load_geometry(GeometryResourceData& geometr
 	return RenderResourceHandle(geometry_buffer);
 }
 
-RenderResourceHandle OpenGLRenderer::load_shader(ShaderResourceData& shader_data, void* dynamic_data)
+RenderResourceHandle OpenGLRenderer::load_shader(const ShaderResourceData& shader_data, void* dynamic_data)
 {
 	auto vertex_source = (char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset);
 	auto fragment_source = (char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset);
 	return RenderResourceHandle(load_shader_internal(vertex_source, fragment_source));
 }
 
-RenderResourceHandle OpenGLRenderer::load_texture(TextureResourceData& trd, void* dynamic_data)
+RenderResourceHandle OpenGLRenderer::load_texture(const TextureResourceData& trd, void* dynamic_data)
 {
 	auto texture = create_texture(_allocator, trd.pixel_format, trd.resolution, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
 	return RenderResourceHandle(texture);
 }
 
-void OpenGLRenderer::update_geometry(DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
+void OpenGLRenderer::update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
 {
 	auto& drawable = *(RenderDrawable*)_resource_lut.lookup(geometry_data.drawable).render_object;
 	auto geometry_handle = _resource_lut.lookup(drawable.geometry).render_handle;
@@ -155,7 +175,15 @@ void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 ////////////////////////////////
 // Implementation.
 
-GLuint OpenGLRenderer::compile_glsl_shader(const char* shader_source, GLenum shader_type)
+namespace
+{
+
+struct GLPixelFormat {
+	GLenum format;
+	GLenum internal_format;
+};
+
+GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type)
 {
 	GLuint result = glCreateShader(shader_type);
 
@@ -170,7 +198,7 @@ GLuint OpenGLRenderer::compile_glsl_shader(const char* shader_source, GLenum sha
 	return result;
 }
 
-RenderTexture* OpenGLRenderer::create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data)
+RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data)
 {
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -187,7 +215,7 @@ RenderTexture* OpenGLRenderer::create_texture(Allocator& allocator, image::Pixel
 	return render_texture;
 }
 
-RenderTarget* OpenGLRenderer::create_render_target_internal(Allocator& allocator, const Vector2u& resolution)
+RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution)
 {
 	auto texture = create_texture(allocator, image::RGBA, resolution, 0);
 	auto texture_id = texture->render_handle.render_handle;
@@ -203,7 +231,7 @@ RenderTarget* OpenGLRenderer::create_render_target_internal(Allocator& allocator
 	return MAKE_NEW(allocator, RenderTarget, RenderResourceHandle(texture_id), RenderResourceHandle(fb));
 }
 
-void OpenGLRenderer::initialize_gl()
+void initialize_gl()
 {
 	int extension_load_error = gl3wInit();
 	assert(extension_load_error == 0);
@@ -219,7 +247,7 @@ void OpenGLRenderer::initialize_gl()
 	glDisable(GL_DEPTH_TEST);
 }
 
-RenderResourceHandle OpenGLRenderer::create_fullscreen_rendering_quad()
+RenderResourceHandle create_fullscreen_rendering_quad()
 {
 	static const GLfloat fullscreen_quad_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -237,7 +265,7 @@ RenderResourceHandle OpenGLRenderer::create_fullscreen_rendering_quad()
 	return RenderResourceHandle(quad_vertexbuffer);
 }
 
-RenderResourceHandle OpenGLRenderer::load_rendered_worlds_combining_shader(Allocator& allocator)
+RenderResourceHandle load_rendered_worlds_combining_shader(Allocator& allocator)
 {
 	auto shader_source = file::load("rendered_world_combining.shader", allocator);
 	auto split_shader = shader_utils::split_shader(shader_source, allocator);
@@ -248,7 +276,7 @@ RenderResourceHandle OpenGLRenderer::load_rendered_worlds_combining_shader(Alloc
 	return RenderResourceHandle(shader_handle);
 }
 
-GLPixelFormat OpenGLRenderer::gl_pixel_format(image::PixelFormat pixel_format)
+GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
 {
 	GLPixelFormat gl_pixel_format;
 	memset(&gl_pixel_format, 0, sizeof(GLPixelFormat));
@@ -269,22 +297,22 @@ GLPixelFormat OpenGLRenderer::gl_pixel_format(image::PixelFormat pixel_format)
 	return gl_pixel_format;
 }
 	
-GLuint OpenGLRenderer::link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders)
+GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders)
 {
-    int i;
+	int i;
 	GLuint program;
 
-    program = glCreateProgram();
+	program = glCreateProgram();
 
-    for(i = 0; i < shader_count; i++)
-        glAttachShader(program, shaders[i]);
+	for(i = 0; i < shader_count; i++)
+		glAttachShader(program, shaders[i]);
 
-    glLinkProgram(program);
+	glLinkProgram(program);
 
 	GLint status;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
-    assert(status && "Failed linking shader program");
+	assert(status && "Failed linking shader program");
 
 	if(delete_shaders)
 	{
@@ -299,10 +327,10 @@ GLuint OpenGLRenderer::link_glsl_program(const GLuint* shaders, int shader_count
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
 	assert(validation_status && "Failed to validate program");
 	
-    return program;
+	return program;
 }
 
-GLuint OpenGLRenderer::load_shader_internal(const char* vertex_source, const char* fragment_source)
+GLuint load_shader_internal(const char* vertex_source, const char* fragment_source)
 {
 	GLuint vertex_shader = compile_glsl_shader(vertex_source, GL_VERTEX_SHADER);
 	GLuint fragment_shader = compile_glsl_shader(fragment_source, GL_FRAGMENT_SHADER);
@@ -327,7 +355,7 @@ GLuint OpenGLRenderer::load_shader_internal(const char* vertex_source, const cha
 	return program;
 }
 
-void OpenGLRenderer::draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
+void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection;
 		
@@ -384,4 +412,6 @@ void OpenGLRenderer::draw_drawable(const Matrix4& view_projection, const RenderD
 	glDisableVertexAttribArray(0);
 }
 
-}
+} // implementation
+
+} // namespace bowtie

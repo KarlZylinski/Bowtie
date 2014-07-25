@@ -15,6 +15,50 @@ namespace bowtie
 {
 
 ////////////////////////////////
+// Implementation fordward decl.
+
+namespace
+{
+
+
+#define CreateResourceFunc(arguments) std::function<RenderResourceHandle(arguments)>
+
+struct ResourceCreators
+{
+	ResourceCreators(const CreateResourceFunc(const DrawableResourceData&)& create_drawable,
+		const CreateResourceFunc(const GeometryResourceData&)& create_geometry,
+		const CreateResourceFunc(void)& create_render_target,
+		const CreateResourceFunc(const ShaderResourceData&)& create_shader,
+		const CreateResourceFunc(const TextureResourceData&)& create_texture,
+		const CreateResourceFunc(void)& create_world)
+			: create_drawable(create_drawable), create_geometry(create_geometry), create_render_target(create_render_target),
+			  create_shader(create_shader), create_texture(create_texture), create_world(create_world) {}
+
+	CreateResourceFunc(const DrawableResourceData&) create_drawable;
+	CreateResourceFunc(const GeometryResourceData&) create_geometry;
+	CreateResourceFunc(void) create_render_target;
+	CreateResourceFunc(const ShaderResourceData&) create_shader;
+	CreateResourceFunc(const TextureResourceData&) create_texture;
+	CreateResourceFunc(void) create_world;
+};
+
+RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
+RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
+RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets);
+RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCreators& resource_creators);
+RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
+RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data);
+RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
+void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
+void flip(RendererContext& context);
+void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
+void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
+void raise_fence(RenderFence& fence);
+void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view);
+
+}
+
+////////////////////////////////
 // Public interface.
 
 Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
@@ -43,7 +87,7 @@ Renderer::~Renderer()
 		case RenderResourceData::World:
 			MAKE_DELETE(_allocator, RenderWorld, (RenderWorld*)resource_object.handle.render_object);
 			break;
-		case RenderResourceData::Target:
+		case RenderResourceData::RenderTarget:
 			MAKE_DELETE(_allocator, RenderTarget, (RenderTarget*)resource_object.handle.render_object);
 			break;
 		default:
@@ -120,56 +164,6 @@ void Renderer::run(RendererContext* context, const Vector2u& resolution)
 ////////////////////////////////
 // Implementation.
 
-RenderResourceHandle Renderer::create_drawable(Allocator& allocator, const DrawableResourceData& drawable_data)
-{
-	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
-	drawable.texture = drawable_data.texture;
-	drawable.model = drawable_data.model;
-	drawable.shader = drawable_data.shader;
-	drawable.geometry = drawable_data.geometry;
-	drawable.num_vertices = drawable_data.num_vertices;
-	return RenderResourceHandle(&drawable);
-}
-
-RenderResourceHandle Renderer::create_resource(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data,
-	const RenderResourceData& render_resource, Array<RenderTarget*>& render_targets, const RenderResourceLookupTable& resource_lut)
-{
-	switch(render_resource.type)
-	{
-	case RenderResourceData::Shader:
-		return concrete_renderer.load_shader(*(ShaderResourceData*)render_resource.data, dynamic_data); break;
-	case RenderResourceData::Texture:
-		return concrete_renderer.load_texture(*(TextureResourceData*)render_resource.data, dynamic_data); break;
-	case RenderResourceData::Drawable:
-		{
-			const auto& data = *(DrawableResourceData*)render_resource.data;
-			auto handle = create_drawable(allocator, data);			
-			auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
-			rw.add_drawable(handle);
-			return handle;
-		}
-		break;
-	case RenderResourceData::World:
-		return create_world(allocator, concrete_renderer); break;
-	case RenderResourceData::Geometry:
-		return concrete_renderer.load_geometry(*(GeometryResourceData*)render_resource.data, dynamic_data); break;
-	case RenderResourceData::Target:
-		{
-			auto render_target = concrete_renderer.create_render_target();
-			array::push_back(render_targets, render_target);
-			return RenderResourceHandle(render_target);
-		}
-		break;
-	default:
-		assert(!"Unknown render resource type"); return RenderResourceHandle();
-	}
-}
-
-RenderResourceHandle Renderer::create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
-{
-	return RenderResourceHandle(MAKE_NEW(allocator, RenderWorld, allocator, *concrete_renderer.create_render_target()));
-}
-
 void Renderer::consume_command_queue()
 {
 	move_unprocessed_commands(_command_queue, _unprocessed_commands, _unprocessed_commands_mutex);
@@ -182,25 +176,29 @@ void Renderer::consume_command_queue()
 	array::clear(_command_queue);
 }
 
-void Renderer::consume_create_resource(void* dynamic_data, const RenderResourceData& render_resource)
+void Renderer::consume_create_resource(void* dynamic_data, const RenderResourceData& data)
 {
-	auto handle = create_resource(_allocator, _concrete_renderer, dynamic_data, render_resource, _render_targets, _resource_lut);
+	ResourceCreators resource_creators(
+		std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
+		std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+		std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
+		std::bind(&create_shader, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+		std::bind(&create_texture, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+		std::bind(&create_world, std::ref(_allocator), std::ref(_concrete_renderer))
+	);
+
+	auto handle = create_resource(data, resource_creators);
 	assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
 						
 	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
-	_resource_lut.set(render_resource.handle, handle);
+	_resource_lut.set(data.handle, handle);
 
 	// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 	if (handle.type == RenderResourceHandle::Object)
-		array::push_back(_resource_objects, RendererResourceObject(render_resource.type, handle));
+		array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
 	
 	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-	array::push_back(_processed_memory, render_resource.data);
-}
-
-void Renderer::drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data)
-{
-	drawable.model = data.model;
+	array::push_back(_processed_memory, data.data);
 }
 
 void Renderer::execute_command(const RendererCommand& command)
@@ -255,37 +253,6 @@ void Renderer::execute_command(const RendererCommand& command)
 	}
 }
 
-void Renderer::flip(RendererContext& context)
-{
-	context.flip();
-}
-
-void Renderer::move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex)
-{
-	std::lock_guard<std::mutex> queue_lock(processed_memory_mutex);
-
-	for (unsigned i = 0; i < array::size(command_queue); ++i) {
-		const auto& command = command_queue[i];
-		auto dont_free = command.type == RendererCommand::Fence;
-
-		if (dont_free)
-			continue;
-
-		array::push_back(processed_memory, command.data);
-		array::push_back(processed_memory, command.dynamic_data);
-	}
-}
-
-void Renderer::move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex)
-{
-	std::lock_guard<std::mutex> queue_lock(unprocessed_commands_mutex);
-
-	for(unsigned i = 0; i < array::size(unprocessed_commands); ++i)
-		array::push_back(command_queue, unprocessed_commands[i]);		
-		
-	array::clear(unprocessed_commands);
-}
-
 void Renderer::notify_unprocessed_commands_consumed()
 {
 	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
@@ -297,21 +264,6 @@ void Renderer::notify_unprocessed_commands_exists()
 	std::lock_guard<std::mutex>	unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
 	_unprocessed_commands_exists = true;
 	_wait_for_unprocessed_commands_to_exist.notify_all();
-}
-
-void Renderer::raise_fence(RenderFence& fence)
-{
-	std::lock_guard<std::mutex> fence_lock(fence.mutex);
-	fence.processed = true;
-	fence.fence_processed.notify_all();
-}
-
-void Renderer::render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
-{
-	concrete_renderer.set_render_target(render_world.render_target());
-	concrete_renderer.clear();
-	concrete_renderer.draw(view, render_world);
-	array::push_back(rendered_worlds, &render_world);
 }
 
 void Renderer::thread()
@@ -333,4 +285,115 @@ void Renderer::wait_for_unprocessed_commands_to_exist()
 	_wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return _unprocessed_commands_exists;});
 }
 
+namespace
+{
+
+RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data)
+{
+	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
+	drawable.texture = data.texture;
+	drawable.model = data.model;
+	drawable.shader = data.shader;
+	drawable.geometry = data.geometry;
+	drawable.num_vertices = data.num_vertices;
+	auto handle = RenderResourceHandle(&drawable);
+	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
+	rw.add_drawable(handle);
+	return handle;
 }
+
+RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
+{
+	return concrete_renderer.load_geometry(data, dynamic_data);
+}
+
+RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets)
+{
+	auto render_target = concrete_renderer.create_render_target();
+	array::push_back(render_targets, render_target);
+	return RenderResourceHandle(render_target);
+}
+
+RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCreators& resource_creators)
+{
+	switch(data.type)
+	{
+		case RenderResourceData::Drawable: return resource_creators.create_drawable(*(DrawableResourceData*)data.data);
+		case RenderResourceData::Geometry: return resource_creators.create_geometry(*(GeometryResourceData*)data.data);
+		case RenderResourceData::RenderTarget: return resource_creators.create_render_target();
+		case RenderResourceData::Shader: return resource_creators.create_shader(*(ShaderResourceData*)data.data);
+		case RenderResourceData::Texture: return resource_creators.create_texture(*(TextureResourceData*)data.data);
+		case RenderResourceData::World: return resource_creators.create_world();
+		default: assert(!"Unknown render resource type"); return RenderResourceHandle();
+	}
+}
+
+RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
+{
+	return concrete_renderer.load_shader(data, dynamic_data);
+}
+
+RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data)
+{
+	return concrete_renderer.load_texture(data, dynamic_data);
+}
+
+RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
+{
+	return RenderResourceHandle(MAKE_NEW(allocator, RenderWorld, allocator, *concrete_renderer.create_render_target()));
+}
+
+void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data)
+{
+	drawable.model = data.model;
+}
+
+void flip(RendererContext& context)
+{
+	context.flip();
+}
+
+void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex)
+{
+	std::lock_guard<std::mutex> queue_lock(processed_memory_mutex);
+
+	for (unsigned i = 0; i < array::size(command_queue); ++i) {
+		const auto& command = command_queue[i];
+		auto dont_free = command.type == RendererCommand::Fence;
+
+		if (dont_free)
+			continue;
+
+		array::push_back(processed_memory, command.data);
+		array::push_back(processed_memory, command.dynamic_data);
+	}
+}
+
+void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex)
+{
+	std::lock_guard<std::mutex> queue_lock(unprocessed_commands_mutex);
+
+	for(unsigned i = 0; i < array::size(unprocessed_commands); ++i)
+		array::push_back(command_queue, unprocessed_commands[i]);		
+		
+	array::clear(unprocessed_commands);
+}
+
+void raise_fence(RenderFence& fence)
+{
+	std::lock_guard<std::mutex> fence_lock(fence.mutex);
+	fence.processed = true;
+	fence.fence_processed.notify_all();
+}
+
+void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
+{
+	concrete_renderer.set_render_target(render_world.render_target());
+	concrete_renderer.clear();
+	concrete_renderer.draw(view, render_world);
+	array::push_back(rendered_worlds, &render_world);
+}
+
+} // implementation
+
+} // namespace bowtie

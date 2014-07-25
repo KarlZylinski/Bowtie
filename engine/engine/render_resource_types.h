@@ -12,7 +12,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Shader, Texture, Drawable, World, Geometry, Target
+		Drawable, Geometry, RenderTarget, Shader, Texture, World
 	};
 
 	Type type;

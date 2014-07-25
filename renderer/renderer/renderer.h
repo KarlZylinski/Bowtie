@@ -49,20 +49,11 @@ public:
 	void run(RendererContext* context, const Vector2u& resolution);
 	
 private:
-	static RenderResourceHandle create_drawable(Allocator& allocator, const DrawableResourceData& drawable_data);
-	static RenderResourceHandle create_resource(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceData& render_resource, Array<RenderTarget*>& render_targets, const RenderResourceLookupTable& resource_lut);
-	static RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
 	void consume_command_queue();
 	void consume_create_resource(void* dynamic_data, const RenderResourceData& render_resource);
-	static void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
 	void execute_command(const RendererCommand& command);
-	static void flip(RendererContext& context);
-	static void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
-	static void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
 	void notify_unprocessed_commands_consumed();
 	void notify_unprocessed_commands_exists();
-	static void raise_fence(RenderFence& fence);
-	static void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view);
 	void thread();
 	void wait_for_unprocessed_commands_to_exist();
 
