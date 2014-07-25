@@ -196,7 +196,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
 			
-			ResourceCreators resource_creators(
+			static ResourceCreators resource_creators(
 				std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
 				std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
 				std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
@@ -226,17 +226,20 @@ void Renderer::execute_command(const RendererCommand& command)
 			_concrete_renderer.resize(data.resolution, _render_targets);
 		}
 		break;
+
 	case RendererCommand::DrawableStateReflection:
 		{
 			const auto& data = *(DrawableStateReflectionData*)command.data;
 			drawable_state_reflection(*(RenderDrawable*)_resource_lut.lookup(data.drawble).render_object, data);
 		}
 		break;
+
 	case RendererCommand::DrawableGeometryReflection:
 		{
 			_concrete_renderer.update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
 		}
 		break;
+
 	case RendererCommand::CombineRenderedWorlds:
 		{
 			_concrete_renderer.combine_rendered_worlds(_rendered_worlds);
@@ -244,6 +247,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			flip(*_context);
 		}
 		break;
+
 	default:
 		assert(!"Command not implemented!");
 		break;
