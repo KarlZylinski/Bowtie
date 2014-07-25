@@ -113,7 +113,7 @@ void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 	auto& drawables = render_world.drawables();
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)
-		draw_drawable(view_projection, *(RenderDrawable*)drawables[i].render_object, _resource_lut);
+		draw_drawable(view_projection, *drawables[i], _resource_lut);
 }
 
 void OpenGLRenderer::initialize_thread()

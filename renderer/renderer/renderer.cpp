@@ -196,7 +196,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
 			
-			static ResourceCreators resource_creators(
+			ResourceCreators resource_creators(
 				std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
 				std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
 				std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
@@ -297,10 +297,9 @@ RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceL
 	drawable.shader = data.shader;
 	drawable.geometry = data.geometry;
 	drawable.num_vertices = data.num_vertices;
-	auto handle = RenderResourceHandle(&drawable);
 	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
-	rw.add_drawable(handle);
-	return handle;
+	rw.add_drawable(&drawable);
+	return RenderResourceHandle(&drawable);
 }
 
 RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)

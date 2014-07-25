@@ -16,12 +16,12 @@ RenderWorld::~RenderWorld()
 	MAKE_DELETE(_allocator, RenderTarget, &_render_target);
 }
 
-void RenderWorld::add_drawable(RenderResourceHandle drawable)
+void RenderWorld::add_drawable(RenderDrawable* drawable)
 {
 	array::push_back(_drawables, drawable);
 }
 
-void RenderWorld::remove_drawable(RenderResourceHandle )
+void RenderWorld::remove_drawable(RenderDrawable* )
 {
 
 }
@@ -36,7 +36,7 @@ RenderTarget& RenderWorld::render_target()
 	return _render_target;
 }
 
-const Array<RenderResourceHandle>& RenderWorld::drawables() const
+const Array<RenderDrawable*>& RenderWorld::drawables() const
 {
 	return _drawables;
 }
