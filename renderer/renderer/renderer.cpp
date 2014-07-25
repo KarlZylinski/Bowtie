@@ -176,31 +176,6 @@ void Renderer::consume_command_queue()
 	array::clear(_command_queue);
 }
 
-void Renderer::consume_create_resource(void* dynamic_data, const RenderResourceData& data)
-{
-	ResourceCreators resource_creators(
-		std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
-		std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
-		std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
-		std::bind(&create_shader, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
-		std::bind(&create_texture, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
-		std::bind(&create_world, std::ref(_allocator), std::ref(_concrete_renderer))
-	);
-
-	auto handle = create_resource(data, resource_creators);
-	assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
-						
-	// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
-	_resource_lut.set(data.handle, handle);
-
-	// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-	if (handle.type == RenderResourceHandle::Object)
-		array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
-	
-	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-	array::push_back(_processed_memory, data.data);
-}
-
 void Renderer::execute_command(const RendererCommand& command)
 {
 	switch(command.type)
@@ -219,7 +194,29 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::LoadResource:
 		{
 			RenderResourceData& data = *(RenderResourceData*)command.data;
-			consume_create_resource(command.dynamic_data, data);
+			void* dynamic_data = command.dynamic_data;
+			
+			ResourceCreators resource_creators(
+				std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
+				std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+				std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
+				std::bind(&create_shader, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+				std::bind(&create_texture, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+				std::bind(&create_world, std::ref(_allocator), std::ref(_concrete_renderer))
+			);
+
+			auto handle = create_resource(data, resource_creators);
+			assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
+
+			// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
+			_resource_lut.set(data.handle, handle);
+
+			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+			if (handle.type == RenderResourceHandle::Object)
+				array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
+	
+			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
+			array::push_back(_processed_memory, data.data);
 		}
 		break;
 

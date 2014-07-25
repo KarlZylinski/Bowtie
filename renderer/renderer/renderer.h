@@ -50,7 +50,6 @@ public:
 	
 private:
 	void consume_command_queue();
-	void consume_create_resource(void* dynamic_data, const RenderResourceData& render_resource);
 	void execute_command(const RendererCommand& command);
 	void notify_unprocessed_commands_consumed();
 	void notify_unprocessed_commands_exists();
