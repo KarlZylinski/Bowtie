@@ -22,17 +22,16 @@ public:
 	Keyboard();
 	static Keyboard from_previous_frame(const Keyboard& previous);
 	static keyboard::Key key_from_string(const char* key_str);
-
-	void set_key_pressed(keyboard::Key key);
-	void set_key_released(keyboard::Key key);
+	bool key_held(keyboard::Key key) const;
 	bool key_pressed(keyboard::Key key) const;
 	bool key_released(keyboard::Key key) const;
-	bool key_held(keyboard::Key key) const;
+	void set_key_pressed(keyboard::Key key);
+	void set_key_released(keyboard::Key key);
 
 private:
+	bool _keys_held[num_keys];
 	bool _keys_pressed[num_keys];
 	bool _keys_released[num_keys];
-	bool _keys_held[num_keys];
 };
 
 }

@@ -4,10 +4,10 @@
 #include <engine/resource_manager.h>
 #include <foundation/array.h>
 #include <foundation/temp_allocator.h>
-#include <renderer/renderer.h>
 #include <opengl_renderer/opengl_context_windows.h>
 #include <opengl_renderer/opengl_renderer.h>
 #include <os/windows/window.h>
+#include <renderer/renderer.h>
 
 using namespace bowtie;
 

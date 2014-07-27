@@ -10,16 +10,16 @@ struct Texture;
 class Font
 {
 public:
-	Font(const Texture& texture, unsigned columns, unsigned rows);
-
-	const Texture& texture() const;
+	Font(unsigned columns, unsigned rows, const Texture& texture);
+	
 	Vector2u char_size() const;
 	Rect char_uv(char c) const;
+	const Texture& texture() const;
 
 private:
-	const Texture& _texture;
 	unsigned _columns;
 	unsigned _rows;
+	const Texture& _texture;
 
 	Font(const Font&);
 	Font& operator=(const Font&);

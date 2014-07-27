@@ -141,7 +141,7 @@ Font& ResourceManager::load_font(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	auto font = _allocator.construct<Font>(const_cast<const Texture&>(load_texture(filename)), 32, 4);
+	auto font = _allocator.construct<Font>(32, 4, const_cast<const Texture&>(load_texture(filename)));
 	add_resource(name, resource_type::Font, ResourceHandle(font));
 	return *font;
 }

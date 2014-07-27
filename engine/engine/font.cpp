@@ -4,13 +4,8 @@
 namespace bowtie
 {
 
-Font::Font(const Texture& texture, unsigned columns, unsigned rows) : _texture(texture), _columns(columns), _rows(rows)
+Font::Font(unsigned columns, unsigned rows, const Texture& texture) : _columns(columns), _rows(rows), _texture(texture)
 {
-}
-
-const Texture& Font::texture() const
-{
-	return _texture;
 }
 
 Vector2u Font::char_size() const
@@ -29,6 +24,11 @@ Rect Font::char_uv(char c) const
 	auto char_uv_max = char_uv_min + Vector2(char_size.x / (float)_texture.resolution.x, char_size.y / (float)_texture.resolution.y);
 
 	return Rect(char_uv_min, char_uv_max);
+}
+
+const Texture& Font::texture() const
+{
+	return _texture;
 }
 
 }

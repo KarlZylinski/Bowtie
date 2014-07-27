@@ -20,22 +20,22 @@ class Engine
 public:
 	Engine(Allocator& allocator, RenderInterface& render_interface);
 	~Engine();
-	void update();
-	void resize(const Vector2u& resolution);
-	RenderInterface& render_interface();
 	World* create_world();
 	void destroy_world(World& world);
+	const Keyboard& keyboard() const;
 	void key_pressed(keyboard::Key key);
 	void key_released(keyboard::Key key);
-	const Keyboard& keyboard() const;
+	RenderInterface& render_interface();
 	ResourceManager& resource_manager();
+	void resize(const Vector2u& resolution);
+	void update();
 
 private:
 	Allocator& _allocator;
 	Keyboard _keyboard;
-	RenderInterface& _render_interface;
-	ResourceManager _resource_manager;
 	Game _game;
+	ResourceManager _resource_manager;
+	RenderInterface& _render_interface;
 
 	float _time_elapsed_previous_frame;
 	float _time_since_start;

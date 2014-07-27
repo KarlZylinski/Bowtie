@@ -17,8 +17,8 @@
 namespace bowtie
 {
 
-Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface),
-	_resource_manager(allocator, render_interface), _game(allocator, *this)
+Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this), _render_interface(render_interface),
+	_resource_manager(allocator, render_interface)
 {
 	timer::start();
 }
@@ -27,6 +27,48 @@ Engine::~Engine()
 {
 	if (_game.initialized())
 		_game.deinit();
+}
+
+World* Engine::create_world()
+{
+	auto world = _allocator.construct<World>(_allocator, _render_interface, _resource_manager);
+	_render_interface.create_render_world(*world);
+	return world;
+}
+
+void Engine::destroy_world(World& world)
+{
+	_allocator.destroy(&world);
+}
+
+const Keyboard& Engine::keyboard() const
+{
+	return _keyboard;
+}
+
+void Engine::key_pressed(keyboard::Key key)
+{
+	_keyboard.set_key_pressed(key);
+}
+
+void Engine::key_released(keyboard::Key key)
+{
+	_keyboard.set_key_released(key);
+}
+
+RenderInterface& Engine::render_interface()
+{
+	return _render_interface;
+}
+
+void Engine::resize(const Vector2u& resolution)
+{
+	_render_interface.resize(resolution);
+}
+
+ResourceManager& Engine::resource_manager()
+{
+	return _resource_manager;
 }
 
 void Engine::update()
@@ -52,48 +94,6 @@ void Engine::update()
 	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
 
 	_keyboard = Keyboard::from_previous_frame(_keyboard);
-}
-
-void Engine::resize(const Vector2u& resolution)
-{
-	_render_interface.resize(resolution);
-}
-
-RenderInterface& Engine::render_interface()
-{
-	return _render_interface;
-}
-
-World* Engine::create_world()
-{
-	auto world = _allocator.construct<World>(_allocator, _render_interface, _resource_manager);
-	_render_interface.create_render_world(*world);
-	return world;
-}
-
-void Engine::destroy_world(World& world)
-{
-	_allocator.destroy(&world);
-}
-
-void Engine::key_pressed(keyboard::Key key)
-{
-	_keyboard.set_key_pressed(key);
-}
-
-void Engine::key_released(keyboard::Key key)
-{
-	_keyboard.set_key_released(key);
-}
-
-const Keyboard& Engine::keyboard() const
-{
-	return _keyboard;
-}
-
-ResourceManager& Engine::resource_manager()
-{
-	return _resource_manager;
 }
 
 }

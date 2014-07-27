@@ -158,7 +158,7 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 			break;
 		case RenderResourceData::Drawable:
 			copied_resource->data = _allocator.allocate(sizeof(DrawableResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(DrawableResourceData));			
+			memcpy(copied_resource->data, resource.data, sizeof(DrawableResourceData));
 			break;
 		case RenderResourceData::Geometry:
 			copied_resource->data = _allocator.allocate(sizeof(GeometryResourceData));

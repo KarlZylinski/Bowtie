@@ -48,6 +48,21 @@ keyboard::Key Keyboard::key_from_string(const char* key_str)
 	return keyboard::Up;
 }
 
+bool Keyboard::key_held(keyboard::Key key) const
+{
+	return _keys_held[key];
+}
+
+bool Keyboard::key_pressed(keyboard::Key key) const
+{
+	return _keys_pressed[key];
+}
+
+bool Keyboard::key_released(keyboard::Key key) const
+{
+	return _keys_released[key];
+}
+
 void Keyboard::set_key_pressed(keyboard::Key key)
 {
 	if (_keys_held[key] == true)
@@ -62,21 +77,5 @@ void Keyboard::set_key_released(keyboard::Key key)
 	_keys_released[key] = true;
     _keys_held[key] = false;
 }
-
-bool Keyboard::key_pressed(keyboard::Key key) const
-{
-	return _keys_pressed[key];
-}
-
-bool Keyboard::key_released(keyboard::Key key) const
-{
-	return _keys_released[key];
-}
-
-bool Keyboard::key_held(keyboard::Key key) const
-{
-	return _keys_held[key];
-}
-
 
 } // namespace bowtie
