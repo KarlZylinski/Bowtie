@@ -13,6 +13,7 @@
 #include "resource_manager.h"
 #include "texture.h"
 #include "world.h"
+#include "idrawable_geometry.h"
 
 namespace bowtie
 {
@@ -55,13 +56,13 @@ ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
 {
 	assert(drawable.render_handle().type == ResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
-	assert(drawable.texture() != nullptr);
+	assert(drawable.geometry().texture() != nullptr);
 
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
 
 	DrawableResourceData drawable_resource_data;
 
-	auto texture = drawable.texture();
+	auto texture = drawable.geometry().texture();
 	
 	if (texture != nullptr)
 		drawable_resource_data.texture = texture->render_handle;
@@ -70,24 +71,24 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	drawable_resource_data.model = drawable.model_matrix();
 	drawable_resource_data.shader = get_shader_or_default(resource_manager, drawable);
 
-	auto geometry = drawable.geometry();
+	auto geometry_handle = drawable.geometry_handle();
 
-	if (geometry.type == ResourceHandle::NotInitialized)
+	if (geometry_handle.type == ResourceHandle::NotInitialized)
 	{
 		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
 		GeometryResourceData geometry_data;
-		geometry_data.size = drawable.geometry_size();
+		geometry_data.size = drawable.geometry().size();
 		geometry_rrd.data = &geometry_data;
 		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
-		memcpy(geometry_dynamic_data, drawable.geometry_data(), geometry_data.size);
+		memcpy(geometry_dynamic_data, drawable.geometry().data(), geometry_data.size);
 		create_resource(geometry_rrd, (void*)geometry_dynamic_data, geometry_data.size);
 		drawable_resource_data.geometry = geometry_rrd.handle;
-		drawable.set_geometry(geometry_rrd.handle);
+		drawable.set_geometry_handle(geometry_rrd.handle);
 	}
 	else
-		drawable_resource_data.geometry = geometry;
+		drawable_resource_data.geometry = geometry_handle;
 
-	drawable_resource_data.num_vertices = drawable.geometry_size() / (sizeof(float) * 5);
+	drawable_resource_data.num_vertices = drawable.geometry().size() / (sizeof(float) * 5);
 
 	drawable_rrd.data = &drawable_resource_data;
 
@@ -185,7 +186,7 @@ void RenderInterface::deallocate_processed_commands(Allocator& allocator)
 RenderFence& RenderInterface::create_fence()
 {
 	auto fence_command = create_command(RendererCommand::Fence);
-	fence_command.data = MAKE_NEW(_allocator, RenderFence);
+	fence_command.data = _allocator.construct<RenderFence>();
 	dispatch(fence_command);	
 	return *(RenderFence*)fence_command.data;
 }
@@ -196,7 +197,7 @@ void RenderInterface::wait_for_fence(RenderFence& fence)
 		std::unique_lock<std::mutex> lock(fence.mutex);
 		fence.fence_processed.wait(lock, [&fence] { return fence.processed; });
 	}
-	MAKE_DELETE(_allocator, RenderFence, &fence);
+	_allocator.destroy(&fence);
 }
 
 void RenderInterface::resize(const Vector2u& resolution)

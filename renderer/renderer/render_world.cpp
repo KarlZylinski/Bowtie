@@ -13,7 +13,7 @@ RenderWorld::RenderWorld(Allocator& allocator, RenderTarget& render_target) : _a
 
 RenderWorld::~RenderWorld()
 {
-	MAKE_DELETE(_allocator, RenderTarget, &_render_target);
+	_allocator.destroy(&_render_target);
 }
 
 void RenderWorld::add_drawable(RenderDrawable* drawable)

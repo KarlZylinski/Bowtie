@@ -85,10 +85,10 @@ Renderer::~Renderer()
 		switch (resource_object.type)
 		{
 		case RenderResourceData::World:
-			MAKE_DELETE(_allocator, RenderWorld, (RenderWorld*)resource_object.handle.render_object);
+			_allocator.destroy((RenderWorld*)resource_object.handle.render_object);
 			break;
 		case RenderResourceData::RenderTarget:
-			MAKE_DELETE(_allocator, RenderTarget, (RenderTarget*)resource_object.handle.render_object);
+			_allocator.destroy((RenderTarget*)resource_object.handle.render_object);
 			break;
 		default:
 			_allocator.deallocate(resource_object.handle.render_object);
@@ -340,7 +340,7 @@ RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* 
 
 RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
 {
-	return RenderResourceHandle(MAKE_NEW(allocator, RenderWorld, allocator, *concrete_renderer.create_render_target()));
+	return RenderResourceHandle(allocator.construct<RenderWorld>(allocator, *concrete_renderer.create_render_target()));
 }
 
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data)

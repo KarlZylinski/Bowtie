@@ -23,6 +23,7 @@
     <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\font.h" />
+    <ClInclude Include="engine\idrawable_geometry.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\irenderer.h" />
     <ClInclude Include="engine\keyboard.h" />
@@ -36,8 +37,8 @@
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\resource_type.h" />
     <ClInclude Include="engine\shader_utils.h" />
-    <ClInclude Include="engine\sprite.h" />
-    <ClInclude Include="engine\text.h" />
+    <ClInclude Include="engine\sprite_geometry.h" />
+    <ClInclude Include="engine\text_geometry.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\view.h" />
@@ -54,8 +55,8 @@
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
-    <ClCompile Include="engine\sprite.cpp" />
-    <ClCompile Include="engine\text.cpp" />
+    <ClCompile Include="engine\sprite_geometry.cpp" />
+    <ClCompile Include="engine\text_geometry.cpp" />
     <ClCompile Include="engine\texture.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />

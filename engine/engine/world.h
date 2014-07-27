@@ -20,9 +20,9 @@ public:
 	~World();
 
 	void set_render_handle(ResourceHandle render_handle);
-	Sprite* spawn_sprite(const char* name);
-	void despawn_sprite(Sprite* sprite);
-	Text* spawn_text(const Font& font, const char* text);
+	Drawable* spawn_sprite(const char* name);
+	void despawn_sprite(Drawable* sprite);
+	Drawable* spawn_text(const Font& font, const char* text);
 	void update();
 	void draw(const View& view);
 	ResourceHandle render_handle();

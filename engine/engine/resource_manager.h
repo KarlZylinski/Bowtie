@@ -58,7 +58,7 @@ private:
 
 	ResourceHandle load_shader(const char* filename);
 	Image& load_image(const char* filename);
-	Sprite& load_sprite_prototype(const char* filename);
+	Drawable& load_sprite_prototype(const char* filename);
 	Texture& load_texture(const char* filename);
 	Font& load_font(const char* filename);
 

@@ -14,7 +14,12 @@ namespace bowtie
 			z += other.z;
 			w += other.w;
 		}
-						
+
+		inline bool operator==(const Vector4& other)
+		{
+			return x == other.x && y == other.y && z == other.z && w == other.w;
+		}
+		
 		union { float x, r; };
 		union { float y, g; };
 		union { float z, b; };

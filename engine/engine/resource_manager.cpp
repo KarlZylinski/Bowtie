@@ -9,18 +9,19 @@
 #include <foundation/temp_allocator.h>
 #include <resource_path.h>
 
+#include "drawable.h"
 #include "font.h"
-#include "render_interface.h"
 #include "png.h"
-#include "sprite.h"
-#include "texture.h"
+#include "render_interface.h"
 #include "shader_utils.h"
+#include "sprite_geometry.h"
+#include "texture.h"
 
 namespace bowtie
 {
 
 
-const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font" };
+const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font", "drawable" };
 
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
 {
@@ -36,10 +37,10 @@ ResourceManager::~ResourceManager()
 		auto obj = resource_iter->value.object;
 		switch(resource_iter->value.object_type)
 		{
-			case resource_type::Image: MAKE_DELETE(_allocator, Image, (Image*)obj); break;
-			case resource_type::Sprite: MAKE_DELETE(_allocator, Sprite, (Sprite*)obj); break;
-			case resource_type::Texture: MAKE_DELETE(_allocator, Texture, (Texture*)obj); break;
-			case resource_type::Font: MAKE_DELETE(_allocator, Font, (Font*)obj); break;
+			case resource_type::Image: _allocator.destroy((Image*)obj); break;
+			case resource_type::Drawable: _allocator.destroy((Drawable*)obj); break;
+			case resource_type::Texture: _allocator.destroy((Texture*)obj); break;
+			case resource_type::Font: _allocator.destroy((Font*)obj); break;
 			default: assert(!"Some resource type isn't freed properly."); break;
 		}
 	}
@@ -108,7 +109,7 @@ Image& ResourceManager::load_image(const char* filename)
 
 	UncompressedTexture tex = png::load(filename, _allocator);
 	
-	auto image = MAKE_NEW(_allocator, Image);
+	auto image = _allocator.construct<Image>();
 	image->resolution = Vector2u(tex.width, tex.height);
 	image->data = tex.data;
 	image->data_size = tex.data_size;
@@ -127,7 +128,7 @@ Texture& ResourceManager::load_texture(const char* filename)
 		return *existing;
 
 	auto& image = load_image(filename);
-	auto texture = MAKE_NEW(_allocator, Texture, &image);
+	auto texture = _allocator.construct<Texture>(&image);
 	_render_interface.create_texture(*texture);
 	add_resource(name, resource_type::Texture, ResourceHandle(texture));
 	return *texture;	
@@ -140,21 +141,22 @@ Font& ResourceManager::load_font(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	auto font = MAKE_NEW(_allocator, Font, const_cast<const Texture&>(load_texture(filename)), 32, 4);
+	auto font = _allocator.construct<Font>(const_cast<const Texture&>(load_texture(filename)), 32, 4);
 	add_resource(name, resource_type::Font, ResourceHandle(font));
 	return *font;
 }
 
-Sprite& ResourceManager::load_sprite_prototype(const char* filename)
+Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get<Sprite>(resource_type::Sprite, name);
+	auto existing = get<Drawable>(resource_type::Drawable, name);
 	if (existing != nullptr)
 		return *existing;
 
-	auto sprite = MAKE_NEW(_allocator, Sprite, load_texture(filename));
-	add_resource(name, resource_type::Sprite, ResourceHandle(sprite));
-	return *sprite;
+	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(filename));
+	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry);
+	add_resource(name, resource_type::Drawable, ResourceHandle(drawable));
+	return *drawable;
 }
 
 uint64_t ResourceManager::get_name(uint64_t name, ResourceType type)

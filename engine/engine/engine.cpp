@@ -66,14 +66,14 @@ RenderInterface& Engine::render_interface()
 
 World* Engine::create_world()
 {
-	auto world = MAKE_NEW(_allocator, World, _allocator, _render_interface, _resource_manager);
+	auto world = _allocator.construct<World>(_allocator, _render_interface, _resource_manager);
 	_render_interface.create_render_world(*world);
 	return world;
 }
 
 void Engine::destroy_world(World& world)
 {
-	MAKE_DELETE(_allocator, World, &world);
+	_allocator.destroy(&world);
 }
 
 void Engine::key_pressed(keyboard::Key key)

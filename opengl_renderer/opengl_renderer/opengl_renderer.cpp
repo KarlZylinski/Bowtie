@@ -228,7 +228,7 @@ RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u
 	GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, draw_buffers);
 
-	return MAKE_NEW(allocator, RenderTarget, RenderResourceHandle(texture_id), RenderResourceHandle(fb));
+	return allocator.construct<RenderTarget>(RenderResourceHandle(texture_id), RenderResourceHandle(fb));
 }
 
 void initialize_gl()

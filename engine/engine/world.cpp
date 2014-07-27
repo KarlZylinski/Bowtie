@@ -1,13 +1,12 @@
 #include "world.h"
 
 #include <cassert>
-
 #include <foundation/array.h>
-
+#include "drawable.h"
 #include "render_interface.h"
 #include "resource_manager.h"
-#include "sprite.h"
-#include "text.h"
+#include "sprite_geometry.h"
+#include "text_geometry.h"
 
 namespace bowtie
 {
@@ -20,7 +19,7 @@ World::World(Allocator& allocator, RenderInterface& render_interface, ResourceMa
 World::~World()
 {
 	for (unsigned i = 0; i < array::size(_drawables); ++i)
-		MAKE_DELETE(_allocator, Drawable, _drawables[i]);
+		_allocator.destroy(_drawables[i]);
 }
 
 void World::set_render_handle(ResourceHandle render_handle)
@@ -30,19 +29,17 @@ void World::set_render_handle(ResourceHandle render_handle)
 	_render_handle = render_handle;
 }
 
-Sprite* World::spawn_sprite(const char* sprite_name)
+Drawable* World::spawn_sprite(const char* sprite_name)
 {
-	auto sprite_prototype = _resource_manager.get<Sprite>(resource_type::Sprite, sprite_name);
-
-	auto sprite = MAKE_NEW(_allocator, Sprite, *sprite_prototype);
-
-	array::push_back(_drawables, (Drawable*)sprite);
+	auto sprite_prototype = _resource_manager.get<Drawable>(resource_type::Drawable, sprite_name);
+	auto sprite = _allocator.construct<Drawable>(*sprite_prototype);
+	array::push_back(_drawables, sprite);
 	_render_interface.spawn(*this, *sprite, _resource_manager);
 
 	return sprite;
 }
 
-void World::despawn_sprite(Sprite* )
+void World::despawn_sprite(Drawable* )
 {
 
 }
@@ -77,12 +74,12 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 		
 	auto& sgr = *(DrawableGeometryReflectionData*)allocator.allocate(sizeof(DrawableGeometryReflectionData));
 	sgr.drawable = drawable.render_handle();
-	sgr.size = drawable.geometry_size();
+	sgr.size = drawable.geometry().size();
 	
 	geometry_changed_command.data = &sgr;
 	geometry_changed_command.dynamic_data_size = sgr.size;
 	geometry_changed_command.dynamic_data = allocator.allocate(sgr.size);
-	memcpy(geometry_changed_command.dynamic_data, drawable.geometry_data(), sgr.size);
+	memcpy(geometry_changed_command.dynamic_data, drawable.geometry().data(), sgr.size);
 
 	drawable.reset_geometry_changed();
 
@@ -115,10 +112,11 @@ void World::draw(const View& view)
 	_render_interface.dispatch(render_world_command);
 }
 
-Text* World::spawn_text(const Font& font, const char* text_str)
+Drawable* World::spawn_text(const Font& font, const char* text_str)
 {
-	auto text = MAKE_NEW(_allocator, Text, font, _allocator);
-	text->set_text(text_str);
+	auto text_geometry = _allocator.construct<TextGeometry>(font, _allocator);
+	text_geometry->set_text(text_str);
+	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry);
 	array::push_back(_drawables, (Drawable*)text);
 	_render_interface.spawn(*this, *text, _resource_manager);
 	return text;

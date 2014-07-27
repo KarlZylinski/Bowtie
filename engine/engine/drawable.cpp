@@ -1,64 +1,49 @@
 #include "drawable.h"
+#include <foundation/memory.h>
+#include "idrawable_geometry.h"
 
 namespace bowtie
 {
 
-Drawable::Drawable() : _color(1,1,1,1)
+////////////////////////////////
+// Public interface.
+
+Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry) : _allocator(allocator), _geometry(geometry), _render_state_changed(false)
+{
+}
+
+Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _geometry(other._geometry.clone(_allocator)), _render_state_changed(false), _position(other._position)
 {
 }
 
 Drawable::~Drawable()
 {
+	_allocator.destroy(&_geometry);
 }
 
-void Drawable::set_render_handle(ResourceHandle handle)
+const Color& Drawable::color() const
 {
-	assert(_render_handle.type == ResourceHandle::NotInitialized && "Trying to reset already initliaized drawable render handle.");
-
-	_render_handle = handle;
+	return _geometry.color();
 }
 
-ResourceHandle Drawable::render_handle() const
-{
-	return _render_handle;
-}
-
-void Drawable::set_shader(ResourceHandle shader)
-{
-	_shader = shader;
-	set_render_state_changed();
-}
-
-ResourceHandle Drawable::shader() const
-{
-	return _shader;
-}
-
-void Drawable::reset_state_changed()
-{
-	_render_state_changed = false;
-}
-
-bool Drawable::state_changed() const
-{
-	return _render_state_changed;
-}
-
-ResourceHandle Drawable::geometry() const
+IDrawableGeometry& Drawable::geometry()
 {
 	return _geometry;
 }
 
-
-void Drawable::set_position(const Vector2& position)
+const IDrawableGeometry& Drawable::geometry() const
 {
-	_position = position;
-	set_render_state_changed();
+	return _geometry;
 }
 
-const Vector2& Drawable::position() const
+bool Drawable::geometry_changed() const
 {
-	return _position;
+	return _geometry.has_changed();
+}
+
+ResourceHandle Drawable::geometry_handle() const
+{
+	return _geometry_handle;
 }
 
 Matrix4 Drawable::model_matrix() const
@@ -71,32 +56,62 @@ Matrix4 Drawable::model_matrix() const
 	return m;
 }
 
-void Drawable::set_geometry(ResourceHandle geometry)
+const Vector2& Drawable::position() const
 {
-	assert (_geometry.type == ResourceHandle::NotInitialized && "Drawable already has geometry set");
-	_geometry = geometry;
-	set_geometry_changed();
+	return _position;
+}
+
+ResourceHandle Drawable::render_handle() const
+{
+	return _render_handle;
 }
 
 void Drawable::reset_geometry_changed()
 {
-	_geometry_changed = false;
+	_geometry.reset_has_changed();
 }
 
-bool Drawable::geometry_changed() const
+void Drawable::reset_state_changed()
 {
-	return _geometry_changed;
+	_render_state_changed = false;
 }
 
-void Drawable::set_color(const Vector4& color)
+void Drawable::set_color(const Color& color)
 {
-	_color = color;
-	update_geometry();
+	_geometry.set_color(color);
 }
 
-const Vector4& Drawable::color() const
+void Drawable::set_geometry_handle(ResourceHandle handle)
 {
-	return _color;
+	_geometry_handle = handle;
+}
+
+void Drawable::set_position(const Vector2& position)
+{
+	_position = position;
+	_render_state_changed = true;
+}
+
+void Drawable::set_render_handle(ResourceHandle handle)
+{
+	assert(_render_handle.type == ResourceHandle::NotInitialized && "Trying to reset already initliaized drawable render handle.");
+	_render_handle = handle;
+}
+
+void Drawable::set_shader(ResourceHandle shader)
+{
+	_shader = shader;
+	_render_state_changed = true;
+}
+
+ResourceHandle Drawable::shader() const
+{
+	return _shader;
+}
+
+bool Drawable::state_changed() const
+{
+	return _render_state_changed;
 }
 
 }

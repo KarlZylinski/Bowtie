@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "memory_types.h"
+#include <new>
 
 namespace bowtie
 {
@@ -24,6 +25,41 @@ namespace bowtie
 
 		/// Frees an allocation previously made with allocate().
 		virtual void deallocate(void *p) = 0;
+		virtual void deallocate(const void *p) { deallocate((void*)p); }
+		
+		template<typename T> T* construct() { return new(allocate(sizeof(T), alignof(T))) T(); }
+		
+		template<typename T, typename P1> T* construct(P1& p1) { return new(allocate(sizeof(T), alignof(T))) T(p1); }
+		template<typename T, typename P1> T* construct(const P1& p1) { return new(allocate(sizeof(T), alignof(T))) T(p1); }
+		
+		template<typename T, typename P1, typename P2> T* construct(P1& p1, P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
+		template<typename T, typename P1, typename P2> T* construct(const P1& p1, P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
+		template<typename T, typename P1, typename P2> T* construct(P1& p1, const P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
+		template<typename T, typename P1, typename P2> T* construct(const P1& p1, const P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
+
+		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, const P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, const P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, const P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, const P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
+
+		template<typename T>
+		void destroy(T* p)
+		{
+			p->~T();
+			deallocate(p);
+		}
+
+		char* copy_string(const char* str)
+		{
+			auto len = (unsigned)strlen(str) + 1;
+			auto new_str = (char*)allocate(len);
+			memcpy(new_str, str, len);
+			return new_str;
+		}
 
 		static const uint32_t SIZE_NOT_TRACKED = 0xffffffffu;
 
@@ -49,12 +85,6 @@ namespace bowtie
 	    Allocator(const Allocator& other);
 	    Allocator& operator=(const Allocator& other);
 	};
-
-	/// Creates a new object of type T using the allocator a to allocate the memory.
-	#define MAKE_NEW(a, T, ...)		(new ((a).allocate(sizeof(T), alignof(T))) T(__VA_ARGS__))
-
-	/// Frees an object allocated with MAKE_NEW.
-	#define MAKE_DELETE(a, T, p)	do {if (p) {(p)->~T(); a.deallocate(p);}} while (0)
 
 	/// Functions for accessing global memory data.
 	namespace memory_globals {
