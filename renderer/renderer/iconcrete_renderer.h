@@ -32,6 +32,7 @@ public:
 	virtual void resize(const Vector2u& size, Array<RenderTarget*>& render_targets) = 0;
 	virtual const Vector2u& resolution() const = 0;
 	virtual void set_render_target(const RenderTarget& render_target) = 0;
+	virtual void unset_render_target() = 0;
 };
 
 }

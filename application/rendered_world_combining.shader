@@ -14,12 +14,15 @@ void main()
 
 in vec2 texcoord;
 
-uniform sampler2D texture_sampler1;
-uniform sampler2D texture_sampler2;
+uniform sampler2D texture_samplers[16];
+uniform int num_samplers;
 
 out vec4 color;
 
 void main()
 {
-	color = texture(texture_sampler1, texcoord) + texture(texture_sampler2, texcoord);
+	color = vec4(0, 0, 0, 1);
+
+	for (int i = 0; i < num_samplers; ++i)
+		color.rgb += texture(texture_samplers[i], texcoord).rgb;
 }

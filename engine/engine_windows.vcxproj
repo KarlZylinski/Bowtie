@@ -49,7 +49,6 @@
     <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\font.cpp" />
-    <ClCompile Include="engine\image.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />

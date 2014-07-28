@@ -2,6 +2,7 @@
 #include <foundation/hash.h>
 #include <foundation/array.h>
 #include <foundation/string_utils.h>
+#include <cassert>
 
 namespace bowtie
 {

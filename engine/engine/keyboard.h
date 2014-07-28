@@ -1,15 +1,7 @@
 #pragma once
 
 #include <foundation/keyboard.h>
-#include <foundation/vector2.h>
-#include <foundation/vector2u.h>
-#include <foundation/matrix4.h>
-
 #include "resource_handle.h"
-
-#ifdef _WIN32
-	#include <Windows.h>
-#endif
 
 namespace bowtie
 {

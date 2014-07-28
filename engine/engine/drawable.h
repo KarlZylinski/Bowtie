@@ -2,14 +2,12 @@
 
 #include <foundation/matrix4.h>
 #include <foundation/vector2.h>
-#include <foundation/vector2u.h>
 #include <foundation/vector4.h>
 #include "resource_handle.h"
 
 namespace bowtie
 {
 
-struct Texture;
 class Allocator;
 class IDrawableGeometry;
 class Drawable

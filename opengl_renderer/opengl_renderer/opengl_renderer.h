@@ -10,6 +10,8 @@ namespace bowtie
 class OpenGLRenderer : public IConcreteRenderer
 {
 public:
+	typedef unsigned GLuint;
+
 	OpenGLRenderer(Allocator& allocator, RenderResourceLookupTable& resource_lut);
 	~OpenGLRenderer();
 	
@@ -25,13 +27,14 @@ public:
 	void resize(const Vector2u& resolution, Array<RenderTarget*>& render_targets);
 	const Vector2u& resolution() const;
 	void set_render_target(const RenderTarget& render_target);
+	void unset_render_target();
 
 private:
 	bool _active;
 	Allocator& _allocator;
 	RenderResourceLookupTable& _resource_lut;
-	RenderResourceHandle _fullscreen_rendering_quad;
-	RenderResourceHandle _rendered_worlds_combining_shader;
+	GLuint _fullscreen_rendering_quad;
+	GLuint _rendered_worlds_combining_shader;
 	Vector2u _resolution;
 
 	// Disabled stuff

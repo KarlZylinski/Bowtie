@@ -242,6 +242,8 @@ void Renderer::execute_command(const RendererCommand& command)
 
 	case RendererCommand::CombineRenderedWorlds:
 		{
+			_concrete_renderer.unset_render_target();
+			_concrete_renderer.clear();
 			_concrete_renderer.combine_rendered_worlds(_rendered_worlds);
 			array::clear(_rendered_worlds);
 			flip(*_context);

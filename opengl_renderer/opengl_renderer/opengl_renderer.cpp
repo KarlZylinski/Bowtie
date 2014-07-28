@@ -25,16 +25,18 @@ namespace
 
 struct GLPixelFormat;
 
+void combine_rendered_world_internal(GLuint fullscreen_rendering_quad, const Array<RenderWorld*>& rendered_worlds, GLuint shader);
 GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type);
-RenderResourceHandle create_fullscreen_rendering_quad();
+GLuint create_fullscreen_rendering_quad();
 RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data);
 RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution);
-void initialize_gl();
-GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format);
-GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders);
-RenderResourceHandle load_rendered_worlds_combining_shader(Allocator& allocator);
-GLuint load_shader_internal(const char* vertex_source, const char* fragment_source);
 void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut);
+GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format);
+void initialize_gl();
+GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders);
+GLuint load_rendered_worlds_combining_shader(Allocator& allocator);
+GLuint load_shader_internal(const char* vertex_source, const char* fragment_source);
+void set_render_target_internal(const Vector2u& resolution, GLuint render_target);
 
 }
 
@@ -57,49 +59,7 @@ void OpenGLRenderer::clear()
 
 void OpenGLRenderer::combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, _resolution.x, _resolution.y);
-	clear();
-	auto shader = _rendered_worlds_combining_shader.render_handle;
-	glUseProgram(shader);
-
-	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
-	{
-		auto& rw = *rendered_worlds[i];
-		auto& rt = rw.render_target();
-		
-		if (i == 0)
-		{
-			GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler1");
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, rt.render_texture.render_handle);
-			glUniform1i(texture_sampler_id, 0);
-		}
-
-		if (i == 1)
-		{
-			GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler2");
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, rt.render_texture.render_handle);
-			glUniform1i(texture_sampler_id, 1);
-		}
-	}
-
-	auto geometry = _fullscreen_rendering_quad.render_handle;
-		
-	glBindBuffer(GL_ARRAY_BUFFER, geometry);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0 
-	);
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glDisableVertexAttribArray(0);
+	combine_rendered_world_internal(_fullscreen_rendering_quad, rendered_worlds, _rendered_worlds_combining_shader);
 }
 
 RenderTarget* OpenGLRenderer::create_render_target()
@@ -167,8 +127,12 @@ const Vector2u& OpenGLRenderer::resolution() const
 
 void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, render_target.target_handle.render_handle);
-	glViewport(0, 0, _resolution.x, _resolution.y);
+	set_render_target_internal(_resolution, render_target.target_handle.render_handle);
+}
+
+void OpenGLRenderer::unset_render_target()
+{
+	set_render_target_internal(_resolution, 0);
 }
 
 
@@ -182,6 +146,40 @@ struct GLPixelFormat {
 	GLenum format;
 	GLenum internal_format;
 };
+
+void combine_rendered_world_internal(GLuint fullscreen_rendering_quad, const Array<RenderWorld*>& rendered_worlds, GLuint shader)
+{
+	glUseProgram(shader);
+	assert(array::size(rendered_worlds) <= 16);
+	GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_samplers");
+
+	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
+	{
+		auto& rw = *rendered_worlds[i];
+		auto& rt = rw.render_target();
+		
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, rt.render_texture.render_handle);
+		glUniform1i(texture_sampler_id, i);
+	}
+
+	GLuint num_samplers_id = glGetUniformLocation(shader, "num_samplers");
+	glUniform1i(num_samplers_id, array::size(rendered_worlds));
+			
+	glBindBuffer(GL_ARRAY_BUFFER, fullscreen_rendering_quad);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0 
+	);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisableVertexAttribArray(0);
+}
 
 GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type)
 {
@@ -231,23 +229,7 @@ RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u
 	return allocator.construct<RenderTarget>(RenderResourceHandle(texture_id), RenderResourceHandle(fb));
 }
 
-void initialize_gl()
-{
-	int extension_load_error = gl3wInit();
-	assert(extension_load_error == 0);
-		
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	// 2D needs no depth test.
-	glDisable(GL_DEPTH_TEST);
-}
-
-RenderResourceHandle create_fullscreen_rendering_quad()
+GLuint create_fullscreen_rendering_quad()
 {
 	static const GLfloat fullscreen_quad_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -262,18 +244,64 @@ RenderResourceHandle create_fullscreen_rendering_quad()
 	glGenBuffers(1, &quad_vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fullscreen_quad_data), fullscreen_quad_data, GL_STATIC_DRAW);
-	return RenderResourceHandle(quad_vertexbuffer);
+	return quad_vertexbuffer;
 }
 
-RenderResourceHandle load_rendered_worlds_combining_shader(Allocator& allocator)
+void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
 {
-	auto shader_source = file::load("rendered_world_combining.shader", allocator);
-	auto split_shader = shader_utils::split_shader(shader_source, allocator);
-	auto shader_handle = load_shader_internal(split_shader.vertex_source, split_shader.fragment_source);
-	allocator.deallocate(shader_source.data);
-	allocator.deallocate(split_shader.vertex_source);
-	allocator.deallocate(split_shader.fragment_source);
-	return RenderResourceHandle(shader_handle);
+	auto model_view_projection_matrix = drawable.model * view_projection;
+		
+	auto shader = resource_lut.lookup(drawable.shader).render_handle;
+	assert(glIsProgram(shader) && "Invalid shader program");
+	glUseProgram(shader);
+
+	GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
+	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
+		
+	if (drawable.texture.type != ResourceHandle::NotInitialized)
+	{
+		RenderTexture& drawable_texture = *(RenderTexture*)resource_lut.lookup(drawable.texture).render_object;
+		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
+		glUniform1i(texture_sampler_id, 0);
+	}
+
+	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
+		
+	glBindBuffer(GL_ARRAY_BUFFER, geometry);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)0 
+	);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(
+		1,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)(3 * sizeof(float))
+	);
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(
+		2,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)(5 * sizeof(float))
+	);
+
+	glDrawArrays(GL_TRIANGLES, 0, drawable.num_vertices);
+	glDisableVertexAttribArray(0);
 }
 
 GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
@@ -295,6 +323,33 @@ GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
 	}
 
 	return gl_pixel_format;
+}
+
+void initialize_gl()
+{
+	int extension_load_error = gl3wInit();
+	assert(extension_load_error == 0);
+		
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	// 2D needs no depth test.
+	glDisable(GL_DEPTH_TEST);
+}
+
+GLuint load_rendered_worlds_combining_shader(Allocator& allocator)
+{
+	auto shader_source = file::load("rendered_world_combining.shader", allocator);
+	auto split_shader = shader_utils::split_shader(shader_source, allocator);
+	auto shader_handle = load_shader_internal(split_shader.vertex_source, split_shader.fragment_source);
+	allocator.deallocate(shader_source.data);
+	allocator.deallocate(split_shader.vertex_source);
+	allocator.deallocate(split_shader.fragment_source);
+	return shader_handle;
 }
 	
 GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders)
@@ -355,61 +410,10 @@ GLuint load_shader_internal(const char* vertex_source, const char* fragment_sour
 	return program;
 }
 
-void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
-{
-	auto model_view_projection_matrix = drawable.model * view_projection;
-		
-	auto shader = resource_lut.lookup(drawable.shader).render_handle;
-	assert(glIsProgram(shader) && "Invalid shader program");
-	glUseProgram(shader);
-
-	GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
-	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
-		
-	if (drawable.texture.type != ResourceHandle::NotInitialized)
-	{
-		RenderTexture& drawable_texture = *(RenderTexture*)resource_lut.lookup(drawable.texture).render_object;
-		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
-		glUniform1i(texture_sampler_id, 0);
-	}
-
-	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
-		
-	glBindBuffer(GL_ARRAY_BUFFER, geometry);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)0 
-	);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(
-		1,
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(3 * sizeof(float))
-	);
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(
-		2,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(5 * sizeof(float))
-	);
-
-	glDrawArrays(GL_TRIANGLES, 0, drawable.num_vertices);
-	glDisableVertexAttribArray(0);
+void set_render_target_internal(const Vector2u& resolution, GLuint render_target)
+{	
+	glBindFramebuffer(GL_FRAMEBUFFER, render_target);
+	glViewport(0, 0, resolution.x, resolution.y);
 }
 
 } // implementation
