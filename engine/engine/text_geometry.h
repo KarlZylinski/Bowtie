@@ -12,7 +12,7 @@ class TextGeometry : public IDrawableGeometry
 {
 public:
 	TextGeometry(const Font& font, Allocator& allocator);
-	virtual ~TextGeometry();
+	~TextGeometry();
 	
 	const IDrawableGeometry& clone(Allocator& allocator) const;
 	IDrawableGeometry& clone(Allocator& allocator);

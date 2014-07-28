@@ -59,9 +59,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	assert(drawable.geometry().texture() != nullptr);
 
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
-
 	DrawableResourceData drawable_resource_data;
-
 	auto texture = drawable.geometry().texture();
 	
 	if (texture != nullptr)
@@ -70,7 +68,6 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
 	drawable_resource_data.shader = get_shader_or_default(resource_manager, drawable);
-
 	auto geometry_handle = drawable.geometry_handle();
 
 	if (geometry_handle.type == ResourceHandle::NotInitialized)
@@ -89,9 +86,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 		drawable_resource_data.geometry = geometry_handle;
 
 	drawable_resource_data.num_vertices = drawable.geometry().size() / (sizeof(float) * 5);
-
 	drawable_rrd.data = &drawable_resource_data;
-
 	create_resource(drawable_rrd);
 	drawable.set_render_handle(drawable_rrd.handle);
 }

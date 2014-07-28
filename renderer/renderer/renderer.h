@@ -24,7 +24,7 @@ struct RenderTarget;
 
 struct RendererResourceObject
 {
-	RendererResourceObject(RenderResourceData::Type, RenderResourceHandle handle)
+	RendererResourceObject(RenderResourceData::Type type, RenderResourceHandle handle)
 		: type(type), handle(handle) {}
 
 	RenderResourceData::Type type;
@@ -72,6 +72,7 @@ private:
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
 	Array<RendererResourceObject> _resource_objects;
 	bool _setup;
+	bool _shut_down;
 	std::thread _thread;
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;

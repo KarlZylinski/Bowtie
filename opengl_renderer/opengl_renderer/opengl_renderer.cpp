@@ -100,10 +100,9 @@ RenderResourceHandle OpenGLRenderer::load_shader(const ShaderResourceData& shade
 	return RenderResourceHandle(load_shader_internal(vertex_source, fragment_source));
 }
 
-RenderResourceHandle OpenGLRenderer::load_texture(const TextureResourceData& trd, void* dynamic_data)
+RenderTexture* OpenGLRenderer::load_texture(const TextureResourceData& trd, void* dynamic_data)
 {
-	auto texture = create_texture(_allocator, trd.pixel_format, trd.resolution, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
-	return RenderResourceHandle(texture);
+	return create_texture(_allocator, trd.pixel_format, trd.resolution, memory::pointer_add(dynamic_data, trd.texture_data_dynamic_data_offset));
 }
 
 void OpenGLRenderer::update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
@@ -159,7 +158,7 @@ void combine_rendered_world_internal(GLuint fullscreen_rendering_quad, const Arr
 		auto& rt = rw.render_target();
 		
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, rt.render_texture.render_handle);
+		glBindTexture(GL_TEXTURE_2D, rt.render_texture->render_handle.render_handle);
 		glUniform1i(texture_sampler_id, i);
 	}
 
@@ -226,7 +225,7 @@ RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u
 	GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, draw_buffers);
 
-	return allocator.construct<RenderTarget>(RenderResourceHandle(texture_id), RenderResourceHandle(fb));
+	return allocator.construct<RenderTarget>(allocator, texture, RenderResourceHandle(fb));
 }
 
 GLuint create_fullscreen_rendering_quad()

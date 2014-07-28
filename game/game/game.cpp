@@ -88,6 +88,9 @@ void Game::init()
 
 void Game::update(float dt)
 {
+	if (!_initialized)
+		return;
+
 	update_game(_lua, dt);
 
 	const char* test_messages[] = {
@@ -106,13 +109,19 @@ void Game::update(float dt)
 
 void Game::draw()
 {
+	if (!_initialized)
+		return;
+
 	draw_game(_lua);
 	console::draw();
 }
 
 void Game::deinit()
 {
+	assert(_initialized && "init() hasn't been called");
+
 	deinit_game(_lua);
+	_initialized = false;
 	lua_gc(_lua, LUA_GCCOLLECT, 0);
 }
 

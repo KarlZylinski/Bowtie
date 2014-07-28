@@ -1,10 +1,17 @@
 #include "memory.h"
 
+#define TRACING 1
+
 #include <stdlib.h>
 #include <assert.h>
 #include <new>
 
-#define TRACING 0
+#if defined(TRACING)
+	#include <foundation/callstack.h>
+	#include <Windows.h>
+	#include <DbgHelp.h>
+#endif
+
 
 namespace {
 	using namespace bowtie;
@@ -72,15 +79,98 @@ namespace {
 			return size + align*2 + sizeof(Header);
 		}
 
+		#if defined(TRACING)
+			struct PointerToCapturedCallstack {
+				PointerToCapturedCallstack() : used(false)
+				{
+				}
+
+				
+				PointerToCapturedCallstack(const CapturedCallstack& callstack, void* ptr) : callstack(callstack), ptr(ptr), used(true)
+				{
+				}
+
+				CapturedCallstack callstack;
+				void* ptr;
+				bool used;
+			};
+
+			static const unsigned max_callstacks = 4096;
+			PointerToCapturedCallstack _captured_callstacks[max_callstacks];
+
+			void add_captured_callstack(const PointerToCapturedCallstack& ptr_to_cc)
+			{
+				for (unsigned i = 0; i < max_callstacks; ++i)
+				{
+					auto& cc = _captured_callstacks[i];
+					if (!cc.used) {
+						cc = ptr_to_cc;
+						return;
+					}
+				}
+
+				assert(!"Out of callstacks. Increase max_callstacks in memory.cpp.");
+			}
+
+			void remove_captured_callstack(void* ptr)
+			{				
+				for (unsigned i = 0; i < max_callstacks; ++i) {
+					auto& ptr_to_cc = _captured_callstacks[i];
+
+					if (ptr_to_cc.ptr == ptr) {
+						ptr_to_cc.used = false;
+						return;
+					}						
+				}
+
+				assert(!"Failed to find callstack in remove_captured_callstack.");
+			}
+		#endif
+
 	public:
-		MallocAllocator(const char* name) : _total_allocated(0), _total_allocations(0) {
+		MallocAllocator(const char* name) : _total_allocated(0), _total_allocations(0)
+		{
 			_name = (char*)malloc(strlen(name) + 1);
 			strcpy(_name, name);
+			memset(&_captured_callstacks, 0, sizeof(PointerToCapturedCallstack) * max_callstacks);
 		}
 
 		~MallocAllocator() {
 			// Check that we don't have any memory leaks when allocator is
 			// destroyed.
+			
+			#if defined(TRACING)
+				for (unsigned i = 0; i < max_callstacks; ++i)
+				{
+					const auto& ptr_to_cc = _captured_callstacks[i];
+
+					if (!ptr_to_cc.used)
+						continue;
+
+					const auto& callstack = ptr_to_cc.callstack;
+
+					#if defined(_WIN32)
+						HANDLE process = GetCurrentProcess();
+						SymInitialize(process, NULL, TRUE);
+						SYMBOL_INFO* symbol = (SYMBOL_INFO *)calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
+						symbol->MaxNameLen = 255;
+						symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+						char* callstack_str = (char*)malloc(symbol->MaxNameLen * 64);
+						unsigned callstack_str_size = 0;
+						for (unsigned j = 0; j < callstack.num_frames; j++ )
+						{
+							SymFromAddr(process, (DWORD64)(callstack.frames[j]), 0, symbol);
+							memcpy(callstack_str + callstack_str_size, symbol->Name, symbol->NameLen);
+							callstack_str[callstack_str_size + symbol->NameLen] = '\n';
+							callstack_str_size += symbol->NameLen + 1;
+						}
+						callstack_str[callstack_str_size] = 0;
+						MessageBox(nullptr, callstack_str, "Memory leak stack trace", MB_ICONWARNING);
+					#endif
+				}
+			#endif
+
 			assert(_total_allocated == 0);
 			assert(_total_allocations == 0);
 			free(_name);
@@ -93,6 +183,11 @@ namespace {
 			fill(h, p, ts);
 			++_total_allocations;
 			_total_allocated += ts;
+
+			#if defined(TRACING)
+				add_captured_callstack(PointerToCapturedCallstack(callstack::capture(), p));
+			#endif
+
 			return p;
 		}
 
@@ -109,6 +204,11 @@ namespace {
 			--_total_allocations;
 			assert(_total_allocations >= 0);
 			_total_allocated -= h->size;
+			
+			#if defined(TRACING)
+				remove_captured_callstack(p);
+			#endif
+
 			free(h);
 		}
 
@@ -238,13 +338,12 @@ namespace {
 	};
 
 	struct MemoryGlobals {
-		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator) + sizeof(ScratchAllocator);
+		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator);
 		char buffer[ALLOCATOR_MEMORY];
 
 		MallocAllocator *default_allocator;
-		ScratchAllocator *default_scratch_allocator;
 
-		MemoryGlobals() : default_allocator(0), default_scratch_allocator(0) {}
+		MemoryGlobals() : default_allocator(0) {}
 	};
 
 	MemoryGlobals _memory_globals;
@@ -257,22 +356,14 @@ namespace bowtie
 		void init(uint32_t temporary_memory) {
 			char *p = _memory_globals.buffer;
 			_memory_globals.default_allocator = new (p) MallocAllocator("default allocator");
-			p += sizeof(MallocAllocator);
-			_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
 		}
 
 		Allocator &default_allocator() {
 			return *_memory_globals.default_allocator;
 		}
 
-		Allocator &default_scratch_allocator() {
-			return *_memory_globals.default_scratch_allocator;
-		}
-		
 		void shutdown() {
-			_memory_globals.default_scratch_allocator->~ScratchAllocator();
 			_memory_globals.default_allocator->~MallocAllocator();
-			_memory_globals = MemoryGlobals();
 		}
 
 		Allocator* new_allocator(const char* name) {

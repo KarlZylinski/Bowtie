@@ -63,7 +63,7 @@ void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& ren
 
 Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
 	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _resource_lut(render_resource_lookup_table), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
-	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _resource_objects(_allocator),
+	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _shut_down(false), _resource_objects(_allocator),
 	_render_targets(_allocator), _rendered_worlds(_allocator)
 {
 	auto num_handles = RenderResourceLookupTable::num_handles;
@@ -76,9 +76,17 @@ Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_all
 Renderer::~Renderer()
 {
 	_active = false;
+	_setup = false;
+	_shut_down = true;
 	notify_unprocessed_commands_exists();
 	_thread.join();
 
+	move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
+	array::clear(_unprocessed_commands);
+
+	move_processed_commads(_command_queue, _processed_memory, _processed_memory_mutex);
+	array::clear(_command_queue);
+	
 	for (unsigned i = 0; i < array::size(_resource_objects); ++i)
 	{
 		auto& resource_object = _resource_objects[i];
@@ -105,6 +113,11 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 	}
 
 	notify_unprocessed_commands_exists();
+
+	if (_shut_down) { // Move to trash, right away!
+		move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
+		array::clear(_unprocessed_commands);
+	}
 }
 
 ResourceHandle Renderer::create_handle()
@@ -337,7 +350,7 @@ RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* d
 
 RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data)
 {
-	return concrete_renderer.load_texture(data, dynamic_data);
+	return RenderResourceHandle(concrete_renderer.load_texture(data, dynamic_data));
 }
 
 RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
@@ -376,7 +389,7 @@ void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<Rend
 	std::lock_guard<std::mutex> queue_lock(unprocessed_commands_mutex);
 
 	for(unsigned i = 0; i < array::size(unprocessed_commands); ++i)
-		array::push_back(command_queue, unprocessed_commands[i]);		
+		array::push_back(command_queue, unprocessed_commands[i]);
 		
 	array::clear(unprocessed_commands);
 }

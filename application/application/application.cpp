@@ -44,32 +44,33 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 {
 	memory_globals::init();
 	Allocator& allocator = memory_globals::default_allocator();
-	s_allocator = &allocator;
-	
+	s_allocator = &allocator;	
 	Allocator* renderer_allocator = memory_globals::new_allocator("renderer allocator");
+
 	{
 		RenderResourceLookupTable render_resource_lookup_table;
-
 		OpenGLRenderer opengl_renderer(*renderer_allocator, render_resource_lookup_table);
 		Renderer renderer(opengl_renderer, *renderer_allocator, allocator, render_resource_lookup_table);
 		s_renderer = &renderer;
-
 		OpenGLContextWindows context;
 		s_context = &context;
+		auto& render_interface = renderer.render_interface();
 
-		Engine engine(allocator, renderer.render_interface());
-		s_engine = &engine;
-
-		auto resolution = Vector2u(1280, 720);
-		Window window(instance, resolution, &create_render_context_callback, &window_resized_callback,
-			&key_down_callback, &key_up_callback);
-		
-		while(window.is_open())
 		{
-			window.dispatch_messages();
-			engine.update();
+			Engine engine(allocator, render_interface);
+			s_engine = &engine;
+			auto resolution = Vector2u(1280, 720);
+			Window window(instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);		
+			while(window.is_open())
+			{
+				window.dispatch_messages();
+				engine.update();
+			}
 		}
+
+		render_interface.deallocate_processed_commands(allocator);
 	}
+
 	memory_globals::destroy_allocator(renderer_allocator);
 	memory_globals::shutdown();
 }

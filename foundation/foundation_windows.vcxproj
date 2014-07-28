@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="foundation\array.h" />
+    <ClInclude Include="foundation\callstack.h" />
     <ClInclude Include="foundation\collection_types.h" />
     <ClInclude Include="foundation\file.h" />
     <ClInclude Include="foundation\hash.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="resource_path.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="foundation\callstack.cpp" />
     <ClCompile Include="foundation\file.cpp" />
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />

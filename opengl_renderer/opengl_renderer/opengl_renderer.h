@@ -21,7 +21,7 @@ public:
 	void draw(const View& view, const RenderWorld& render_world);
 	void initialize_thread();
 	RenderResourceHandle load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data);
-	RenderResourceHandle load_texture(const TextureResourceData& trd, void* dynamic_data);
+	RenderTexture* load_texture(const TextureResourceData& trd, void* dynamic_data);
 	RenderResourceHandle load_shader(const ShaderResourceData& shader_data, void* dynamic_data);	
 	void update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data);
 	void resize(const Vector2u& resolution, Array<RenderTarget*>& render_targets);
