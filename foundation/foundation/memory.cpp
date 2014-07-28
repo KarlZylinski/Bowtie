@@ -1,17 +1,14 @@
 #include "memory.h"
 
-#define TRACING 1
-
 #include <stdlib.h>
 #include <assert.h>
 #include <new>
 
+//#define TRACING 1
+
 #if defined(TRACING)
 	#include <foundation/callstack.h>
-	#include <Windows.h>
-	#include <DbgHelp.h>
 #endif
-
 
 namespace {
 	using namespace bowtie;
@@ -81,14 +78,8 @@ namespace {
 
 		#if defined(TRACING)
 			struct PointerToCapturedCallstack {
-				PointerToCapturedCallstack() : used(false)
-				{
-				}
-
-				
-				PointerToCapturedCallstack(const CapturedCallstack& callstack, void* ptr) : callstack(callstack), ptr(ptr), used(true)
-				{
-				}
+				PointerToCapturedCallstack() : used(false) {}
+				PointerToCapturedCallstack(const CapturedCallstack& callstack, void* ptr) : callstack(callstack), ptr(ptr), used(true) {}
 
 				CapturedCallstack callstack;
 				void* ptr;
@@ -132,7 +123,10 @@ namespace {
 		{
 			_name = (char*)malloc(strlen(name) + 1);
 			strcpy(_name, name);
-			memset(&_captured_callstacks, 0, sizeof(PointerToCapturedCallstack) * max_callstacks);
+
+			#if defined(TRACING)
+				memset(&_captured_callstacks, 0, sizeof(PointerToCapturedCallstack) * max_callstacks);
+			#endif
 		}
 
 		~MallocAllocator() {
@@ -147,27 +141,7 @@ namespace {
 					if (!ptr_to_cc.used)
 						continue;
 
-					const auto& callstack = ptr_to_cc.callstack;
-
-					#if defined(_WIN32)
-						HANDLE process = GetCurrentProcess();
-						SymInitialize(process, NULL, TRUE);
-						SYMBOL_INFO* symbol = (SYMBOL_INFO *)calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
-						symbol->MaxNameLen = 255;
-						symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-						char* callstack_str = (char*)malloc(symbol->MaxNameLen * 64);
-						unsigned callstack_str_size = 0;
-						for (unsigned j = 0; j < callstack.num_frames; j++ )
-						{
-							SymFromAddr(process, (DWORD64)(callstack.frames[j]), 0, symbol);
-							memcpy(callstack_str + callstack_str_size, symbol->Name, symbol->NameLen);
-							callstack_str[callstack_str_size + symbol->NameLen] = '\n';
-							callstack_str_size += symbol->NameLen + 1;
-						}
-						callstack_str[callstack_str_size] = 0;
-						MessageBox(nullptr, callstack_str, "Memory leak stack trace", MB_ICONWARNING);
-					#endif
+					callstack::print_callstack("Memory leak stack trace", ptr_to_cc.callstack);
 				}
 			#endif
 
@@ -197,10 +171,12 @@ namespace {
 				
 			Header *h = header(p);
 			assert(_total_allocated >= h->size);
+
 			#if defined(TRACING)
 				assert(h->tracing_marker == TRACING_MARKER);
+				h->tracing_marker = 0;
 			#endif
-			h->tracing_marker = 0;
+
 			--_total_allocations;
 			assert(_total_allocations >= 0);
 			_total_allocated -= h->size;

@@ -13,6 +13,7 @@ namespace callstack
 {
 
 CapturedCallstack capture();
+void print_callstack(const char* caption, const CapturedCallstack& captured_callstack);
 
 }
 }
