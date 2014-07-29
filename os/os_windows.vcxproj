@@ -24,9 +24,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="os\windows\callstack_capturer.h" />
     <ClInclude Include="os\windows\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="os\windows\callstack_capturer.cpp" />
     <ClCompile Include="os\windows\window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

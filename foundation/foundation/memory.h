@@ -6,6 +6,8 @@
 
 namespace bowtie
 {
+	class ICallstackCapturer;
+
 	/// Base class for memory allocators.
 	///
 	/// Note: Regardless of which allocator is used, prefer to allocate memory in larger chunks
@@ -90,7 +92,7 @@ namespace bowtie
 	namespace memory_globals {
 		/// Initializes the global memory allocators. scratch_buffer_size is the size of the
 		/// memory buffer used by the scratch allocators.
-		void init(uint32_t scratch_buffer_size = 4*1024*1024);
+		void init(ICallstackCapturer& callstack_captururer, uint32_t scratch_buffer_size = 4*1024*1024);
 
 		/// Returns a default memory allocator that can be used for most allocations.
 		///
@@ -108,7 +110,7 @@ namespace bowtie
 		/// Shuts down the global memory allocators created by init().
 		void shutdown();
 
-		Allocator* new_allocator(const char* name);
+		Allocator* new_allocator(ICallstackCapturer& callstack_captururer, const char* name);
 		void destroy_allocator(Allocator* allocator);
 	}
 

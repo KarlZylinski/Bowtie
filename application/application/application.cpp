@@ -6,6 +6,7 @@
 #include <foundation/temp_allocator.h>
 #include <opengl_renderer/opengl_context_windows.h>
 #include <opengl_renderer/opengl_renderer.h>
+#include <os/windows/callstack_capturer.h>
 #include <os/windows/window.h>
 #include <renderer/renderer.h>
 
@@ -42,10 +43,11 @@ void key_up_callback(keyboard::Key key)
 
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
-	memory_globals::init();
+	auto callstack_capturer = new CallstackCapturer();
+	memory_globals::init(*callstack_capturer);
 	Allocator& allocator = memory_globals::default_allocator();
 	s_allocator = &allocator;	
-	Allocator* renderer_allocator = memory_globals::new_allocator("renderer allocator");
+	Allocator* renderer_allocator = memory_globals::new_allocator(*callstack_capturer, "renderer allocator");
 
 	{
 		RenderResourceLookupTable render_resource_lookup_table;
@@ -73,4 +75,5 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 	memory_globals::destroy_allocator(renderer_allocator);
 	memory_globals::shutdown();
+	delete callstack_capturer;
 }

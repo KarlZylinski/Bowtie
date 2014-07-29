@@ -3,12 +3,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <new>
+#include "icallstack_capturer.h"
 
-//#define TRACING 1
-
-#if defined(TRACING)
-	#include <foundation/callstack.h>
-#endif
+#define TRACING 1
 
 namespace {
 	using namespace bowtie;
@@ -67,9 +64,10 @@ namespace {
 	/// MallocAllocator.)
 	class MallocAllocator : public Allocator
 	{
+		ICallstackCapturer& _callstack_capturer;
+		char* _name;
 		uint32_t _total_allocations;
 		uint32_t _total_allocated;
-		char* _name;
 
 		// Returns the size to allocate from malloc() for a given size and align.		
 		static inline uint32_t size_with_padding(uint32_t size, uint32_t align) {
@@ -119,7 +117,7 @@ namespace {
 		#endif
 
 	public:
-		MallocAllocator(const char* name) : _total_allocated(0), _total_allocations(0)
+		MallocAllocator(ICallstackCapturer& callstack_capturer, const char* name) : _callstack_capturer(callstack_capturer), _total_allocated(0), _total_allocations(0)
 		{
 			_name = (char*)malloc(strlen(name) + 1);
 			strcpy(_name, name);
@@ -141,7 +139,7 @@ namespace {
 					if (!ptr_to_cc.used)
 						continue;
 
-					callstack::print_callstack("Memory leak stack trace", ptr_to_cc.callstack);
+					_callstack_capturer.print_callstack("Memory leak stack trace", ptr_to_cc.callstack);
 				}
 			#endif
 
@@ -159,7 +157,7 @@ namespace {
 			_total_allocated += ts;
 
 			#if defined(TRACING)
-				add_captured_callstack(PointerToCapturedCallstack(callstack::capture(), p));
+				add_captured_callstack(PointerToCapturedCallstack(_callstack_capturer.capture(1), p));
 			#endif
 
 			return p;
@@ -329,9 +327,9 @@ namespace bowtie
 {
 	namespace memory_globals
 	{
-		void init(uint32_t temporary_memory) {
+		void init(ICallstackCapturer& callstack_capturer, uint32_t temporary_memory) {
 			char *p = _memory_globals.buffer;
-			_memory_globals.default_allocator = new (p) MallocAllocator("default allocator");
+			_memory_globals.default_allocator = new (p) MallocAllocator(callstack_capturer, "default allocator");
 		}
 
 		Allocator &default_allocator() {
@@ -342,8 +340,8 @@ namespace bowtie
 			_memory_globals.default_allocator->~MallocAllocator();
 		}
 
-		Allocator* new_allocator(const char* name) {
-			return new MallocAllocator(name);
+		Allocator* new_allocator(ICallstackCapturer& callstack_capturer, const char* name) {
+			return new MallocAllocator(callstack_capturer, name);
 		}
 		
 		void destroy_allocator(Allocator* allocator) {
