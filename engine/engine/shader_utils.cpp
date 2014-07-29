@@ -9,7 +9,7 @@ namespace bowtie
 namespace shader_utils
 {
 
-SplitShader split_shader(const file::LoadedFile& shader_source, Allocator& allocator)
+SplitShader split_shader(const LoadedFile& shader_source, Allocator& allocator)
 {
 	const char* delimiter = "#fragment";
 

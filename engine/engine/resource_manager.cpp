@@ -5,6 +5,7 @@
 #include <foundation/file.h>
 #include <foundation/memory.h>
 #include <foundation/murmur_hash.h>
+#include <foundation/rapidjson/document.h>
 #include <foundation/string_utils.h>
 #include <foundation/temp_allocator.h>
 #include <resource_path.h>
@@ -138,10 +139,20 @@ Font& ResourceManager::load_font(const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get<Font>(resource_type::Font, name);
+
 	if (existing != nullptr)
 		return *existing;
+	
+	LoadedFile file = file::load(filename, _allocator);
+	using namespace rapidjson;
+    Document d;	
+    d.Parse<0>((char*)file.data);	
+	
+	auto texture_filename = d["texture"].GetString();
+	auto columns = d["columns"].GetInt();
+	auto rows = d["rows"].GetInt();
 
-	auto font = _allocator.construct<Font>(32, 4, const_cast<const Texture&>(load_texture(filename)));
+	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, resource_type::Font, ResourceHandle(font));
 	return *font;
 }

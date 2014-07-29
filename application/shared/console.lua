@@ -5,7 +5,7 @@ Console = class(Console)
 function Console:init()
 	local engine = Engine.engine()
 	self.world = World.create(engine)
-	self.font = Engine.load_resource("font", "fonts/stolen.png")
+	self.font = Engine.load_resource("font", "fonts/stolen.font")
 	self.rows = {}
 end
 
