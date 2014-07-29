@@ -50,7 +50,7 @@ RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* d
 RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data);
 RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
-void flip(RendererContext& context);
+void flip(IRendererContext& context);
 void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
 void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
 void raise_fence(RenderFence& fence);
@@ -163,7 +163,7 @@ const Vector2u& Renderer::resolution() const
 	return _concrete_renderer.resolution();
 }
 
-void Renderer::run(RendererContext* context, const Vector2u& resolution)
+void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 {
 	_context = context;
 	_thread = std::thread(&Renderer::thread, this);
@@ -363,7 +363,7 @@ void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateRefl
 	drawable.model = data.model;
 }
 
-void flip(RendererContext& context)
+void flip(IRendererContext& context)
 {
 	context.flip();
 }

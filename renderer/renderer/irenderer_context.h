@@ -3,7 +3,7 @@
 namespace bowtie
 {
 
-class RendererContext
+class IRendererContext
 {
 public:
 	virtual void flip() = 0;

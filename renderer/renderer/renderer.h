@@ -12,7 +12,7 @@
 
 #include "render_resource_lookup_table.h"
 #include "render_resource_handle.h"
-#include "renderer_context.h"
+#include "irenderer_context.h"
 #include "render_world.h"
 
 namespace bowtie
@@ -46,7 +46,7 @@ public:
 	bool is_setup() const;
 	RenderInterface& render_interface();
 	const Vector2u& resolution() const;
-	void run(RendererContext* context, const Vector2u& resolution);
+	void run(IRendererContext* context, const Vector2u& resolution);
 	
 private:
 	void consume_command_queue();
@@ -62,7 +62,7 @@ private:
 	bool _unprocessed_commands_exists;
 	std::mutex _unprocessed_commands_exists_mutex;
 	IConcreteRenderer& _concrete_renderer;
-	RendererContext* _context;
+	IRendererContext* _context;
 	Array<ResourceHandle> _free_handles;
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;

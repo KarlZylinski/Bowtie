@@ -1,12 +1,12 @@
 #pragma once
 
-#include <renderer/renderer_context.h>
+#include <renderer/irenderer_context.h>
 #include <Windows.h>
 
 namespace bowtie
 {
 
-class OpenGLContextWindows : public RendererContext
+class OpenGLContextWindows : public IRendererContext
 {
 public:
 	void create(HWND window);
