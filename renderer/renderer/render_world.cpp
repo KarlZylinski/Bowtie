@@ -1,8 +1,8 @@
 #include "render_world.h"
 
 #include <foundation/array.h>
-
 #include "render_target.h"
+#include "render_drawable.h"
 
 namespace bowtie
 {
@@ -21,9 +21,9 @@ void RenderWorld::add_drawable(RenderDrawable* drawable)
 	array::push_back(_drawables, drawable);
 }
 
-void RenderWorld::remove_drawable(RenderDrawable* )
+void RenderWorld::remove_drawable(RenderDrawable* drawable)
 {
-
+	array::remove(_drawables, drawable);
 }
 
 const RenderTarget& RenderWorld::render_target() const

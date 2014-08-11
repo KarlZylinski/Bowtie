@@ -10,7 +10,9 @@
 #include "script_interfaces/script_sprite.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
+#include "script_interfaces/script_rectangle.h"
 #include "script_interfaces/script_time.h"
+#include "script_interfaces/script_text.h"
 
 #include <random>
 
@@ -70,6 +72,8 @@ Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(l
 	time_script_interface::load(_lua);
 	drawable_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
+	text_script_interface::load(_lua);
+	rectangle_script_interface::load(_lua);
 }
 
 Game::~Game()
@@ -101,7 +105,7 @@ void Game::update(float dt)
 		"DONDE ESTA"
 	};
 
-	if (rand() % 100 < 5)
+	if (rand() % 100 < 50)
 		console::write(test_messages[rand() % 5]);
 
 	console::update(dt);

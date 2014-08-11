@@ -146,7 +146,8 @@ Font& ResourceManager::load_font(const char* filename)
 	LoadedFile file = file::load(filename, _allocator);
 	using namespace rapidjson;
     Document d;	
-    d.Parse<0>((char*)file.data);	
+    d.Parse<0>((char*)file.data);
+	_allocator.deallocate(file.data);
 	
 	auto texture_filename = d["texture"].GetString();
 	auto columns = d["columns"].GetInt();

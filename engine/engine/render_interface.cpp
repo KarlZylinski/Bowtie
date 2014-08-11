@@ -56,15 +56,12 @@ ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
 {
 	assert(drawable.render_handle().type == ResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
-	assert(drawable.geometry().texture() != nullptr);
 
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
 	DrawableResourceData drawable_resource_data;
-	auto texture = drawable.geometry().texture();
-	
-	if (texture != nullptr)
-		drawable_resource_data.texture = texture->render_handle;
 
+	auto texture = drawable.geometry().texture();	
+	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : ResourceHandle();
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
 	drawable_resource_data.shader = get_shader_or_default(resource_manager, drawable);
@@ -74,7 +71,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	{
 		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
 		GeometryResourceData geometry_data;
-		geometry_data.size = drawable.geometry().size();
+		geometry_data.size = drawable.geometry().data_size();
 		geometry_rrd.data = &geometry_data;
 		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
 		memcpy(geometry_dynamic_data, drawable.geometry().data(), geometry_data.size);
@@ -85,10 +82,22 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	else
 		drawable_resource_data.geometry = geometry_handle;
 
-	drawable_resource_data.num_vertices = drawable.geometry().size() / (sizeof(float) * 5);
+	drawable_resource_data.num_vertices = drawable.geometry().data_size() / (sizeof(float) * 5);
 	drawable_rrd.data = &drawable_resource_data;
 	create_resource(drawable_rrd);
 	drawable.set_render_handle(drawable_rrd.handle);
+}
+
+void RenderInterface::unspawn(World& world, Drawable& drawable)
+{
+	auto command = create_command(RendererCommand::Unspawn);	
+	auto& data = *(UnspawnData*)_allocator.allocate(sizeof(UnspawnData));
+	data.world = world.render_handle();
+	data.drawable = drawable.render_handle();
+	command.data = &data;
+	dispatch(command);
+	_renderer.free_handle(drawable.render_handle());
+	_renderer.free_handle(drawable.geometry_handle());
 }
 
 void RenderInterface::create_render_world(World& world)

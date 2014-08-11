@@ -21,8 +21,9 @@ out vec4 color;
 
 void main()
 {
-	color = vec4(0, 0, 0, 1);
+	color = vec4(0, 0, 0, 0);
 
-	for (int i = 0; i < num_samplers; ++i)
-		color.rgb += texture(texture_samplers[i], texcoord).rgb;
+	for (int i = 0; i < num_samplers; ++i) {
+		color += color.a * color + (1 - color.a) * texture(texture_samplers[i], texcoord);
+	}
 }

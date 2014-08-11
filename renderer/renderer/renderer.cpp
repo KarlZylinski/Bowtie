@@ -68,7 +68,7 @@ Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_all
 {
 	auto num_handles = RenderResourceLookupTable::num_handles;
 	array::set_capacity(_free_handles, num_handles);
-
+	
 	for(unsigned handle = num_handles; handle > 0; --handle)
 		array::push_back(_free_handles, ResourceHandle(handle));
 }
@@ -123,10 +123,8 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 ResourceHandle Renderer::create_handle()
 {
 	assert(array::any(_free_handles) && "Out of render resource handles!");
-
 	ResourceHandle handle = array::back(_free_handles);
 	array::pop_back(_free_handles);
-
 	return handle;
 }
 
@@ -141,6 +139,12 @@ void Renderer::deallocate_processed_commands(Allocator& allocator)
 	}
 
 	array::clear(_processed_memory);
+}
+
+void Renderer::free_handle(ResourceHandle handle)
+{
+	assert(handle.type == ResourceHandle::Handle && "Trying to free handle of non handle-type");
+	array::push_back(_free_handles, handle);
 }
 
 bool Renderer::is_active() const
@@ -260,6 +264,17 @@ void Renderer::execute_command(const RendererCommand& command)
 			_concrete_renderer.combine_rendered_worlds(_rendered_worlds);
 			array::clear(_rendered_worlds);
 			flip(*_context);
+		}
+		break;
+
+	case RendererCommand::Unspawn:
+		{
+			const auto& unspawn_data = *(UnspawnData*)command.data;
+			auto& render_world = *(RenderWorld*)_resource_lut.lookup(unspawn_data.world).render_object;
+			auto& render_drawable = *(RenderDrawable*)_resource_lut.lookup(unspawn_data.drawable).render_object;
+			render_world.remove_drawable(&render_drawable);	
+			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return &render_drawable == rro.handle.render_object; });
+			_allocator.deallocate(&render_drawable);
 		}
 		break;
 

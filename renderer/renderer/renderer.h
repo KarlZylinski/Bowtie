@@ -42,6 +42,7 @@ public:
 	void add_renderer_command(const RendererCommand& command);
 	ResourceHandle create_handle();
 	void deallocate_processed_commands(Allocator& allocator);
+	void free_handle(ResourceHandle handle);
 	bool is_active() const;
 	bool is_setup() const;
 	RenderInterface& render_interface();
@@ -55,7 +56,7 @@ private:
 	void notify_unprocessed_commands_exists();
 	void thread();
 	void wait_for_unprocessed_commands_to_exist();
-
+	
 	bool _active;
 	Allocator& _allocator;
 	Array<RendererCommand> _command_queue;

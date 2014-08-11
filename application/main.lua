@@ -10,9 +10,9 @@ function init()
 	Engine.load_resource("sprite", "textures/hill.png")
 
 	game.world = World.create(engine)
-	game.hill = World.spawn_sprite(game.world, "textures/hill.png")
+	game.hill = Sprite.spawn(game.world, "textures/hill.png")
 	Drawable.set_position(game.hill, Vector2(50, 50))
-	game.beer = World.spawn_sprite(game.world, "textures/beer.png")
+	game.beer = Sprite.spawn(game.world, "textures/beer.png")
 end
 
 function update_beer(dt)

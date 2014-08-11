@@ -5,6 +5,7 @@
 #include "drawable.h"
 #include "render_interface.h"
 #include "resource_manager.h"
+#include "rectangle_geometry.h"
 #include "sprite_geometry.h"
 #include "text_geometry.h"
 
@@ -29,6 +30,15 @@ void World::set_render_handle(ResourceHandle render_handle)
 	_render_handle = render_handle;
 }
 
+Drawable* World::spawn_rectangle(const Rect& rect, const Color& color)
+{
+	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
+	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry);
+	array::push_back(_drawables, rectangle);
+	_render_interface.spawn(*this, *rectangle, _resource_manager);
+	return rectangle;
+}
+
 Drawable* World::spawn_sprite(const char* sprite_name)
 {
 	auto sprite_prototype = _resource_manager.get<Drawable>(resource_type::Drawable, sprite_name);
@@ -39,9 +49,11 @@ Drawable* World::spawn_sprite(const char* sprite_name)
 	return sprite;
 }
 
-void World::despawn_sprite(Drawable* )
+void World::unspawn(Drawable& drawable)
 {
-
+	array::remove(_drawables, &drawable);
+	_render_interface.unspawn(*this, drawable);
+	_allocator.destroy(&drawable);
 }
 
 ResourceHandle World::render_handle()
@@ -74,7 +86,7 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 		
 	auto& sgr = *(DrawableGeometryReflectionData*)allocator.allocate(sizeof(DrawableGeometryReflectionData));
 	sgr.drawable = drawable.render_handle();
-	sgr.size = drawable.geometry().size();
+	sgr.size = drawable.geometry().data_size();
 	
 	geometry_changed_command.data = &sgr;
 	geometry_changed_command.dynamic_data_size = sgr.size;
@@ -117,7 +129,7 @@ Drawable* World::spawn_text(const Font& font, const char* text_str)
 	auto text_geometry = _allocator.construct<TextGeometry>(font, _allocator);
 	text_geometry->set_text(text_str);
 	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry);
-	array::push_back(_drawables, (Drawable*)text);
+	array::push_back(_drawables, text);
 	_render_interface.spawn(*this, *text, _resource_manager);
 	return text;
 }

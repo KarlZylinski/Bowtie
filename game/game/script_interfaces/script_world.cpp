@@ -47,39 +47,16 @@ int draw(lua_State* lua)
 	return 0;
 }
 
-int spawn_sprite(lua_State* lua)
-{
-	auto& world = *(World*)lua_touserdata(lua, 1);
-	auto name = lua_tostring(lua, 2);
-
-	lua_pushlightuserdata(lua, world.spawn_sprite(name));
-
-	return 1;
-}
-
-int spawn_text(lua_State* lua)
-{
-	auto& world = *(World*)lua_touserdata(lua, 1);
-	auto& font = *(Font*)lua_touserdata(lua, 2);
-	auto text = lua_tostring(lua, 3);
-
-	lua_pushlightuserdata(lua, world.spawn_text(font, text));
-
-	return 1;
-}
-
 void load(lua_State* lua)
 {
 	const interface_function functions[] = {
 		{ "create", create },
 		{ "destroy", destroy },
 		{ "update", update },
-		{ "draw", draw },
-		{ "spawn_sprite", spawn_sprite },
-		{ "spawn_text", spawn_text }
+		{ "draw", draw }
 	};
 
-	script_interface::register_interface(lua, "World", functions, 6);
+	script_interface::register_interface(lua, "World", functions, 4);
 }
 
 } // namespace world_script_interface

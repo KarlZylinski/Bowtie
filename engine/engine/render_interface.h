@@ -23,6 +23,7 @@ public:
 	
 	void create_texture(Texture& texture);
 	void spawn(World& world, Drawable& drawable, ResourceManager& resource_manager);
+	void unspawn(World& world, Drawable& drawable);
 	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);

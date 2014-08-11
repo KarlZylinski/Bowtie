@@ -8,12 +8,12 @@ namespace bowtie
 {
 
 class Allocator;
-class SpriteGeometry : public IDrawableGeometry
+class RectangleGeometry : public IDrawableGeometry
 {
 public:
 	static const unsigned s_geometry_size = sizeof(float) * 9 * 6;
 
-	SpriteGeometry(const Texture& texture);
+	RectangleGeometry(const Color& color, const Rect& rect);
 
 	const IDrawableGeometry& clone(Allocator& allocator) const;
 	IDrawableGeometry& clone(Allocator& allocator);
@@ -32,7 +32,6 @@ private:
 	Color _color;
 	bool _has_changed;
 	Rect _rect;
-	const Texture* _texture;
 };
 
 }

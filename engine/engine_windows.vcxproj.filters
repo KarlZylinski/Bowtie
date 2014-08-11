@@ -16,6 +16,7 @@
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\sprite_geometry.cpp" />
     <ClCompile Include="engine\text_geometry.cpp" />
+    <ClCompile Include="engine\rectangle_geometry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />
@@ -42,5 +43,6 @@
     <ClInclude Include="engine\idrawable_geometry.h" />
     <ClInclude Include="engine\sprite_geometry.h" />
     <ClInclude Include="engine\text_geometry.h" />
+    <ClInclude Include="engine\rectangle_geometry.h" />
   </ItemGroup>
 </Project>

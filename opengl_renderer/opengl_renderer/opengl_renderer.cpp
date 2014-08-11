@@ -266,6 +266,8 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 		glUniform1i(texture_sampler_id, 0);
 	}
 
+	glUniform1i(glGetUniformLocation(shader, "has_texture"), drawable.texture.type != ResourceHandle::NotInitialized ? 1 : 0);
+
 	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
 		
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);

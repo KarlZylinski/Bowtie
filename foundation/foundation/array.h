@@ -4,6 +4,7 @@
 #include "memory.h"
 
 #include <memory>
+#include <functional>
 
 namespace bowtie {
 	namespace array
@@ -80,6 +81,45 @@ namespace bowtie {
 		{
 			if (new_capacity > a._capacity)
 				set_capacity(a, new_capacity);
+		}
+
+		template <typename T> void remove(Array<T> &a, unsigned index)
+		{
+			if (a._size == 0)
+				return;
+
+			if (a._size != 1 && index != a._size - 1)
+				a._data[index] = array::back(a);
+
+			--a._size;
+		}
+				
+		template <typename T, typename F> void remove(Array<T> &a, const F& predicate)
+		{
+			for (unsigned i = 0; i < array::size(a); ++i)
+			{
+				auto& element = a[i];
+
+				if (!predicate(element))
+					continue;
+
+				remove(a, i);
+				return;
+			}
+		}
+
+		template <typename T> void remove(Array<T> &a, const T& element)
+		{
+			for (unsigned i = 0; i < array::size(a); ++i)
+			{
+				auto& element_from_list = a[i];
+
+				if (element != element_from_list)
+					continue;
+
+				remove(a, i);
+				return;
+			}
 		}
 
 		template<typename T> void set_capacity(Array<T> &a, uint32_t new_capacity)

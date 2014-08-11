@@ -6,12 +6,14 @@
 namespace bowtie
 {
 
-class Sprite;
+struct Vector4;
 class Drawable;
+class Font;
+struct Rect;
 class RenderInterface;
 class ResourceManager;
+class Sprite;
 class Text;
-class Font;
 class View;
 class World
 {
@@ -20,8 +22,9 @@ public:
 	~World();
 
 	void set_render_handle(ResourceHandle render_handle);
+	Drawable* spawn_rectangle(const Rect& rect, const Vector4& color);
 	Drawable* spawn_sprite(const char* name);
-	void despawn_sprite(Drawable* sprite);
+	void unspawn(Drawable& sprite);
 	Drawable* spawn_text(const Font& font, const char* text);
 	void update();
 	void draw(const View& view);

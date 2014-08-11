@@ -40,6 +40,11 @@ const float* SpriteGeometry::data() const
 	return _data;
 }
 
+unsigned SpriteGeometry::data_size() const
+{
+	return s_geometry_size;
+}
+
 bool SpriteGeometry::has_changed() const
 {
 	return _has_changed;
@@ -70,11 +75,6 @@ void SpriteGeometry::set_rect(const Rect& rect)
 	_rect = rect;
 	update_geometry(_color, _data, _rect, *_texture);
 	_has_changed = true;
-}
-
-unsigned SpriteGeometry::size() const
-{
-	return s_geometry_size;
 }
 
 const Texture* SpriteGeometry::texture() const

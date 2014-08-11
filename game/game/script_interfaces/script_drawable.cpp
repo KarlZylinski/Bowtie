@@ -1,11 +1,9 @@
 #include "script_drawable.h"
 
 #include <cmath>
-
 #include <lua.hpp>
-
 #include <engine/drawable.h>
-
+#include <engine/world.h>
 #include "script_interface_helpers.h"
 
 namespace bowtie
@@ -41,16 +39,25 @@ int color(lua_State* lua)
 	return 1;
 }
 
+int unspawn(lua_State* lua)
+{
+	auto& world = *(World*)lua_touserdata(lua, 1);
+	auto& drawable = *(Drawable*)lua_touserdata(lua, 2);
+	world.unspawn(drawable);
+	return 0;
+}
+
 void load(lua_State* lua)
 {
 	const interface_function functions[] = {
 		{ "set_position", set_position },
 		{ "position", position },
 		{ "set_color", set_color },
-		{ "color", color }
+		{ "color", color },
+		{ "unspawn", unspawn }
 	};
 
-	script_interface::register_interface(lua, "Drawable", functions, 4);
+	script_interface::register_interface(lua, "Drawable", functions, 5);
 }
 
 } // namespace drawable_script_interface

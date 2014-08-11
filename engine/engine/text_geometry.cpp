@@ -47,6 +47,13 @@ const float* TextGeometry::data() const
 	return _data;
 }
 
+unsigned TextGeometry::data_size() const
+{
+	auto text_len = strlen32(_text);
+	auto size_of_char_geometry = sizeof(float) * 9 * 6;
+	return text_len * (unsigned)size_of_char_geometry;
+}
+
 bool TextGeometry::has_changed() const
 {
 	return _has_changed;
@@ -69,13 +76,6 @@ void TextGeometry::set_text(const char* text)
 	_allocator.deallocate(_data);
 	_data = update_geometry(_allocator, _color, _font, _text);
 	_has_changed = true;
-}
-
-unsigned TextGeometry::size() const
-{
-	auto text_len = strlen32(_text);
-	auto size_of_char_geometry = sizeof(float) * 9 * 6;
-	return text_len * (unsigned)size_of_char_geometry;
 }
 
 const Texture* TextGeometry::texture() const
