@@ -74,19 +74,7 @@ Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_all
 }
 
 Renderer::~Renderer()
-{
-	_active = false;
-	_setup = false;
-	_shut_down = true;
-	notify_unprocessed_commands_exists();
-	_thread.join();
-
-	move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
-	array::clear(_unprocessed_commands);
-
-	move_processed_commads(_command_queue, _processed_memory, _processed_memory_mutex);
-	array::clear(_command_queue);
-	
+{	
 	for (unsigned i = 0; i < array::size(_resource_objects); ++i)
 	{
 		auto& resource_object = _resource_objects[i];
@@ -112,12 +100,11 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 		array::push_back(_unprocessed_commands, command);
 	}
 
-	notify_unprocessed_commands_exists();
-
 	if (_shut_down) { // Move to trash, right away!
 		move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
 		array::clear(_unprocessed_commands);
-	}
+	} else 
+		notify_unprocessed_commands_exists();
 }
 
 ResourceHandle Renderer::create_handle()
@@ -128,14 +115,14 @@ ResourceHandle Renderer::create_handle()
 	return handle;
 }
 
-void Renderer::deallocate_processed_commands(Allocator& allocator)
+void Renderer::deallocate_processed_commands(Allocator& render_interface_allocator)
 {
 	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 
 	for (unsigned i = 0; i < array::size(_processed_memory); ++i)
 	{
 		void* ptr = _processed_memory[i];
-		allocator.deallocate(ptr);
+		render_interface_allocator.deallocate(ptr);
 	}
 
 	array::clear(_processed_memory);
@@ -175,6 +162,20 @@ void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 	// Do stuff here which should happen before anything else.
 	_render_interface.resize(resolution);
 	_setup = true;
+}
+
+void Renderer::stop(Allocator& render_interface_allocator)
+{
+	_active = false;
+	_setup = false;
+	_shut_down = true;
+	notify_unprocessed_commands_exists();
+	_thread.join();
+	move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
+	array::clear(_unprocessed_commands);
+	move_processed_commads(_command_queue, _processed_memory, _processed_memory_mutex);
+	array::clear(_command_queue);
+	deallocate_processed_commands(render_interface_allocator);
 }
 
 
@@ -272,7 +273,8 @@ void Renderer::execute_command(const RendererCommand& command)
 			const auto& unspawn_data = *(UnspawnData*)command.data;
 			auto& render_world = *(RenderWorld*)_resource_lut.lookup(unspawn_data.world).render_object;
 			auto& render_drawable = *(RenderDrawable*)_resource_lut.lookup(unspawn_data.drawable).render_object;
-			render_world.remove_drawable(&render_drawable);	
+			render_world.remove_drawable(&render_drawable);
+			_concrete_renderer.unload_geometry(_resource_lut.lookup(render_drawable.geometry));
 			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return &render_drawable == rro.handle.render_object; });
 			_allocator.deallocate(&render_drawable);
 		}
@@ -322,7 +324,11 @@ namespace
 RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data)
 {
 	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
-	drawable.texture = data.texture;
+
+	drawable.texture = data.texture.type != ResourceHandle::NotInitialized
+		? (RenderTexture*)resource_lut.lookup(data.texture).render_object
+		: nullptr;
+
 	drawable.model = data.model;
 	drawable.shader = data.shader;
 	drawable.geometry = data.geometry;

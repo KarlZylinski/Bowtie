@@ -69,8 +69,8 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 				engine.update();
 			}
 		}
-
-		render_interface.deallocate_processed_commands(allocator);
+		
+		renderer.stop(allocator);
 	}
 
 	memory_globals::destroy_allocator(renderer_allocator);

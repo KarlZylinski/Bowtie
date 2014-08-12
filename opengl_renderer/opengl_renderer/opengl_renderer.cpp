@@ -67,6 +67,12 @@ RenderTarget* OpenGLRenderer::create_render_target()
 	return create_render_target_internal(_allocator, _resolution);
 }
 
+void OpenGLRenderer::destroy_render_target(const RenderTarget& target)
+{
+	unload_texture(*target.render_texture);
+	glDeleteFramebuffers(1, &target.target_handle.render_handle);
+}
+
 void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 {	
 	auto view_projection = view.view_projection();
@@ -127,6 +133,21 @@ const Vector2u& OpenGLRenderer::resolution() const
 void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 {
 	set_render_target_internal(_resolution, render_target.target_handle.render_handle);
+}
+
+void OpenGLRenderer::unload_geometry(RenderResourceHandle handle)
+{
+	glDeleteBuffers(1, &handle.render_handle);
+}
+
+void OpenGLRenderer::unload_shader(RenderResourceHandle handle)
+{
+	glDeleteProgram(handle.render_handle);
+}
+
+void OpenGLRenderer::unload_texture(const RenderTexture& texture)
+{
+	glDeleteTextures(1, &texture.render_handle.render_handle);
 }
 
 void OpenGLRenderer::unset_render_target()
@@ -257,16 +278,16 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 	GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
 	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
-	if (drawable.texture.type != ResourceHandle::NotInitialized)
+	if (drawable.texture != nullptr)
 	{
-		RenderTexture& drawable_texture = *(RenderTexture*)resource_lut.lookup(drawable.texture).render_object;
+		RenderTexture& drawable_texture = *drawable.texture;
 		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
 		glUniform1i(texture_sampler_id, 0);
 	}
 
-	glUniform1i(glGetUniformLocation(shader, "has_texture"), drawable.texture.type != ResourceHandle::NotInitialized ? 1 : 0);
+	glUniform1i(glGetUniformLocation(shader, "has_texture"), drawable.texture != nullptr ? 1 : 0);
 
 	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
 		
@@ -356,18 +377,14 @@ GLuint load_rendered_worlds_combining_shader(Allocator& allocator)
 GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders)
 {
 	int i;
-	GLuint program;
-
-	program = glCreateProgram();
+	GLuint program = glCreateProgram();
 
 	for(i = 0; i < shader_count; i++)
 		glAttachShader(program, shaders[i]);
 
 	glLinkProgram(program);
-
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
-
 	assert(status && "Failed linking shader program");
 
 	if(delete_shaders)
@@ -376,8 +393,7 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
 			glDeleteShader(shaders[i]);
 	}
 	
-	assert(glIsProgram(program));
-	
+	assert(glIsProgram(program));	
 	glValidateProgram(program);
 	GLint validation_status;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
@@ -389,13 +405,10 @@ GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_sh
 GLuint load_shader_internal(const char* vertex_source, const char* fragment_source)
 {
 	GLuint vertex_shader = compile_glsl_shader(vertex_source, GL_VERTEX_SHADER);
-	GLuint fragment_shader = compile_glsl_shader(fragment_source, GL_FRAGMENT_SHADER);
-		
+	GLuint fragment_shader = compile_glsl_shader(fragment_source, GL_FRAGMENT_SHADER);		
 	assert(vertex_shader != 0 && "Failed compiling vertex shader");
 	assert(fragment_shader != 0 && "Failed compiling fragments shader");
-
-	GLuint shaders[] = { vertex_shader, fragment_shader	};
-	
+	GLuint shaders[] = { vertex_shader, fragment_shader	};	
 	GLuint program = link_glsl_program(shaders, 2, true);
 	
 	if (program == 0)

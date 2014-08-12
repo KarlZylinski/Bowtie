@@ -6,9 +6,11 @@
 namespace bowtie
 {
 
+struct RenderTexture;
+
 struct RenderDrawable
 {
-	ResourceHandle texture;
+	RenderTexture* texture;
 	ResourceHandle shader;
 	ResourceHandle geometry;
 	unsigned num_vertices;

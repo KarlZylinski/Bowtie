@@ -24,6 +24,7 @@ public:
 	virtual void clear() = 0;
 	virtual void combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds) = 0;
 	virtual RenderTarget* create_render_target() = 0;
+	virtual void destroy_render_target(const RenderTarget& target) = 0;
 	virtual void draw(const View& view, const RenderWorld& render_world) = 0;
 	virtual void initialize_thread() = 0;
 	virtual RenderResourceHandle load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data) = 0;
@@ -33,6 +34,9 @@ public:
 	virtual void resize(const Vector2u& size, Array<RenderTarget*>& render_targets) = 0;
 	virtual const Vector2u& resolution() const = 0;
 	virtual void set_render_target(const RenderTarget& render_target) = 0;
+	virtual void unload_geometry(RenderResourceHandle handle) = 0;
+	virtual void unload_texture(const RenderTexture& texture) = 0;
+	virtual void unload_shader(RenderResourceHandle handle) = 0;
 	virtual void unset_render_target() = 0;
 };
 

@@ -41,13 +41,14 @@ public:
 	
 	void add_renderer_command(const RendererCommand& command);
 	ResourceHandle create_handle();
-	void deallocate_processed_commands(Allocator& allocator);
+	void deallocate_processed_commands(Allocator& render_interface_allocator);
 	void free_handle(ResourceHandle handle);
 	bool is_active() const;
 	bool is_setup() const;
 	RenderInterface& render_interface();
 	const Vector2u& resolution() const;
 	void run(IRendererContext* context, const Vector2u& resolution);
+	void stop(Allocator& render_interface_allocator);
 	
 private:
 	void consume_command_queue();

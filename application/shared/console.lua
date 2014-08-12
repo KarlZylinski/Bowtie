@@ -1,6 +1,6 @@
 require "shared/class"
 
-local _update_drawables
+local _update_drawables, _truncate_array
 
 Console = class(Console)
 
@@ -19,7 +19,13 @@ function Console:deinit()
 end
 
 function Console:write(message)
+    max_lines_to_keep = 1000
     table.insert(self.all_lines, message)
+
+    if #self.all_lines > max_lines_to_keep then
+        self.all_lines = _truncate_array(self.all_lines, max_lines_to_keep)
+    end
+
     self.visible_drawables = _update_drawables(self.world, self.font, self.all_lines, self.visible_drawables)
 end
 
@@ -36,6 +42,21 @@ end
 
 function Console:draw()
     World.draw(self.world, Vector2(0, 0), Vector2(1280, 720))
+end
+
+_truncate_array = function(array, num_to_keep)
+    if #array <= num_to_keep then
+        return array
+    end
+
+    local truncated = {}
+    local first = #array - num_to_keep
+
+    for i = first, #array do
+        table.insert(truncated, array[i])
+    end
+
+    return truncated
 end
 
 _update_drawables = function(world, font, all_lines, visible_drawables)

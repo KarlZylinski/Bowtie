@@ -147,7 +147,6 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 	auto copied_resource = (RenderResourceData*)_allocator.allocate(sizeof(RenderResourceData));
 	memcpy(copied_resource, &resource, sizeof(RenderResourceData));
 	rc.data = copied_resource;
-
 	rc.type = RendererCommand::LoadResource;
 	
 	switch (resource.type)
