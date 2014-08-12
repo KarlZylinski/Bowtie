@@ -1,8 +1,11 @@
 require "shared/class"
 
-local _update_drawables, _truncate_array
+local _truncate_array, _update_drawables
 
 Console = class(Console)
+console_height = 300
+console_hidden_y_pos = -console_height
+epsilon = 0.0001
 
 function Console:init()
     local engine = Engine.engine()
@@ -11,7 +14,9 @@ function Console:init()
     self.all_lines = {}
     self.visible_drawables = {}
     self.offset_from_bottom = 0
-    Rectangle.spawn(self.world, Vector2(0,0), Vector2(1280, 360), Color(0.1, 0.1, 0.12, 1))
+    self.current_y_pos = console_hidden_y_pos
+    self.target_y_pos = console_hidden_y_pos
+    Rectangle.spawn(self.world, Vector2(0,0), Vector2(1280, console_height), Color(0.1, 0.1, 0.12, 1))
 end
 
 function Console:deinit()
@@ -36,6 +41,18 @@ function Console:write(message)
 end
 
 function Console:update(dt)
+    local position_diff = self.target_y_pos - self.current_y_pos
+
+    if math.abs(position_diff) > epsilon then
+        self.current_y_pos = self.current_y_pos + position_diff * dt * 10
+    else
+        self.current_y_pos = self.target_y_pos
+    end
+
+    if not self:visible() then
+        return
+    end
+
     local offset_before = self.offset_from_bottom
 
     if Keyboard.pressed("PageUp") then
@@ -56,7 +73,19 @@ function Console:update(dt)
 end
 
 function Console:draw()
-    World.draw(self.world, Vector2(0, 0), Vector2(1280, 720))
+    if not self:visible() then
+        return
+    end
+
+    World.draw(self.world, Vector2(0, self.current_y_pos), Vector2(1280, 720))
+end
+
+function Console:toggle()
+    self.target_y_pos = self.target_y_pos ~= 0 and 0 or console_hidden_y_pos
+end
+
+function Console:visible()
+    return math.abs(self.current_y_pos - console_hidden_y_pos) > epsilon
 end
 
 _truncate_array = function(array, num_to_keep)
@@ -75,7 +104,8 @@ _truncate_array = function(array, num_to_keep)
 end
 
 _update_drawables = function(world, font, all_lines, visible_drawables, offset_from_bottom)
-    max_lines_visible = 12
+    line_height = 30
+    max_lines_visible = console_height / line_height
 
     for _, drawable in pairs(visible_drawables) do
         Drawable.unspawn(world, drawable)
@@ -94,7 +124,7 @@ _update_drawables = function(world, font, all_lines, visible_drawables, offset_f
     for i = first, last do
         local line = all_lines[i]
         local text = Text.spawn(world, font, line)
-        Drawable.set_position(text, Vector2(5, 5 + (#drawables + (max_lines_visible - num_to_show)) * 30))
+        Drawable.set_position(text, Vector2(5, 5 + (#drawables + (max_lines_visible - num_to_show)) * line_height))
         table.insert(drawables, text)
     end
 

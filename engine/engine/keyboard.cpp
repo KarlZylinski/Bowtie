@@ -36,7 +36,8 @@ static const NamedKey named_keys[] =
 	{ "A", keyboard::A },
 	{ "Z", keyboard::Z },
 	{ "PageUp", keyboard::PageUp },
-	{ "PageDown", keyboard::PageDown }
+	{ "PageDown", keyboard::PageDown },
+	{ "Tilde", keyboard::Tilde }
 };
 
 keyboard::Key Keyboard::key_from_string(const char* key_str)

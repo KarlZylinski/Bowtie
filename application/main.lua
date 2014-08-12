@@ -38,6 +38,10 @@ function update_beer(dt)
 		console:write("Right")
 	end
 
+	if (Keyboard.pressed("Tilde")) then
+		console:toggle()
+	end
+
 	Drawable.set_position(game.beer, Drawable.position(game.beer) + direction * dt * 400)
 end
 

@@ -19,7 +19,8 @@ namespace keyboard
 		A = 0x41,
 		Z = 0x5A,
 		PageUp = VK_PRIOR,
-		PageDown = VK_NEXT
+		PageDown = VK_NEXT,
+		Tilde = 0xC0
 	};
 
 #endif
