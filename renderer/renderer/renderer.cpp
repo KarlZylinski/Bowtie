@@ -184,8 +184,11 @@ void Renderer::stop(Allocator& render_interface_allocator)
 
 void Renderer::consume_command_queue()
 {
-	move_unprocessed_commands(_command_queue, _unprocessed_commands, _unprocessed_commands_mutex);
-	notify_unprocessed_commands_consumed();
+	{
+		std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
+		move_unprocessed_commands(_command_queue, _unprocessed_commands, _unprocessed_commands_mutex);
+		_unprocessed_commands_exists = false;
+	}
 
 	for (unsigned i = 0; i < array::size(_command_queue); ++i)
 		execute_command(_command_queue[i]);
@@ -284,12 +287,6 @@ void Renderer::execute_command(const RendererCommand& command)
 		assert(!"Command not implemented!");
 		break;
 	}
-}
-
-void Renderer::notify_unprocessed_commands_consumed()
-{
-	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
-	_unprocessed_commands_exists = false;
 }
 
 void Renderer::notify_unprocessed_commands_exists()

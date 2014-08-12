@@ -96,18 +96,6 @@ void Game::update(float dt)
 		return;
 
 	update_game(_lua, dt);
-
-	const char* test_messages[] = {
-		"mega dunder 2000 hej då",
-		"FAIL FAIL FAIL",
-		"massa skiiiiiiiiiiit",
-		"dhelalst ears rstareistn arstnu arst",
-		"DONDE ESTA"
-	};
-
-	if (rand() % 100 < 50)
-		console::write(test_messages[rand() % 5]);
-
 	console::update(dt);
 }
 

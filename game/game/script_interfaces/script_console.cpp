@@ -53,5 +53,5 @@ void draw()
 	script_interface::check_errors(s_lua, error);
 }
 
-} // namespace console_script_interface
+} // namespace console
 } // namespace bowtie

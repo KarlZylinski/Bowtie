@@ -20,18 +20,22 @@ function update_beer(dt)
 
 	if Keyboard.held("Up") then
 		direction.y = -1
+		console:write("Up")
 	end
 
 	if Keyboard.held("Down") then
 		direction.y = 1
+		console:write("Down")
 	end
 
 	if Keyboard.held("Left") then
 		direction.x = -1
+		console:write("Left")
 	end
 
 	if Keyboard.held("Right") then
 		direction.x = 1
+		console:write("Right")
 	end
 
 	Drawable.set_position(game.beer, Drawable.position(game.beer) + direction * dt * 400)

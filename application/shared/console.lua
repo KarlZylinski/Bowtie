@@ -36,7 +36,7 @@ function Console:write(message)
 end
 
 function Console:update(dt)
-    World.update(self.world)
+    local offset_before = self.offset_from_bottom
 
     if Keyboard.pressed("PageUp") then
         local new_offset = self.offset_from_bottom + 7
@@ -47,6 +47,12 @@ function Console:update(dt)
         local new_offset = self.offset_from_bottom - 7
         self.offset_from_bottom = new_offset > 0 and new_offset or 0
     end
+
+    if offset_before ~= self.offset_from_bottom then
+        self.visible_drawables = _update_drawables(self.world, self.font, self.all_lines, self.visible_drawables, self.offset_from_bottom)
+    end
+
+    World.update(self.world)
 end
 
 function Console:draw()

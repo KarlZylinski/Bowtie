@@ -53,7 +53,6 @@ public:
 private:
 	void consume_command_queue();
 	void execute_command(const RendererCommand& command);
-	void notify_unprocessed_commands_consumed();
 	void notify_unprocessed_commands_exists();
 	void thread();
 	void wait_for_unprocessed_commands_to_exist();
