@@ -10,6 +10,7 @@ function Console:init()
     self.font = Engine.load_resource("font", "fonts/stolen.font")
     self.all_lines = {}
     self.visible_drawables = {}
+    self.offset_from_bottom = 0
     Rectangle.spawn(self.world, Vector2(0,0), Vector2(1280, 360), Color(0.1, 0.1, 0.12, 1))
 end
 
@@ -19,25 +20,33 @@ function Console:deinit()
 end
 
 function Console:write(message)
-    max_lines_to_keep = 1000
+    max_lines_to_keep = 10000
+
+    if self.offset_from_bottom ~= 0 then
+        self.offset_from_bottom = self.offset_from_bottom + 1
+    end
+
     table.insert(self.all_lines, message)
 
     if #self.all_lines > max_lines_to_keep then
         self.all_lines = _truncate_array(self.all_lines, max_lines_to_keep)
     end
 
-    self.visible_drawables = _update_drawables(self.world, self.font, self.all_lines, self.visible_drawables)
+    self.visible_drawables = _update_drawables(self.world, self.font, self.all_lines, self.visible_drawables, self.offset_from_bottom)
 end
 
 function Console:update(dt)
     World.update(self.world)
 
---[[
-    if Keyboard.pressed("Z") then
-        local k, row = next(self.rows, 2)
-        table.remove(self.rows, k)
-        Drawable.unspawn(self.world, row)
-    end]]
+    if Keyboard.pressed("PageUp") then
+        local new_offset = self.offset_from_bottom + 7
+        self.offset_from_bottom = new_offset < #self.all_lines and new_offset or #self.all_lines - 1
+    end
+
+    if Keyboard.pressed("PageDown") then
+        local new_offset = self.offset_from_bottom - 7
+        self.offset_from_bottom = new_offset > 0 and new_offset or 0
+    end
 end
 
 function Console:draw()
@@ -59,7 +68,7 @@ _truncate_array = function(array, num_to_keep)
     return truncated
 end
 
-_update_drawables = function(world, font, all_lines, visible_drawables)
+_update_drawables = function(world, font, all_lines, visible_drawables, offset_from_bottom)
     max_lines_visible = 12
 
     for _, drawable in pairs(visible_drawables) do
@@ -72,13 +81,14 @@ _update_drawables = function(world, font, all_lines, visible_drawables)
         return drawables
     end
 
-    local last = #all_lines
+    local last = #all_lines - offset_from_bottom
     local first = last >= max_lines_visible and last - (max_lines_visible - 1) or 1
+    local num_to_show = last - first + 1
 
     for i = first, last do
         local line = all_lines[i]
         local text = Text.spawn(world, font, line)
-        Drawable.set_position(text, Vector2(0, #drawables * 30))
+        Drawable.set_position(text, Vector2(5, 5 + (#drawables + (max_lines_visible - num_to_show)) * 30))
         table.insert(drawables, text)
     end
 

@@ -17,7 +17,9 @@ namespace keyboard
 		Left = VK_LEFT,
 		Right = VK_RIGHT,
 		A = 0x41,
-		Z = 0x5A
+		Z = 0x5A,
+		PageUp = VK_PRIOR,
+		PageDown = VK_NEXT
 	};
 
 #endif

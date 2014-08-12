@@ -269,12 +269,10 @@ GLuint create_fullscreen_rendering_quad()
 
 void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
 {
-	auto model_view_projection_matrix = drawable.model * view_projection;
-		
+	auto model_view_projection_matrix = drawable.model * view_projection;		
 	auto shader = resource_lut.lookup(drawable.shader).render_handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
-
 	GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
 	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
 		
@@ -285,9 +283,10 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
 		glUniform1i(texture_sampler_id, 0);
+		glUniform1i(glGetUniformLocation(shader, "has_texture"), true);
 	}
-
-	glUniform1i(glGetUniformLocation(shader, "has_texture"), drawable.texture != nullptr ? 1 : 0);
+	else
+		glUniform1i(glGetUniformLocation(shader, "has_texture"), false);
 
 	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
 		

@@ -198,7 +198,8 @@ void RenderInterface::wait_for_fence(RenderFence& fence)
 {
 	{
 		std::unique_lock<std::mutex> lock(fence.mutex);
-		fence.fence_processed.wait(lock, [&fence] { return fence.processed; });
+		if (!fence.processed)
+			fence.fence_processed.wait(lock, [&fence] { return fence.processed; });
 	}
 	_allocator.destroy(&fence);
 }

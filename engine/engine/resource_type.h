@@ -8,7 +8,7 @@ namespace resource_type
 
 enum ResourceType
 {
-	Shader, Image, Sprite, Texture, Font, NumResourceTypes, Drawable
+	Shader, Image, Sprite, Texture, Font, Drawable, NumResourceTypes
 };
 
 }
