@@ -1,66 +1,23 @@
-game = {}
+require "game"
+
+local game
 
 function init()
-	local engine = Engine.engine()
-
-	Engine.load_resource("shader", "default.shader")
-	Engine.set_default_resource("shader", "default.shader")
-
-	Engine.load_resource("sprite", "textures/beer.png")
-	Engine.load_resource("sprite", "textures/hill.png")
-
-	game.world = World.create(engine)
-	game.hill = Sprite.spawn(game.world, "textures/hill.png")
-	Drawable.set_position(game.hill, Vector2(50, 50))
-	game.beer = Sprite.spawn(game.world, "textures/beer.png")
-end
-
-function update_beer(dt)
-	local direction = Vector2()
-
-	if Keyboard.held("Up") then
-		direction.y = -1
-		console:write("Up")
-	end
-
-	if Keyboard.held("Down") then
-		direction.y = 1
-		console:write("Down")
-	end
-
-	if Keyboard.held("Left") then
-		direction.x = -1
-		console:write("Left")
-	end
-
-	if Keyboard.held("Right") then
-		direction.x = 1
-		console:write("Right")
-	end
-
-	if (Keyboard.pressed("Tilde")) then
-		console:toggle()
-	end
-
-	Drawable.set_position(game.beer, Drawable.position(game.beer) + direction * dt * 400)
+    game = Game()
 end
 
 function update(dt)
-	local pos = Drawable.position(game.beer)
+    if (Keyboard.pressed("Tilde")) then
+        console:toggle()
+    end
 
-	Drawable.set_color(game.beer, Vector4((math.sin(pos.x)+1)/2,(math.sin(pos.y)+1)/2,0,1))
-	Drawable.set_color(game.hill, Vector4((math.cos(pos.y)+1)/2,(math.sin(pos.x)+1)/2,0,1))
-	Drawable.set_position(game.hill, Vector2(((math.cos(pos.y)+1)/2) * 640 - 200, ((math.sin(pos.x)+1)/2) * 360 - 200))
-
-	update_beer(dt)
-	World.update(game.world)
+    game:update(dt)
 end
 
 function draw()
-	World.draw(game.world, Vector2(0,0), Vector2(1280,720))
+    game:draw()
 end
 
 function deinit()
-	local engine = Engine.engine()
-	World.destroy(engine, game.world)
+    game = nil
 end

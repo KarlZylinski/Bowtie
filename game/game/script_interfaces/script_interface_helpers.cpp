@@ -34,7 +34,7 @@ double get_field(lua_State* lua, int index, const char *key)
     if (!lua_isnumber(lua, -1))
 		return 0;
 
-    auto result = lua_tonumber(lua, -1);
+	auto result = lua_tonumber(lua, -1);
     lua_pop(lua, 1);
     return result;
 }

@@ -1,11 +1,18 @@
 #include "render_resource_lookup_table.h"
 #include <cassert>
+#include <cstring>
 
 namespace bowtie
 {
 
 RenderResourceLookupTable::RenderResourceLookupTable()
 {
+	memset(&_lookup_table, 0, num_handles * sizeof(RenderResourceHandle));
+}
+
+void RenderResourceLookupTable::free(ResourceHandle key)
+{
+	_lookup_table[key.handle] = RenderResourceHandle();
 }
 
 RenderResourceHandle RenderResourceLookupTable::lookup(ResourceHandle handle) const

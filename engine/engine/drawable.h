@@ -27,10 +27,12 @@ public:
 	ResourceHandle render_handle() const;
 	void reset_geometry_changed();
 	void reset_state_changed();
+	float rotation() const;
 	void set_color(const Color& color);
 	void set_geometry_handle(ResourceHandle handle);
 	void set_position(const Vector2& position);
 	void set_render_handle(ResourceHandle handle);
+	void set_rotation(float rotation);
 	void set_shader(ResourceHandle shader);
 	ResourceHandle shader() const;
 	bool state_changed() const;
@@ -42,6 +44,7 @@ private:
 	Vector2 _position;
 	ResourceHandle _render_handle;
 	bool _render_state_changed;
+	float _rotation;
 	ResourceHandle _shader;
 
 	Drawable& operator=(const Drawable&);

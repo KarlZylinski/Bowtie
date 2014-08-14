@@ -279,6 +279,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			render_world.remove_drawable(&render_drawable);
 			_concrete_renderer.unload_geometry(_resource_lut.lookup(render_drawable.geometry));
 			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return &render_drawable == rro.handle.render_object; });
+			_resource_lut.free(unspawn_data.drawable);
 			_allocator.deallocate(&render_drawable);
 		}
 		break;

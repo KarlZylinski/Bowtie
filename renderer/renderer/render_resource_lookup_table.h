@@ -11,6 +11,7 @@ class RenderResourceLookupTable
 public:
 	RenderResourceLookupTable();
 
+	void free(ResourceHandle key);
 	RenderResourceHandle lookup(ResourceHandle handle) const;
 	void set(ResourceHandle key, RenderResourceHandle value);
 	

@@ -16,7 +16,7 @@ function Console:init()
     self.offset_from_bottom = 0
     self.current_y_pos = console_hidden_y_pos
     self.target_y_pos = console_hidden_y_pos
-    Rectangle.spawn(self.world, Vector2(0,0), Vector2(1280, console_height), Color(0.1, 0.1, 0.12, 1))
+    Rectangle.spawn(self.world, Vector2(0, 0), Vector2(1280, console_height), Color(0.1, 0.1, 0.12, 1))
 end
 
 function Console:deinit()
