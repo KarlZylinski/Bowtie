@@ -1,12 +1,7 @@
 #include "script_interface_helpers.h"
-
 #include <cassert>
-
 #include <lua.hpp>
-
 #include "script_console.h"
-
-
 
 namespace bowtie
 {

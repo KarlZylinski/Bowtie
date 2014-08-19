@@ -19,17 +19,18 @@ end
 
 function Rocket:update(dt, view_size)
     local input = read_input()
-    Drawable.set_rotation(self.sprite, calculate_rotation(Drawable.rotation(self.sprite), input, dt))
+    local rotation = calculate_rotation(Drawable.rotation(self.sprite), input, dt)
+    Drawable.set_rotation(self.sprite, rotation)
     self.velocity = apply_gravity(self.velocity, dt)
     self.thrust = calculate_thrust(self.thrust, input, dt)
-    self.velocity = apply_thrust(self.velocity, self.thrust, dt)
+    self.velocity = apply_thrust(self.velocity, self.thrust, rotation, dt)
     self.velocity = limit_velocity(self.velocity)
     local new_pos = Drawable.position(self.sprite) + self.velocity * dt
     local sprite_size = Tuple.second(Sprite.rect(self.sprite))
 
     if new_pos.y > view_size.y - sprite_size.y then
         new_pos.y = view_size.y - sprite_size.y
-        self.velocity.y = 0
+        self.velocity = Vector2(0, 0)
     end
 
     Drawable.set_position(self.sprite, new_pos)
@@ -39,13 +40,14 @@ apply_gravity = function(current_velocity, dt)
     return current_velocity + Vector2(0, 9.82 * 300 * dt);
 end
 
-apply_thrust = function(current_velocity, current_thrust, dt)
+apply_thrust = function(current_velocity, current_thrust, rotation, dt)
     local vertical_velocity_change = current_thrust * dt
-    return current_velocity + Vector2(0, vertical_velocity_change)
+    return current_velocity + Vector2(-vertical_velocity_change * math.sin(rotation),
+        vertical_velocity_change * math.cos(rotation))
 end
 
 calculate_rotation = function(current_rotation, input, dt)
-    return current_rotation + input.x * dt
+    return current_rotation + input.x * 5 * dt
 end
 
 calculate_thrust = function(current_thrust, input, dt)
