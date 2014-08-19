@@ -1,0 +1,47 @@
+simple material
+----
+
+{
+    shader: "basic.shader"
+    uniforms: [
+        "mat4 model_view_projection_matrix mvp"
+    ]
+    vertex_definition: [
+        "position"
+        "texcoord"
+        "color"
+    ]
+}
+
+complex material
+----
+
+{
+    shader: "fire.shader"
+    uniforms: [
+        "mat4 model_view_projection_matrix mvp"
+        "float intensity 0"
+    ]
+    vertex_definition: [
+        "position"
+        "texcoord"
+        "color"
+    ]
+}
+
+complex material
+----
+
+{
+    shader: "rendered_world_combining.shader"
+    uniforms: [
+        "texture texture_samplers[16]"
+        "int num_samplers"
+    ]
+    vertex_definition: [
+        "position"
+        "texcoord"
+    ]
+}
+
+
