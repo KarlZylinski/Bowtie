@@ -6,26 +6,13 @@
 
 #include "script_console.h"
 
+
+
 namespace bowtie
 {
-namespace script_interface
+
+namespace
 {
-
-void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions)
-{
-	lua_newtable(lua);
-
-	for (unsigned i = 0; i < num_functions; ++i)
-	{
-		auto func = functions[i];
-
-		lua_pushcfunction(lua, func.function);
-		lua_setfield(lua, -2, func.name);
-	}
-
-	lua_setglobal(lua, interface_name);
-}
-
 double get_field(lua_State* lua, int index, const char *key)
 {
     lua_pushstring(lua, key);
@@ -38,28 +25,36 @@ double get_field(lua_State* lua, int index, const char *key)
     lua_pop(lua, 1);
     return result;
 }
-
-Vector2 to_vector2(lua_State* lua, int index)
-{
-	assert(lua_istable(lua, index));
-
-	auto x_value = (float)get_field(lua, index, "x");
-	auto y_value = (float)get_field(lua, index, "y");
-
-	return Vector2(x_value, y_value);
 }
 
-Vector2u to_vector2u(lua_State* lua, int index)
+namespace script_interface
 {
-	assert(lua_istable(lua, index));
 
-	auto x_value = (unsigned)get_field(lua, index, "x");
-	auto y_value = (unsigned)get_field(lua, index, "y");
+bool check_errors(lua_State* lua, int error)
+{
+	if (error == 0)
+		return true;
 
-	return Vector2u(x_value, y_value);
+	auto error_str = lua_tostring(lua, -1);
+	console::write(error_str);
+	return false;
+}
+
+void push_color(lua_State* lua, const Color& c)
+{
+	push_vector4(lua, c);
 }
 
 void push_vector2(lua_State* lua, const Vector2& v)
+{
+	lua_getglobal(lua, "Vector2");
+	lua_pushnumber(lua, v.x);
+	lua_pushnumber(lua, v.y);
+	int error = lua_pcall(lua, 2, 1, 0);
+	script_interface::check_errors(lua, error);
+}
+
+void push_vector2(lua_State* lua, const Vector2i& v)
 {
 	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v.x);
@@ -77,18 +72,6 @@ void push_vector2(lua_State* lua, const Vector2u& v)
 	script_interface::check_errors(lua, error);
 }
 
-Vector4 to_vector4(lua_State* lua, int index)
-{
-	assert(lua_istable(lua, index));
-
-	auto x_value = (float)get_field(lua, index, "x");
-	auto y_value = (float)get_field(lua, index, "y");
-	auto z_value = (float)get_field(lua, index, "z");
-	auto w_value = (float)get_field(lua, index, "w");
-
-	return Vector4(x_value, y_value, z_value, w_value);
-}
-
 void push_vector4(lua_State* lua, const Vector4& v)
 {
 	lua_getglobal(lua, "Vector4");
@@ -100,24 +83,66 @@ void push_vector4(lua_State* lua, const Vector4& v)
 	script_interface::check_errors(lua, error);
 }
 
+void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions)
+{
+	lua_newtable(lua);
+
+	for (unsigned i = 0; i < num_functions; ++i)
+	{
+		auto func = functions[i];
+
+		lua_pushcfunction(lua, func.function);
+		lua_setfield(lua, -2, func.name);
+	}
+
+	lua_setglobal(lua, interface_name);
+}
+
 Color to_color(lua_State* lua, int index)
 {
 	return to_vector4(lua, index);
 }
 
-void push_color(lua_State* lua, const Color& c)
+Vector2 to_vector2(lua_State* lua, int index)
 {
-	push_vector4(lua, c);
+	assert(lua_istable(lua, index));
+
+	auto x_value = (float)get_field(lua, index, "x");
+	auto y_value = (float)get_field(lua, index, "y");
+
+	return Vector2(x_value, y_value);
 }
 
-bool check_errors(lua_State* lua, int error)
+Vector2i to_vector2i(lua_State* lua, int index)
 {
-	if (error == 0)
-		return true;
+	assert(lua_istable(lua, index));
 
-	auto error_str = lua_tostring(lua, -1);
-	console::write(error_str);
-	return false;
+	auto x_value = (int)get_field(lua, index, "x");
+	auto y_value = (int)get_field(lua, index, "y");
+
+	return Vector2i(x_value, y_value);
+}
+
+Vector2u to_vector2u(lua_State* lua, int index)
+{
+	assert(lua_istable(lua, index));
+
+	auto x_value = (unsigned)get_field(lua, index, "x");
+	auto y_value = (unsigned)get_field(lua, index, "y");
+
+	return Vector2u(x_value, y_value);
+}
+
+Vector4 to_vector4(lua_State* lua, int index)
+{
+	assert(lua_istable(lua, index));
+
+	auto x_value = (float)get_field(lua, index, "x");
+	auto y_value = (float)get_field(lua, index, "y");
+	auto z_value = (float)get_field(lua, index, "z");
+	auto w_value = (float)get_field(lua, index, "w");
+
+	return Vector4(x_value, y_value, z_value, w_value);
 }
 
 } // namespace script_interface

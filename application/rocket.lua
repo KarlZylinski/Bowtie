@@ -1,4 +1,5 @@
 require "shared/class"
+require "shared/tuple"
 
 local apply_gravity, apply_thrust, calculate_rotation, calculate_thrust, limit_velocity, limit_vertical_velocity, read_input
 
@@ -13,6 +14,7 @@ end
 function Rocket:spawn(world)
     self.sprite = Sprite.spawn(world, "textures/rocket.png")
     Drawable.set_position(self.sprite, Vector2(200, 0))
+    Drawable.set_pivot(self.sprite, Tuple.second(Sprite.rect(self.sprite)) * 0.5);
 end
 
 function Rocket:update(dt, view_size)
@@ -23,7 +25,7 @@ function Rocket:update(dt, view_size)
     self.velocity = apply_thrust(self.velocity, self.thrust, dt)
     self.velocity = limit_velocity(self.velocity)
     local new_pos = Drawable.position(self.sprite) + self.velocity * dt
-    local _, sprite_size = Sprite.rect(self.sprite)
+    local sprite_size = Tuple.second(Sprite.rect(self.sprite))
 
     if new_pos.y > view_size.y - sprite_size.y then
         new_pos.y = view_size.y - sprite_size.y
