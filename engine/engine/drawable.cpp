@@ -10,12 +10,12 @@ namespace bowtie
 // Public interface.
 
 Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry) : _allocator(allocator), _geometry(geometry),
-	 _pivot(0, 0), _position(0, 0), _render_state_changed(false), _rotation(0.7f)
+	 _pivot(0, 0), _position(0, 0), _render_state_changed(false), _rotation(0.0f)
 {
 }
 
 Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _geometry(other._geometry.clone(_allocator)),
-	_pivot(0, 0), _position(other._position), _render_state_changed(false), _rotation(0.7f)
+	_pivot(0, 0), _position(other._position), _render_state_changed(false), _rotation(0.0f)
 {
 }
 
