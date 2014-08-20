@@ -56,6 +56,7 @@ private:
 	uint64_t get_name(uint64_t name, ResourceType type);
 	void add_resource(uint64_t name, ResourceType type, ResourceHandle resource);
 
+	ResourceHandle load_material(const char* filename);
 	ResourceHandle load_shader(const char* filename);
 	Image& load_image(const char* filename);
 	Drawable& load_sprite_prototype(const char* filename);

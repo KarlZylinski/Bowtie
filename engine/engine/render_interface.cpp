@@ -151,6 +151,10 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 	
 	switch (resource.type)
 	{
+		case RenderResourceData::Material:
+			copied_resource->data = _allocator.allocate(sizeof(MaterialResourceData));
+			memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
+			break;
 		case RenderResourceData::Shader:
 			copied_resource->data = _allocator.allocate(sizeof(ShaderResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));

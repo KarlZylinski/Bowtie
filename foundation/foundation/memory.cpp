@@ -312,12 +312,13 @@ namespace {
 	};
 
 	struct MemoryGlobals {
-		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator);
+		static const int ALLOCATOR_MEMORY = sizeof(MallocAllocator) + sizeof(ScratchAllocator);
 		char buffer[ALLOCATOR_MEMORY];
 
 		MallocAllocator *default_allocator;
+		ScratchAllocator *default_scratch_allocator;
 
-		MemoryGlobals() : default_allocator(0) {}
+		MemoryGlobals() : default_allocator(0), default_scratch_allocator(0) {}
 	};
 
 	MemoryGlobals _memory_globals;
@@ -330,14 +331,22 @@ namespace bowtie
 		void init(ICallstackCapturer& callstack_capturer, uint32_t temporary_memory) {
 			char *p = _memory_globals.buffer;
 			_memory_globals.default_allocator = new (p) MallocAllocator(callstack_capturer, "default allocator");
+			p += sizeof(MallocAllocator);
+			_memory_globals.default_scratch_allocator = new (p) ScratchAllocator(*_memory_globals.default_allocator, temporary_memory);
 		}
 
 		Allocator &default_allocator() {
 			return *_memory_globals.default_allocator;
 		}
 
+		Allocator &default_scratch_allocator() {
+			return *_memory_globals.default_scratch_allocator;
+		}
+
 		void shutdown() {
+			_memory_globals.default_scratch_allocator->~ScratchAllocator();
 			_memory_globals.default_allocator->~MallocAllocator();
+			_memory_globals = MemoryGlobals();
 		}
 
 		Allocator* new_allocator(ICallstackCapturer& callstack_capturer, const char* name) {

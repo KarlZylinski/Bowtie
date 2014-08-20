@@ -26,6 +26,7 @@ public:
 	virtual RenderTarget* create_render_target() = 0;
 	virtual void destroy_render_target(const RenderTarget& target) = 0;
 	virtual void draw(const View& view, const RenderWorld& render_world) = 0;
+	virtual unsigned get_uniform_location(RenderResourceHandle shader, const char* name) = 0;
 	virtual void initialize_thread() = 0;
 	virtual RenderResourceHandle load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data) = 0;
 	virtual RenderTexture* load_texture(const TextureResourceData& trd, void* dynamic_data) = 0;

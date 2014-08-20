@@ -1,0 +1,6 @@
+{
+    "shader": "default.shader",
+    "uniforms": [
+        "mat4 model_view_projection_matrix mvp"
+    ]
+}

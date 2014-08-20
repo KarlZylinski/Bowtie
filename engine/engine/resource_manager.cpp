@@ -22,7 +22,7 @@ namespace bowtie
 {
 
 
-const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font", "drawable" };
+const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font", "drawable", "material" };
 
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
 {
@@ -65,10 +65,72 @@ uint64_t hash_name(const char* name)
 	return murmur_hash_64(name, strlen32(name), 0); 
 }
 
+ResourceHandle ResourceManager::load_material(const char* filename)
+{
+	auto name = hash_name(filename);
+	auto existing = get(resource_type::Material, name);
+
+	if (existing.type != ResourceHandle::NotInitialized)
+		return existing;
+
+	LoadedFile file = file::load(filename, _allocator);
+	using namespace rapidjson;
+    Document d;	
+    d.Parse<0>((char*)file.data);
+	_allocator.deallocate(file.data);
+
+	auto shader_filename = d["shader"].GetString();
+	auto shader_handle = load_shader(shader_filename);
+	auto& uniforms = d["uniforms"];
+	unsigned uniforms_dynamic_data_size = 0;
+	unsigned num_uniforms = 0;
+
+	for(auto uniform_iter = uniforms.Begin(); uniform_iter != uniforms.End(); ++uniform_iter)
+	{
+		auto& uniform = *uniform_iter;
+
+		if (!uniform.IsString())
+			continue;
+
+		uniforms_dynamic_data_size += uniform.GetStringLength() + 1;
+		++num_uniforms;
+	}
+
+	char* uniforms_dynamic_data = num_uniforms != 0
+		? (char*)_allocator.allocate(uniforms_dynamic_data_size)
+		: nullptr;
+
+	char* uniforms_dynamic_data_writer = uniforms_dynamic_data;
+	for(auto uniform_iter = uniforms.Begin(); uniform_iter != uniforms.End(); ++uniform_iter)
+	{
+		auto& uniform = *uniform_iter;
+
+		if (!uniform.IsString())
+			continue;
+		
+		auto uniform_str = uniform.GetString();
+		unsigned uniform_str_len = uniform.GetStringLength() + 1;
+		memcpy(uniforms_dynamic_data_writer, uniform_str, uniform_str_len);
+		uniforms_dynamic_data_writer += uniform_str_len;
+	}
+	
+	MaterialResourceData mrd;
+	mrd.num_uniforms = num_uniforms;
+	mrd.shader = shader_handle;
+	RenderResourceData material_resource = _render_interface.create_render_resource_data(RenderResourceData::Material);
+	material_resource.data = &mrd;
+	
+	_render_interface.create_resource(material_resource, uniforms_dynamic_data, uniforms_dynamic_data_size);
+	add_resource(name, resource_type::Material, material_resource.handle);
+	
+	return material_resource.handle;
+}
+
 ResourceHandle ResourceManager::load_shader(const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(resource_type::Shader, name);
+
 	if (existing.type != ResourceHandle::NotInitialized)
 		return existing;
 
@@ -194,6 +256,7 @@ ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
 {
 	switch(type)
 	{
+		case resource_type::Material: return load_material(filename);
 		case resource_type::Image: return ResourceHandle(&load_image(filename));
 		case resource_type::Shader: return load_shader(filename);
 		case resource_type::Sprite: return ResourceHandle(&load_sprite_prototype(filename));

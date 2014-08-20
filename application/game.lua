@@ -5,7 +5,7 @@ Game = class(Game)
 
 function Game:init()
     local engine = Engine.engine()
-    Engine.load_resource("shader", "default.shader")
+    Engine.load_resource("material", "default.material")
     Engine.set_default_resource("shader", "default.shader")
     self.world = World.create(engine)
     self.rocket = Rocket()

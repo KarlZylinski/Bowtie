@@ -4,12 +4,15 @@
 
 #include <engine/render_fence.h>
 #include <foundation/array.h>
+#include <foundation/murmur_hash.h>
+#include <foundation/temp_allocator.h>
+#include <foundation/string_utils.h>
 #include <foundation/queue.h>
-
+#include "iconcrete_renderer.h"
+#include "material.h"
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
-#include "iconcrete_renderer.h"
 
 namespace bowtie
 {
@@ -27,15 +30,17 @@ struct ResourceCreators
 {
 	ResourceCreators(const CreateResourceFunc(const DrawableResourceData&)& create_drawable,
 		const CreateResourceFunc(const GeometryResourceData&)& create_geometry,
+		const CreateResourceFunc(const MaterialResourceData&)& create_material,
 		const CreateResourceFunc(void)& create_render_target,
 		const CreateResourceFunc(const ShaderResourceData&)& create_shader,
 		const CreateResourceFunc(const TextureResourceData&)& create_texture,
 		const CreateResourceFunc(void)& create_world)
-			: create_drawable(create_drawable), create_geometry(create_geometry), create_render_target(create_render_target),
+		: create_drawable(create_drawable), create_geometry(create_geometry), create_material(create_material), create_render_target(create_render_target),
 			  create_shader(create_shader), create_texture(create_texture), create_world(create_world) {}
 
 	CreateResourceFunc(const DrawableResourceData&) create_drawable;
 	CreateResourceFunc(const GeometryResourceData&) create_geometry;
+	CreateResourceFunc(const MaterialResourceData&) create_material;
 	CreateResourceFunc(void) create_render_target;
 	CreateResourceFunc(const ShaderResourceData&) create_shader;
 	CreateResourceFunc(const TextureResourceData&) create_texture;
@@ -44,6 +49,7 @@ struct ResourceCreators
 
 RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
 RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
+RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
 RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets);
 RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCreators& resource_creators);
 RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
@@ -220,6 +226,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			ResourceCreators resource_creators(
 				std::bind(&create_drawable, std::ref(_allocator), std::cref(_resource_lut), std::placeholders::_1),
 				std::bind(&create_geometry, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
+				std::bind(&create_material, std::ref(_allocator), std::ref(_concrete_renderer), dynamic_data, std::cref(_resource_lut), std::placeholders::_1),
 				std::bind(&create_render_target, std::ref(_concrete_renderer), std::ref(_render_targets)),
 				std::bind(&create_shader, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
 				std::bind(&create_texture, std::ref(_concrete_renderer), dynamic_data, std::placeholders::_1),
@@ -341,6 +348,89 @@ RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void*
 	return concrete_renderer.load_geometry(data, dynamic_data);
 }
 
+Array<char*> split(Allocator& allocator, const char* str, char delimiter)
+{
+	Array<char*> words(allocator);
+	auto len_str = strlen(str);
+
+	if (len_str == 0)
+		return words;
+
+	auto len = len_str + 1;
+	unsigned current_word_len = 0;
+
+	for (unsigned i = 0; i < len; ++i)
+	{
+		if (str[i] == delimiter || i == len - 1)
+		{
+			char* word = (char*)allocator.allocate(current_word_len);
+			memcpy(word, str + i - current_word_len, current_word_len);
+			word[current_word_len] = 0;
+			array::push_back(words, word);
+			current_word_len = 0;
+		}
+		else
+			++current_word_len;
+	}
+
+	return words;
+}
+
+Uniform::Type get_uniform_type_from_str(const char* str)
+{
+	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4" };
+	
+	for (unsigned i = 0; i < Uniform::NumUniformTypes; ++i)
+	{
+		if (!strcmp(str, types_as_str[i]))
+			return (Uniform::Type)i;
+	}
+
+	assert(!"Unknown uniform type");
+	return Uniform::NumUniformTypes;
+}
+
+Uniform::AutomaticValue get_automatic_value_from_str(const char* str)
+{
+	static const char* types_as_str[] = { "none", "mvp" };
+	
+	for (unsigned i = 0; i < Uniform::NumAutomaticValues; ++i)
+	{
+		if (!strcmp(str, types_as_str[i]))
+			return (Uniform::AutomaticValue)i;
+	}
+
+	assert(!"Unknown uniform automatic value");
+	return Uniform::NumAutomaticValues;
+}
+
+RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
+{
+	auto shader = lookup_table.lookup(data.shader);
+	auto material = allocator.construct<Material>(allocator, shader);
+	char* current_uniform = (char*)dynamic_data;
+	
+	for (unsigned i = 0; i < data.num_uniforms; ++i)
+	{
+		TempAllocator4096 ta;
+		auto split_uniform = split(ta, current_uniform, ' ');
+		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
+		auto type = get_uniform_type_from_str(split_uniform[0]);
+		auto name = split_uniform[1];
+		auto name_hash = murmur_hash_64(name, strlen32(name), 0);
+		auto location = concrete_renderer.get_uniform_location(shader, name);
+		
+		auto automatic_value = array::size(split_uniform) > 2
+			? get_automatic_value_from_str(split_uniform[2])
+			: Uniform::None;
+
+		material->add_uniform(Uniform(type, name_hash, location, automatic_value));
+		current_uniform += strlen(current_uniform) + 1;
+	}
+
+	return RenderResourceHandle(material);
+}
+
 RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets)
 {
 	auto render_target = concrete_renderer.create_render_target();
@@ -354,6 +444,7 @@ RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCre
 	{
 		case RenderResourceData::Drawable: return resource_creators.create_drawable(*(DrawableResourceData*)data.data);
 		case RenderResourceData::Geometry: return resource_creators.create_geometry(*(GeometryResourceData*)data.data);
+		case RenderResourceData::Material: return resource_creators.create_material(*(MaterialResourceData*)data.data);
 		case RenderResourceData::RenderTarget: return resource_creators.create_render_target();
 		case RenderResourceData::Shader: return resource_creators.create_shader(*(ShaderResourceData*)data.data);
 		case RenderResourceData::Texture: return resource_creators.create_texture(*(TextureResourceData*)data.data);

@@ -82,6 +82,11 @@ void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 		draw_drawable(view_projection, *drawables[i], _resource_lut);
 }
 
+unsigned OpenGLRenderer::get_uniform_location(RenderResourceHandle shader, const char* name)
+{
+	return glGetUniformLocation(shader.render_handle, name);
+}
+
 void OpenGLRenderer::initialize_thread()
 {
 	initialize_gl();

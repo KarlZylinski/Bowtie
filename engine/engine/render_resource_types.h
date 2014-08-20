@@ -12,12 +12,18 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Drawable, Geometry, RenderTarget, Shader, Texture, World
+		Drawable, Geometry, RenderTarget, Shader, Texture, World, Material
 	};
 
 	Type type;
 	ResourceHandle handle;
 	void* data;
+};
+
+struct MaterialResourceData
+{
+	ResourceHandle shader;
+	unsigned num_uniforms;
 };
 	
 struct ShaderResourceData

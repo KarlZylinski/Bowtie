@@ -20,6 +20,7 @@ public:
 	RenderTarget* create_render_target();
 	void destroy_render_target(const RenderTarget& target);
 	void draw(const View& view, const RenderWorld& render_world);
+	unsigned get_uniform_location(RenderResourceHandle shader, const char* name);
 	void initialize_thread();
 	RenderResourceHandle load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data);
 	RenderResourceHandle load_shader(const ShaderResourceData& shader_data, void* dynamic_data);	
