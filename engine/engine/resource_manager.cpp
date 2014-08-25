@@ -62,7 +62,7 @@ ResourceType ResourceManager::resource_type_from_string(const char* type)
 
 uint64_t hash_name(const char* name)
 {
-	return murmur_hash_64(name, strlen32(name), 0); 
+	return hash_str(name); 
 }
 
 ResourceHandle ResourceManager::load_material(const char* filename)

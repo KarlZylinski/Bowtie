@@ -1,7 +1,6 @@
 #include "game.h"
 
 #include <cassert>
-
 #include <lua.hpp>
 
 #include "script_interfaces/script_console.h"
@@ -13,6 +12,7 @@
 #include "script_interfaces/script_rectangle.h"
 #include "script_interfaces/script_time.h"
 #include "script_interfaces/script_text.h"
+#include "script_interfaces/script_material.h"
 
 #include <random>
 
@@ -61,7 +61,7 @@ void load_shared_libs(lua_State* lua)
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/console.lua"));
 }
 
-Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
+Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
 {
 	luaL_openlibs(_lua);
 	load_main(_lua);
@@ -74,6 +74,7 @@ Game::Game(Allocator& allocator, Engine& engine) : _allocator(allocator), _lua(l
 	sprite_script_interface::load(_lua);
 	text_script_interface::load(_lua);
 	rectangle_script_interface::load(_lua);
+	material_script_interface::load(_lua, render_interface);
 }
 
 Game::~Game()

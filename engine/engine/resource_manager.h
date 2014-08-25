@@ -46,7 +46,7 @@ public:
 	
 	template<class T> T* get(ResourceType type, const char* name)
 	{
-		return get<T>(type, murmur_hash_64(name, strlen32(name), 0));
+		return get<T>(type, hash_str(name));
 	}
 
 	void set_default(ResourceType type, ResourceHandle handle);

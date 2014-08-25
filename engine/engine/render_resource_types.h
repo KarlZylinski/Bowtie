@@ -44,7 +44,7 @@ struct DrawableResourceData
 {
 	ResourceHandle render_world;
 	ResourceHandle texture;
-	ResourceHandle shader;
+	ResourceHandle material;
 	ResourceHandle geometry;
 	unsigned num_vertices;
 	Matrix4 model;

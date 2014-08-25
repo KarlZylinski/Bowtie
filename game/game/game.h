@@ -7,11 +7,12 @@ namespace bowtie
 
 class Allocator;
 class Engine;
+class RenderInterface;
 
 class Game
 {
 public:
-	Game(Allocator& allocator, Engine& engine);
+	Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface);
 	~Game();
 
 	void init();

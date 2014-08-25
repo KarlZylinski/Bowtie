@@ -23,6 +23,7 @@ public:
 	const IDrawableGeometry& geometry() const;
 	bool geometry_changed() const;
 	ResourceHandle geometry_handle() const;
+	ResourceHandle material() const;
 	Matrix4 model_matrix() const;
 	const Vector2i& pivot() const;
 	const Vector2& position() const;
@@ -32,12 +33,11 @@ public:
 	float rotation() const;
 	void set_color(const Color& color);
 	void set_geometry_handle(ResourceHandle handle);
+	void set_material(ResourceHandle shader);
 	void set_pivot(const Vector2i& position);
 	void set_position(const Vector2& position);
 	void set_render_handle(ResourceHandle handle);
 	void set_rotation(float rotation);
-	void set_shader(ResourceHandle shader);
-	ResourceHandle shader() const;
 	bool state_changed() const;
 
 private:
@@ -49,7 +49,7 @@ private:
 	ResourceHandle _render_handle;
 	bool _render_state_changed;
 	float _rotation;
-	ResourceHandle _shader;
+	ResourceHandle _material;
 
 	Drawable& operator=(const Drawable&);
 };

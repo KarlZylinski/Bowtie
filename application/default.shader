@@ -24,12 +24,15 @@ in vec4 vertex_color;
 
 uniform sampler2D texture_sampler;
 uniform bool has_texture;
+uniform float test;
 
 layout(location = 0) out vec4 color;
 
 void main()
 {
-	color = has_texture
-		? texture(texture_sampler, texcoord) * vertex_color
-		: vertex_color;
+    color = has_texture
+        ? texture(texture_sampler, texcoord) * vertex_color
+        : vertex_color;
+
+    color.r = test;
 }

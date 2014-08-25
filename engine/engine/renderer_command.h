@@ -3,13 +3,15 @@
 #include "view.h"
 #include "resource_handle.h"
 #include <foundation/vector2u.h>
+#include <foundation/vector4.h>
+#include <stdint.h>
 
 namespace bowtie
 {
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, Unspawn, Resize, DrawableStateReflection, DrawableGeometryReflection, CombineRenderedWorlds };
+	enum Type { Fence, RenderWorld, LoadResource, Unspawn, Resize, DrawableStateReflection, DrawableGeometryReflection, CombineRenderedWorlds, SetUniformValue};
 	Type type;
 	void* data;
 	unsigned dynamic_data_size;
@@ -50,4 +52,12 @@ struct UnspawnData
 	ResourceHandle world;
 	ResourceHandle drawable;
 };
+
+struct SetUniformValueData
+{
+	ResourceHandle material;
+	uint64_t uniform_name;
+	Vector4 value;
+};
+
 }

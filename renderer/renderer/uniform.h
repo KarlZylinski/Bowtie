@@ -1,5 +1,6 @@
 #pragma once
 
+#include <foundation/vector4.h>
 #include <stdint.h>
 
 namespace bowtie
@@ -18,10 +19,13 @@ struct Uniform
 	};
 
 	Uniform(Type type, uint64_t name, unsigned location, AutomaticValue automatic_value);
+	Uniform(Type type, uint64_t name, unsigned location, Vector4 value);
+
 	AutomaticValue automatic_value;
 	uint64_t name;
 	unsigned location;
-	Type type;	
+	Type type;
+	Vector4 value;
 };
 
 }

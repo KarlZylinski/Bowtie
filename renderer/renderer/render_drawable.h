@@ -11,7 +11,7 @@ struct RenderTexture;
 struct RenderDrawable
 {
 	RenderTexture* texture;
-	ResourceHandle shader;
+	ResourceHandle material;
 	ResourceHandle geometry;
 	unsigned num_vertices;
 	Matrix4 model;

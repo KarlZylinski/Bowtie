@@ -49,6 +49,11 @@ ResourceHandle Drawable::geometry_handle() const
 	return _geometry_handle;
 }
 
+ResourceHandle Drawable::material() const
+{
+	return _material;
+}
+
 Matrix4 Drawable::model_matrix() const
 {
 	auto p = Matrix4();	
@@ -115,6 +120,12 @@ void Drawable::set_geometry_handle(ResourceHandle handle)
 	_geometry_handle = handle;
 }
 
+void Drawable::set_material(ResourceHandle material)
+{
+	_material = material;
+	_render_state_changed = true;
+}
+
 void Drawable::set_pivot(const Vector2i& pivot)
 {
 	_pivot = pivot;
@@ -137,17 +148,6 @@ void Drawable::set_rotation(float rotation)
 {
 	_rotation = rotation;
 	_render_state_changed = true;
-}
-
-void Drawable::set_shader(ResourceHandle shader)
-{
-	_shader = shader;
-	_render_state_changed = true;
-}
-
-ResourceHandle Drawable::shader() const
-{
-	return _shader;
 }
 
 bool Drawable::state_changed() const

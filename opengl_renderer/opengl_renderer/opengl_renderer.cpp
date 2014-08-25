@@ -8,6 +8,8 @@
 #include <engine/view.h>
 #include <engine/renderer_command.h>
 #include <engine/render_resource_types.h>
+#include <engine/timer.h>
+#include <renderer/material.h>
 #include <renderer/render_drawable.h>
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
@@ -275,11 +277,34 @@ GLuint create_fullscreen_rendering_quad()
 void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection;		
-	auto shader = resource_lut.lookup(drawable.shader).render_handle;
+	auto& material = *(Material*)resource_lut.lookup(drawable.material).render_object;
+	auto shader = material.shader().render_handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
-	GLuint model_view_projection_matrix_id = glGetUniformLocation(shader, "model_view_projection_matrix");
-	glUniformMatrix4fv(model_view_projection_matrix_id, 1, GL_FALSE, &model_view_projection_matrix[0][0]);
+
+	auto uniforms = material.uniforms();
+	for (unsigned i = 0; i < array::size(uniforms); ++i)
+	{
+		const auto& uniform = uniforms[i];
+		auto value = &uniform.value.x;
+
+		switch (uniform.automatic_value)
+		{
+		case Uniform::ModelViewProjectionMatrix:
+			value = &model_view_projection_matrix[0][0];
+			break;
+		}
+
+		switch (uniform.type)
+		{
+		case Uniform::Float: glUniform1fv(uniform.location, 1, value); break;
+		case Uniform::Vec2: glUniform2fv(uniform.location, 1, value); break;
+		case Uniform::Vec3: glUniform3fv(uniform.location, 1, value); break;
+		case Uniform::Vec4: glUniform4fv(uniform.location, 1, value); break;
+		case Uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, value); break;
+		case Uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, value); break;
+		}
+	}
 		
 	if (drawable.texture != nullptr)
 	{

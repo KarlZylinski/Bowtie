@@ -17,7 +17,7 @@
 namespace bowtie
 {
 
-Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this), _render_interface(render_interface),
+Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this, render_interface), _render_interface(render_interface),
 	_resource_manager(allocator, render_interface), _time_elapsed_previous_frame(0.0f)
 {
 	timer::start();

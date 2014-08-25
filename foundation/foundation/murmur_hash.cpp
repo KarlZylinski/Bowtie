@@ -1,15 +1,19 @@
 #include "murmur_hash.h"
+#include <cstring>
 
 namespace bowtie
 {
-	uint64_t murmur_hash_64(const void * key, uint32_t len, uint64_t seed)
+	uint64_t hash_str(const char* str)
 	{
+		auto len = strlen(str);
+		auto seed = 0;
+
 		const uint64_t m = 0xc6a4a7935bd1e995ULL;
 		const uint32_t r = 47;
 
 		uint64_t h = seed ^ (len * m);
 
-		const uint64_t * data = (const uint64_t *)key;
+		const uint64_t * data = (const uint64_t *)str;
 		const uint64_t * end = data + (len/8);
 
 		while(data != end)

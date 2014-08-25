@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include <cassert>
-
+#include <cstdlib>
 #include <engine/render_fence.h>
 #include <foundation/array.h>
 #include <foundation/murmur_hash.h>
@@ -291,6 +291,14 @@ void Renderer::execute_command(const RendererCommand& command)
 		}
 		break;
 
+	case RendererCommand::SetUniformValue:
+		{
+			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
+			auto& material = *(Material*)_resource_lut.lookup(set_uniform_value_data.material).render_object;
+			material.set_uniform_value(set_uniform_value_data.uniform_name, set_uniform_value_data.value);
+		}
+		break;
+
 	default:
 		assert(!"Command not implemented!");
 		break;
@@ -335,7 +343,7 @@ RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceL
 		: nullptr;
 
 	drawable.model = data.model;
-	drawable.shader = data.shader;
+	drawable.material = data.material;
 	drawable.geometry = data.geometry;
 	drawable.num_vertices = data.num_vertices;
 	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
@@ -400,8 +408,12 @@ Uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 			return (Uniform::AutomaticValue)i;
 	}
 
-	assert(!"Unknown uniform automatic value");
-	return Uniform::NumAutomaticValues;
+	return Uniform::None;
+}
+
+Vector4 get_value_from_str(const char* str)
+{
+	return Vector4((float)strtod(str, nullptr), 0, 0, 0);
 }
 
 RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
@@ -417,14 +429,22 @@ RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& co
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
 		auto name = split_uniform[1];
-		auto name_hash = murmur_hash_64(name, strlen32(name), 0);
+		auto name_hash = hash_str(name);
 		auto location = concrete_renderer.get_uniform_location(shader, name);
 		
-		auto automatic_value = array::size(split_uniform) > 2
-			? get_automatic_value_from_str(split_uniform[2])
-			: Uniform::None;
+		if (array::size(split_uniform) > 2)
+		{
+			auto value_str = split_uniform[2];
+			auto automatic_value = get_automatic_value_from_str(value_str);
 
-		material->add_uniform(Uniform(type, name_hash, location, automatic_value));
+			if (automatic_value != Uniform::None)
+				material->add_uniform(Uniform(type, name_hash, location, automatic_value));
+			else
+				material->add_uniform(Uniform(type, name_hash, location, get_value_from_str(value_str)));
+		}
+		else
+			material->add_uniform(Uniform(type, name_hash, location, Vector4()));
+
 		current_uniform += strlen(current_uniform) + 1;
 	}
 

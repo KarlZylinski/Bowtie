@@ -43,14 +43,14 @@ void RenderInterface::create_texture(Texture& texture)
 	texture.render_handle = texture_resource.handle;
 }
 
-ResourceHandle get_shader_or_default(ResourceManager& resource_manager, Drawable& drawable)
+ResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawable& drawable)
 {
-	auto shader = drawable.shader();
+	auto shader = drawable.material();
 
 	if (shader.type != ResourceHandle::NotInitialized)
 		return shader;
 
-	return resource_manager.get_default(resource_type::Shader);
+	return resource_manager.get_default(resource_type::Material);
 }
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
@@ -64,7 +64,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : ResourceHandle();
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
-	drawable_resource_data.shader = get_shader_or_default(resource_manager, drawable);
+	drawable_resource_data.material = get_material_or_default(resource_manager, drawable);
 	auto geometry_handle = drawable.geometry_handle();
 
 	if (geometry_handle.type == ResourceHandle::NotInitialized)
@@ -120,6 +120,14 @@ RendererCommand RenderInterface::create_command(RendererCommand::Type type)
 	RendererCommand command;
 	memset(&command, 0, sizeof(RendererCommand));
 	command.type = type;
+
+	switch (type)
+	{
+	case RendererCommand::SetUniformValue:
+		command.data = _allocator.allocate(sizeof(SetUniformValueData));
+		break;
+	}
+
 	return command;
 }
 
