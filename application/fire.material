@@ -1,0 +1,7 @@
+{
+    "shader": "fire.shader",
+    "uniforms": [
+        "mat4 model_view_projection_matrix mvp",
+        "float time time"
+    ]
+}

@@ -33,7 +33,7 @@ public:
 	float rotation() const;
 	void set_color(const Color& color);
 	void set_geometry_handle(ResourceHandle handle);
-	void set_material(ResourceHandle shader);
+	void set_material(ResourceHandle material);
 	void set_pivot(const Vector2i& position);
 	void set_position(const Vector2& position);
 	void set_render_handle(ResourceHandle handle);

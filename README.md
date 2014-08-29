@@ -34,3 +34,4 @@ Todo
     * [ ] Update geometry when text or font changes
 * [x] Make sure to remove hacks from combine_rendered_worlds and split it into multiple methods. Seems to be  some haze with arrays of textures...
 * [x] Change render resource handles in render_world to drawables
+* [ ] Make ResourceHandle -> RenderResourceHandle. RenderResourceHandle -> RenderResource. Move void* in ResourceHandle to Resource.

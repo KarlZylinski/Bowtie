@@ -19,6 +19,13 @@ int color(lua_State* lua)
 	return 1;
 }
 
+int material(lua_State* lua)
+{
+	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
+	lua_pushnumber(lua, drawable.material().handle);
+	return 1;
+}
+
 int pivot(lua_State* lua)
 {
 	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
@@ -44,6 +51,14 @@ int set_color(lua_State* lua)
 {
 	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
 	drawable.set_color(script_interface::to_vector4(lua, 2));
+	return 0;
+}
+
+int set_material(lua_State* lua)
+{
+	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
+	ResourceHandle material((unsigned)lua_tonumber(lua, 2));
+	drawable.set_material(material);
 	return 0;
 }
 
@@ -81,17 +96,19 @@ void load(lua_State* lua)
 {
 	const interface_function functions[] = {
 		{ "color", color },
+		{ "material", material },
 		{ "pivot", pivot },
 		{ "position", position },
 		{ "rotation", rotation },
 		{ "set_color", set_color },
+		{ "set_material", set_material },
 		{ "set_pivot", set_pivot },
 		{ "set_position", set_position },
 		{ "set_rotation", set_rotation },
 		{ "unspawn", unspawn }
 	};
 
-	script_interface::register_interface(lua, "Drawable", functions, 9);
+	script_interface::register_interface(lua, "Drawable", functions, 11);
 }
 
 } // namespace drawable_script_interface

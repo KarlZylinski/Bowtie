@@ -5,7 +5,7 @@ Game = class(Game)
 
 function Game:init()
     local engine = Engine.engine()
-    self.default_material = Engine.load_resource("material", "default.material")
+    Engine.load_resource("material", "default.material")
     Engine.set_default_resource("material", "default.material")
     self.world = World.create(engine)
     self.rocket = Rocket()
@@ -19,11 +19,7 @@ function Game:deinit()
     World.destroy(engine, self.world)
 end
 
-t = 0
-
 function Game:update(dt)
-    t = t + dt
-    Material.set_uniform_value(self.default_material, "test", Vector4(math.cos(t), 0, 0, 0))
     self.rocket:update(dt, self.view_size)
     World.update(self.world)
 end

@@ -38,6 +38,7 @@ struct DrawableStateReflectionData
 	DrawableStateReflectionData(const Matrix4& model) : model(model) {}
 
 	ResourceHandle drawble;
+	ResourceHandle material;
 	Matrix4 model;
 };
 

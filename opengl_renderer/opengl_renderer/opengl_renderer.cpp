@@ -121,7 +121,7 @@ RenderTexture* OpenGLRenderer::load_texture(const TextureResourceData& trd, void
 void OpenGLRenderer::update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
 {
 	auto& drawable = *(RenderDrawable*)_resource_lut.lookup(geometry_data.drawable).render_object;
-	auto geometry_handle = _resource_lut.lookup(drawable.geometry).render_handle;
+	auto geometry_handle = drawable.geometry.render_handle;
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 }
@@ -274,13 +274,14 @@ GLuint create_fullscreen_rendering_quad()
 	return quad_vertexbuffer;
 }
 
-void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut)
+void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable&)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection;		
-	auto& material = *(Material*)resource_lut.lookup(drawable.material).render_object;
+	auto& material = *drawable.material;
 	auto shader = material.shader().render_handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
+	auto time = timer::counter();
 
 	auto uniforms = material.uniforms();
 	for (unsigned i = 0; i < array::size(uniforms); ++i)
@@ -292,6 +293,9 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 		{
 		case Uniform::ModelViewProjectionMatrix:
 			value = &model_view_projection_matrix[0][0];
+			break;
+		case Uniform::Time:
+			value = &time;
 			break;
 		}
 
@@ -318,7 +322,7 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 	else
 		glUniform1i(glGetUniformLocation(shader, "has_texture"), false);
 
-	auto geometry = resource_lut.lookup(drawable.geometry).render_handle;
+	auto geometry = drawable.geometry.render_handle;
 		
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
 	glEnableVertexAttribArray(0);

@@ -72,6 +72,7 @@ void update_drawable_state(Allocator& allocator, RenderInterface& render_interfa
 		
 	auto& scd = *(DrawableStateReflectionData*)allocator.allocate(sizeof(DrawableStateReflectionData));
 	scd.model = drawable.model_matrix();
+	scd.material = drawable.material();
 	scd.drawble = drawable.render_handle();
 	state_changed_command.data = &scd;
 

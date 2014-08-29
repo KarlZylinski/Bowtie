@@ -15,7 +15,7 @@ struct Uniform
 
 	enum AutomaticValue
 	{
-		None, ModelViewProjectionMatrix, NumAutomaticValues
+		None, ModelViewProjectionMatrix, Time, NumAutomaticValues
 	};
 
 	Uniform(Type type, uint64_t name, unsigned location, AutomaticValue automatic_value);
