@@ -19,6 +19,7 @@ void main()
 in vec2 texcoord;
 
 uniform float time;
+uniform float thrust;
 
 layout(location = 0) out vec4 color;
 
@@ -48,7 +49,11 @@ float snoise(vec3 uv, float res)
 void main()
 {
     vec2 p = -.5 + texcoord;
-    
+
+    float t = thrust == 0.0 ? 0.0001 : thrust;
+
+    p *= 1000.0/t;
+
     float color = 3.0 - (3.*length(2.*p));
     
     vec3 coord = vec3(atan(p.x,p.y)/6.2832+.5, length(p)*.4, .5);
@@ -58,5 +63,8 @@ void main()
         float power = pow(2.0, float(i));
         color += (1.5 / power) * snoise(coord + vec3(0.,-time*.05, time*.01), power*16.);
     }
-    gl_FragColor = vec4( color, pow(max(color,0.),2.)*0.4, pow(max(color,0.),3.)*0.15 , 1.0);
+    gl_FragColor = vec4(color, pow(max(color,0.),2.)*0.4, pow(max(color,0.),3.)*0.15 , 1.0);
+
+    if (p.y > 0)
+        gl_FragColor = vec4(0, 0, 0, 1);
 }

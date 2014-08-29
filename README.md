@@ -27,7 +27,7 @@ Todo
     * [ ] Check if player is in triangle
     * [ ] Make editor to plot mesh (level editor???)
     * [ ] Set sort value depending on player occlusion
-* [ ] Materials w/ shaders
+* [x] Materials w/ shaders
 * [x] Split engine and renderer into two
 * [ ] Text rendering
     * [x] Create geometry for text
@@ -35,3 +35,5 @@ Todo
 * [x] Make sure to remove hacks from combine_rendered_worlds and split it into multiple methods. Seems to be  some haze with arrays of textures...
 * [x] Change render resource handles in render_world to drawables
 * [ ] Make ResourceHandle -> RenderResourceHandle. RenderResourceHandle -> RenderResource. Move void* in ResourceHandle to Resource.
+* [ ] Depth sorting
+* [ ] Parenting with local transform and all that jazz
