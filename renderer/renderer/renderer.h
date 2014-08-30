@@ -11,7 +11,7 @@
 #include <foundation/collection_types.h>
 
 #include "render_resource_lookup_table.h"
-#include "render_resource_handle.h"
+#include "render_resource.h"
 #include "irenderer_context.h"
 #include "render_world.h"
 
@@ -24,11 +24,11 @@ struct RenderTarget;
 
 struct RendererResourceObject
 {
-	RendererResourceObject(RenderResourceData::Type type, RenderResourceHandle handle)
+	RendererResourceObject(RenderResourceData::Type type, RenderResource handle)
 		: type(type), handle(handle) {}
 
 	RenderResourceData::Type type;
-	RenderResourceHandle handle;
+	RenderResource handle;
 };
 
 class Renderer : public IRenderer
@@ -37,7 +37,7 @@ public:
 	Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table);
 	~Renderer();
 
-	typedef std::function<RenderResourceHandle(ResourceHandle)> LookupResourceFunction;
+	typedef std::function<RenderResource(ResourceHandle)> LookupResourceFunction;
 	
 	void add_renderer_command(const RendererCommand& command);
 	ResourceHandle create_handle();

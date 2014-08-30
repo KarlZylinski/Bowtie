@@ -1,24 +1,24 @@
 #pragma once
 
 #include <foundation/collection_types.h>
-#include "render_resource_handle.h"
+#include "render_resource.h"
 #include "uniform.h"
 #include <stdint.h>
 
 namespace bowtie
 {
 
-class Material
+class RenderMaterial
 {
 public:
-	Material(Allocator& allocator, RenderResourceHandle shader);
+	RenderMaterial(Allocator& allocator, RenderResource shader);
 	void add_uniform(const Uniform& uniform);
 	void set_uniform_value(uint64_t name, Vector4 value);
-	RenderResourceHandle shader() const;
+	RenderResource shader() const;
 	const Array<Uniform>& uniforms() const;
 	
 private:
-	RenderResourceHandle _shader;
+	RenderResource _shader;
 	Array<Uniform> _uniforms;
 };
 

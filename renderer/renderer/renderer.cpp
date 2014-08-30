@@ -9,7 +9,7 @@
 #include <foundation/string_utils.h>
 #include <foundation/queue.h>
 #include "iconcrete_renderer.h"
-#include "material.h"
+#include "render_material.h"
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
@@ -24,7 +24,7 @@ namespace
 {
 
 
-#define CreateResourceFunc(arguments) std::function<RenderResourceHandle(arguments)>
+#define CreateResourceFunc(arguments) std::function<RenderResource(arguments)>
 
 struct ResourceCreators
 {
@@ -47,14 +47,14 @@ struct ResourceCreators
 	CreateResourceFunc(void) create_world;
 };
 
-RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
-RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
-RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
-RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets);
-RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCreators& resource_creators);
-RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
-RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data);
-RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
+RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
+RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
+RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
+RenderResource create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets);
+RenderResource create_resource(const RenderResourceData& data, ResourceCreators& resource_creators);
+RenderResource create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
+RenderResource create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data);
+RenderResource create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
 void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut, const DrawableStateReflectionData& data);
 void flip(IRendererContext& context);
 void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
@@ -234,13 +234,13 @@ void Renderer::execute_command(const RendererCommand& command)
 			);
 
 			auto handle = create_resource(data, resource_creators);
-			assert(handle.type != RenderResourceHandle::NotInitialized && "Failed to load resource!");
+			assert(handle.type != RenderResource::NotInitialized && "Failed to load resource!");
 
-			// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResourceHandle).
+			// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResource).
 			_resource_lut.set(data.handle, handle);
 
 			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-			if (handle.type == RenderResourceHandle::Object)
+			if (handle.type == RenderResource::Object)
 				array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
 	
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
@@ -294,7 +294,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::SetUniformValue:
 		{
 			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
-			auto& material = *(Material*)_resource_lut.lookup(set_uniform_value_data.material).render_object;
+			auto& material = *(RenderMaterial*)_resource_lut.lookup(set_uniform_value_data.material).render_object;
 			material.set_uniform_value(set_uniform_value_data.uniform_name, set_uniform_value_data.value);
 		}
 		break;
@@ -334,7 +334,7 @@ void Renderer::wait_for_unprocessed_commands_to_exist()
 namespace
 {
 
-RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data)
+RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data)
 {
 	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
 
@@ -343,15 +343,15 @@ RenderResourceHandle create_drawable(Allocator& allocator, const RenderResourceL
 		: nullptr;
 
 	drawable.model = data.model;
-	drawable.material = (Material*)resource_lut.lookup(data.material).render_object;
+	drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).render_object;
 	drawable.geometry = resource_lut.lookup(data.geometry);
 	drawable.num_vertices = data.num_vertices;
 	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
 	rw.add_drawable(&drawable);
-	return RenderResourceHandle(&drawable);
+	return RenderResource(&drawable);
 }
 
-RenderResourceHandle create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
+RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
 {
 	return concrete_renderer.load_geometry(data, dynamic_data);
 }
@@ -416,10 +416,10 @@ Vector4 get_value_from_str(const char* str)
 	return Vector4((float)strtod(str, nullptr), 0, 0, 0);
 }
 
-RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
+RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
 {
 	auto shader = lookup_table.lookup(data.shader);
-	auto material = allocator.construct<Material>(allocator, shader);
+	auto material = allocator.construct<RenderMaterial>(allocator, shader);
 	char* current_uniform = (char*)dynamic_data;
 	
 	for (unsigned i = 0; i < data.num_uniforms; ++i)
@@ -448,44 +448,44 @@ RenderResourceHandle create_material(Allocator& allocator, IConcreteRenderer& co
 		current_uniform += strlen(current_uniform) + 1;
 	}
 
-	return RenderResourceHandle(material);
+	return RenderResource(material);
 }
 
-RenderResourceHandle create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets)
+RenderResource create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets)
 {
 	auto render_target = concrete_renderer.create_render_target();
 	array::push_back(render_targets, render_target);
-	return RenderResourceHandle(render_target);
+	return RenderResource(render_target);
 }
 
-RenderResourceHandle create_resource(const RenderResourceData& data, ResourceCreators& resource_creators)
+RenderResource create_resource(const RenderResourceData& data, ResourceCreators& resource_creators)
 {
 	switch(data.type)
 	{
 		case RenderResourceData::Drawable: return resource_creators.create_drawable(*(DrawableResourceData*)data.data);
 		case RenderResourceData::Geometry: return resource_creators.create_geometry(*(GeometryResourceData*)data.data);
-		case RenderResourceData::Material: return resource_creators.create_material(*(MaterialResourceData*)data.data);
+		case RenderResourceData::RenderMaterial: return resource_creators.create_material(*(MaterialResourceData*)data.data);
 		case RenderResourceData::RenderTarget: return resource_creators.create_render_target();
 		case RenderResourceData::Shader: return resource_creators.create_shader(*(ShaderResourceData*)data.data);
 		case RenderResourceData::Texture: return resource_creators.create_texture(*(TextureResourceData*)data.data);
 		case RenderResourceData::World: return resource_creators.create_world();
-		default: assert(!"Unknown render resource type"); return RenderResourceHandle();
+		default: assert(!"Unknown render resource type"); return RenderResource();
 	}
 }
 
-RenderResourceHandle create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
+RenderResource create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
 {
 	return concrete_renderer.load_shader(data, dynamic_data);
 }
 
-RenderResourceHandle create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data)
+RenderResource create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data)
 {
-	return RenderResourceHandle(concrete_renderer.load_texture(data, dynamic_data));
+	return RenderResource(concrete_renderer.load_texture(data, dynamic_data));
 }
 
-RenderResourceHandle create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
+RenderResource create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
 {
-	return RenderResourceHandle(allocator.construct<RenderWorld>(allocator, *concrete_renderer.create_render_target()));
+	return RenderResource(allocator.construct<RenderWorld>(allocator, *concrete_renderer.create_render_target()));
 }
 
 void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut, const DrawableStateReflectionData& data)
@@ -493,7 +493,7 @@ void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLoo
 	drawable.model = data.model;
 
 	if (data.material.type != ResourceHandle::NotInitialized)
-		drawable.material = (Material*)resource_lut.lookup(data.material).render_object;
+		drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).render_object;
 }
 
 void flip(IRendererContext& context)

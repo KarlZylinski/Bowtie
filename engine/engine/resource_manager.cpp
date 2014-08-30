@@ -68,7 +68,7 @@ uint64_t hash_name(const char* name)
 ResourceHandle ResourceManager::load_material(const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(resource_type::Material, name);
+	auto existing = get(resource_type::RenderMaterial, name);
 
 	if (existing.type != ResourceHandle::NotInitialized)
 		return existing;
@@ -117,11 +117,11 @@ ResourceHandle ResourceManager::load_material(const char* filename)
 	MaterialResourceData mrd;
 	mrd.num_uniforms = num_uniforms;
 	mrd.shader = shader_handle;
-	RenderResourceData material_resource = _render_interface.create_render_resource_data(RenderResourceData::Material);
+	RenderResourceData material_resource = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
 	material_resource.data = &mrd;
 	
 	_render_interface.create_resource(material_resource, uniforms_dynamic_data, uniforms_dynamic_data_size);
-	add_resource(name, resource_type::Material, material_resource.handle);
+	add_resource(name, resource_type::RenderMaterial, material_resource.handle);
 	
 	return material_resource.handle;
 }
@@ -256,7 +256,7 @@ ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
 {
 	switch(type)
 	{
-		case resource_type::Material: return load_material(filename);
+		case resource_type::RenderMaterial: return load_material(filename);
 		case resource_type::Image: return ResourceHandle(&load_image(filename));
 		case resource_type::Shader: return load_shader(filename);
 		case resource_type::Sprite: return ResourceHandle(&load_sprite_prototype(filename));

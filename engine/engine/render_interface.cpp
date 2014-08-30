@@ -50,7 +50,7 @@ ResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawab
 	if (shader.type != ResourceHandle::NotInitialized)
 		return shader;
 
-	return resource_manager.get_default(resource_type::Material);
+	return resource_manager.get_default(resource_type::RenderMaterial);
 }
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
@@ -159,7 +159,7 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 	
 	switch (resource.type)
 	{
-		case RenderResourceData::Material:
+		case RenderResourceData::RenderMaterial:
 			copied_resource->data = _allocator.allocate(sizeof(MaterialResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
 			break;

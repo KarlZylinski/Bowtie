@@ -7,22 +7,22 @@ namespace bowtie
 
 RenderResourceLookupTable::RenderResourceLookupTable()
 {
-	memset(&_lookup_table, 0, num_handles * sizeof(RenderResourceHandle));
+	memset(&_lookup_table, 0, num_handles * sizeof(RenderResource));
 }
 
 void RenderResourceLookupTable::free(ResourceHandle key)
 {
-	_lookup_table[key.handle] = RenderResourceHandle();
+	_lookup_table[key.handle] = RenderResource();
 }
 
-RenderResourceHandle RenderResourceLookupTable::lookup(ResourceHandle handle) const
+RenderResource RenderResourceLookupTable::lookup(ResourceHandle handle) const
 {
 	assert(handle.type == ResourceHandle::Handle && "Resource is not of handle-type");
 	assert(handle.handle < num_handles && "Handle is out of range");
 	return _lookup_table[handle.handle];
 }
 
-void RenderResourceLookupTable::set(ResourceHandle key, RenderResourceHandle value)
+void RenderResourceLookupTable::set(ResourceHandle key, RenderResource value)
 {
 	_lookup_table[key.handle] = value;
 }

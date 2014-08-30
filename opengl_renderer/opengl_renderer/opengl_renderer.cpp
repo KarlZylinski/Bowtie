@@ -9,7 +9,7 @@
 #include <engine/renderer_command.h>
 #include <engine/render_resource_types.h>
 #include <engine/timer.h>
-#include <renderer/material.h>
+#include <renderer/render_material.h>
 #include <renderer/render_drawable.h>
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
@@ -84,7 +84,7 @@ void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 		draw_drawable(view_projection, *drawables[i], _resource_lut);
 }
 
-unsigned OpenGLRenderer::get_uniform_location(RenderResourceHandle shader, const char* name)
+unsigned OpenGLRenderer::get_uniform_location(RenderResource shader, const char* name)
 {
 	return glGetUniformLocation(shader.render_handle, name);
 }
@@ -96,21 +96,21 @@ void OpenGLRenderer::initialize_thread()
 	_rendered_worlds_combining_shader = load_rendered_worlds_combining_shader(_allocator);
 }
 
-RenderResourceHandle OpenGLRenderer::load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data)
+RenderResource OpenGLRenderer::load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data)
 {
 	GLuint geometry_buffer;
 	glGenBuffers(1, &geometry_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 
-	return RenderResourceHandle(geometry_buffer);
+	return RenderResource(geometry_buffer);
 }
 
-RenderResourceHandle OpenGLRenderer::load_shader(const ShaderResourceData& shader_data, void* dynamic_data)
+RenderResource OpenGLRenderer::load_shader(const ShaderResourceData& shader_data, void* dynamic_data)
 {
 	auto vertex_source = (char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset);
 	auto fragment_source = (char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset);
-	return RenderResourceHandle(load_shader_internal(vertex_source, fragment_source));
+	return RenderResource(load_shader_internal(vertex_source, fragment_source));
 }
 
 RenderTexture* OpenGLRenderer::load_texture(const TextureResourceData& trd, void* dynamic_data)
@@ -142,12 +142,12 @@ void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 	set_render_target_internal(_resolution, render_target.target_handle.render_handle);
 }
 
-void OpenGLRenderer::unload_geometry(RenderResourceHandle handle)
+void OpenGLRenderer::unload_geometry(RenderResource handle)
 {
 	glDeleteBuffers(1, &handle.render_handle);
 }
 
-void OpenGLRenderer::unload_shader(RenderResourceHandle handle)
+void OpenGLRenderer::unload_shader(RenderResource handle)
 {
 	glDeleteProgram(handle.render_handle);
 }
@@ -235,7 +235,7 @@ RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const
 
 	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
 	render_texture->pixel_format = pf;
-	render_texture->render_handle = RenderResourceHandle(texture_id);
+	render_texture->render_handle = RenderResource(texture_id);
 	render_texture->resolution = resolution;
 	return render_texture;
 }
@@ -253,7 +253,7 @@ RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u
 	GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, draw_buffers);
 
-	return allocator.construct<RenderTarget>(allocator, texture, RenderResourceHandle(fb));
+	return allocator.construct<RenderTarget>(allocator, texture, RenderResource(fb));
 }
 
 GLuint create_fullscreen_rendering_quad()

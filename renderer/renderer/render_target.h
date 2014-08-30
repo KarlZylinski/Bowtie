@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render_resource_handle.h"
+#include "render_resource.h"
 
 namespace bowtie
 {
@@ -9,11 +9,11 @@ class Allocator;
 struct RenderTexture;
 struct RenderTarget
 {
-	RenderTarget(Allocator& allocator, RenderTexture* render_texture, RenderResourceHandle target_handle);
+	RenderTarget(Allocator& allocator, RenderTexture* render_texture, RenderResource target_handle);
 	~RenderTarget();
 	Allocator& allocator;
 	RenderTexture* render_texture;
-	RenderResourceHandle target_handle;
+	RenderResource target_handle;
 	RenderTarget& operator=(const RenderTarget&);
 };
 

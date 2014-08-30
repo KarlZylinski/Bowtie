@@ -20,17 +20,17 @@ public:
 	RenderTarget* create_render_target();
 	void destroy_render_target(const RenderTarget& target);
 	void draw(const View& view, const RenderWorld& render_world);
-	unsigned get_uniform_location(RenderResourceHandle shader, const char* name);
+	unsigned get_uniform_location(RenderResource shader, const char* name);
 	void initialize_thread();
-	RenderResourceHandle load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data);
-	RenderResourceHandle load_shader(const ShaderResourceData& shader_data, void* dynamic_data);	
+	RenderResource load_geometry(const GeometryResourceData& geometry_data, void* dynamic_data);
+	RenderResource load_shader(const ShaderResourceData& shader_data, void* dynamic_data);	
 	RenderTexture* load_texture(const TextureResourceData& trd, void* dynamic_data);
 	void update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data);
 	void resize(const Vector2u& resolution, Array<RenderTarget*>& render_targets);
 	const Vector2u& resolution() const;
 	void set_render_target(const RenderTarget& render_target);
-	void unload_geometry(RenderResourceHandle handle);
-	void unload_shader(RenderResourceHandle handle);
+	void unload_geometry(RenderResource handle);
+	void unload_shader(RenderResource handle);
 	void unload_texture(const RenderTexture& texture);
 	void unset_render_target();
 
