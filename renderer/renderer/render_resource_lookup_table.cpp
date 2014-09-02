@@ -10,21 +10,23 @@ RenderResourceLookupTable::RenderResourceLookupTable()
 	memset(&_lookup_table, 0, num_handles * sizeof(RenderResource));
 }
 
-void RenderResourceLookupTable::free(ResourceHandle key)
+void RenderResourceLookupTable::free(RenderResourceHandle handle)
 {
-	_lookup_table[key.handle] = RenderResource();
+	assert(handle < num_handles && "Handle is out of range");
+	_lookup_table[handle.handle] = RenderResource();
 }
 
-RenderResource RenderResourceLookupTable::lookup(ResourceHandle handle) const
+const RenderResource& RenderResourceLookupTable::lookup(RenderResourceHandle handle) const
 {
-	assert(handle.type == ResourceHandle::Handle && "Resource is not of handle-type");
-	assert(handle.handle < num_handles && "Handle is out of range");
-	return _lookup_table[handle.handle];
+	assert(handle < num_handles && "Handle is out of range");
+	auto& resource = _lookup_table[handle.handle];
+	assert(resource.type != RenderResource::NotInitialized && "Trying to lookup unused render resource.");
+	return resource;
 }
 
-void RenderResourceLookupTable::set(ResourceHandle key, RenderResource value)
+void RenderResourceLookupTable::set(RenderResourceHandle handle, const RenderResource& resource)
 {
-	_lookup_table[key.handle] = value;
+	_lookup_table[handle.handle] = resource;
 }
 
 }

@@ -76,7 +76,7 @@ Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_all
 	array::set_capacity(_free_handles, num_handles);
 	
 	for(unsigned handle = num_handles; handle > 0; --handle)
-		array::push_back(_free_handles, ResourceHandle(handle));
+		array::push_back(_free_handles, RenderResourceHandle(handle));
 }
 
 Renderer::~Renderer()
@@ -91,6 +91,9 @@ Renderer::~Renderer()
 			break;
 		case RenderResourceData::RenderTarget:
 			_allocator.destroy((RenderTarget*)resource_object.handle.render_object);
+			break;
+		case RenderResourceData::RenderMaterial:
+			_allocator.destroy((RenderMaterial*)resource_object.handle.render_object);
 			break;
 		default:
 			_allocator.deallocate(resource_object.handle.render_object);
@@ -113,10 +116,10 @@ void Renderer::add_renderer_command(const RendererCommand& command)
 		notify_unprocessed_commands_exists();
 }
 
-ResourceHandle Renderer::create_handle()
+RenderResourceHandle Renderer::create_handle()
 {
 	assert(array::any(_free_handles) && "Out of render resource handles!");
-	ResourceHandle handle = array::back(_free_handles);
+	RenderResourceHandle handle = array::back(_free_handles);
 	array::pop_back(_free_handles);
 	return handle;
 }
@@ -134,9 +137,9 @@ void Renderer::deallocate_processed_commands(Allocator& render_interface_allocat
 	array::clear(_processed_memory);
 }
 
-void Renderer::free_handle(ResourceHandle handle)
+void Renderer::free_handle(RenderResourceHandle handle)
 {
-	assert(handle.type == ResourceHandle::Handle && "Trying to free handle of non handle-type");
+	assert(handle < RenderResourceLookupTable::num_handles && "Trying to free render resource handle with a higher value than RenderResourceLookupTable::num_handles.");
 	array::push_back(_free_handles, handle);
 }
 
@@ -236,7 +239,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			auto handle = create_resource(data, resource_creators);
 			assert(handle.type != RenderResource::NotInitialized && "Failed to load resource!");
 
-			// Map handle from outside of renderer (ResourceHandle) to internal handle (RenderResource).
+			// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
 			_resource_lut.set(data.handle, handle);
 
 			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
@@ -338,7 +341,7 @@ RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupT
 {
 	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
 
-	drawable.texture = data.texture.type != ResourceHandle::NotInitialized
+	drawable.texture = data.texture != RenderResourceHandle::NotInitialized
 		? (RenderTexture*)resource_lut.lookup(data.texture).render_object
 		: nullptr;
 
@@ -492,7 +495,7 @@ void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLoo
 {
 	drawable.model = data.model;
 
-	if (data.material.type != ResourceHandle::NotInitialized)
+	if (data.material != RenderResourceHandle::NotInitialized)
 		drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).render_object;
 }
 

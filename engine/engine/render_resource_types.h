@@ -3,7 +3,7 @@
 #include <foundation/matrix4.h>
 
 #include "image.h"
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 
 namespace bowtie
 {
@@ -16,13 +16,13 @@ struct RenderResourceData
 	};
 
 	Type type;
-	ResourceHandle handle;
+	RenderResourceHandle handle;
 	void* data;
 };
 
 struct MaterialResourceData
 {
-	ResourceHandle shader;
+	RenderResourceHandle shader;
 	unsigned num_uniforms;
 };
 	
@@ -42,10 +42,10 @@ struct TextureResourceData
 
 struct DrawableResourceData
 {
-	ResourceHandle render_world;
-	ResourceHandle texture;
-	ResourceHandle material;
-	ResourceHandle geometry;
+	RenderResourceHandle render_world;
+	RenderResourceHandle texture;
+	RenderResourceHandle material;
+	RenderResourceHandle geometry;
 	unsigned num_vertices;
 	Matrix4 model;
 };

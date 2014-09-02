@@ -6,7 +6,7 @@ local apply_gravity, apply_thrust, calculate_rotation, calculate_thrust, limit_v
 Rocket = class(Rocket)
 
 function Rocket:init()
-    Engine.load_resource("sprite", "textures/rocket.png")
+    Engine.load_resource("sprite", "sprites/rocket.sprite")
     self.fire_material = Engine.load_resource("material", "fire.material")
     self.velocity = Vector2(0, 0)
     self.thrust = 0
@@ -14,7 +14,7 @@ end
 
 function Rocket:spawn(world)
     self.fire = Rectangle.spawn(world, Vector2(0,0), Vector2(30,50), Color(1, 1, 1, 0.5))
-    self.sprite = Sprite.spawn(world, "textures/rocket.png")
+    self.sprite = Sprite.spawn(world, "sprites/rocket.sprite")
     Drawable.set_pivot(self.fire, Vector2(15, 25))
     Drawable.set_material(self.fire, self.fire_material)
     Drawable.set_position(self.sprite, Vector2(200, 0))

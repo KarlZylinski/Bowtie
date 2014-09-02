@@ -22,7 +22,7 @@ int color(lua_State* lua)
 int material(lua_State* lua)
 {
 	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
-	lua_pushnumber(lua, drawable.material().handle);
+	lua_pushlightuserdata(lua, drawable.material());
 	return 1;
 }
 
@@ -57,8 +57,7 @@ int set_color(lua_State* lua)
 int set_material(lua_State* lua)
 {
 	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
-	ResourceHandle material((unsigned)lua_tonumber(lua, 2));
-	drawable.set_material(material);
+	drawable.set_material((Material*)lua_touserdata(lua, 2));
 	return 0;
 }
 

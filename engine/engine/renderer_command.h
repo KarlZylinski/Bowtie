@@ -1,7 +1,7 @@
 #pragma once
 
 #include "view.h"
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 #include <foundation/vector2u.h>
 #include <foundation/vector4.h>
 #include <stdint.h>
@@ -20,10 +20,10 @@ struct RendererCommand
 
 struct RenderWorldData
 {
-	RenderWorldData(const View& view, ResourceHandle& render_world) : view(view), render_world(render_world) {}
+	RenderWorldData(const View& view, RenderResourceHandle& render_world) : view(view), render_world(render_world) {}
 
 	View view;
-	ResourceHandle render_world;
+	RenderResourceHandle render_world;
 };
 
 struct ResizeData
@@ -37,26 +37,26 @@ struct DrawableStateReflectionData
 {
 	DrawableStateReflectionData(const Matrix4& model) : model(model) {}
 
-	ResourceHandle drawble;
-	ResourceHandle material;
+	RenderResourceHandle drawble;
+	RenderResourceHandle material;
 	Matrix4 model;
 };
 
 struct DrawableGeometryReflectionData
 {
-	ResourceHandle drawable;
+	RenderResourceHandle drawable;
 	unsigned size;
 };
 
 struct UnspawnData
 {
-	ResourceHandle world;
-	ResourceHandle drawable;
+	RenderResourceHandle world;
+	RenderResourceHandle drawable;
 };
 
 struct SetUniformValueData
 {
-	ResourceHandle material;
+	RenderResourceHandle material;
 	uint64_t uniform_name;
 	Vector4 value;
 };

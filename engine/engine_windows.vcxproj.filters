@@ -22,7 +22,6 @@
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
-    <ClInclude Include="engine\resource_handle.h" />
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\image.h" />
@@ -44,5 +43,9 @@
     <ClInclude Include="engine\sprite_geometry.h" />
     <ClInclude Include="engine\text_geometry.h" />
     <ClInclude Include="engine\rectangle_geometry.h" />
+    <ClInclude Include="engine\resource.h" />
+    <ClInclude Include="engine\render_resource_handle.h" />
+    <ClInclude Include="engine\material.h" />
+    <ClInclude Include="engine\shader.h" />
   </ItemGroup>
 </Project>

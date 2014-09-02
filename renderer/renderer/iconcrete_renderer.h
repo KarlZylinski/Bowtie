@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/resource_handle.h>
+#include <engine/render_resource_handle.h>
 #include <foundation/collection_types.h>
 #include "render_resource.h"
 

@@ -12,8 +12,10 @@
 
 #include "drawable.h"
 #include "font.h"
+#include "material.h"
 #include "png.h"
 #include "render_interface.h"
+#include "shader.h"
 #include "shader_utils.h"
 #include "sprite_geometry.h"
 #include "texture.h"
@@ -32,12 +34,11 @@ ResourceManager::~ResourceManager()
 {
 	for(auto resource_iter = hash::begin(_resources); resource_iter != hash::end(_resources); ++resource_iter)
 	{
-		if(resource_iter->value.type != ResourceHandle::Object)
-			continue;
-		
 		auto obj = resource_iter->value.object;
-		switch(resource_iter->value.object_type)
+		switch(resource_iter->value.type)
 		{
+			case resource_type::Material: _allocator.destroy((Material*)obj); break;
+			case resource_type::Shader: _allocator.destroy((Shader*)obj); break;
 			case resource_type::Image: _allocator.destroy((Image*)obj); break;
 			case resource_type::Drawable: _allocator.destroy((Drawable*)obj); break;
 			case resource_type::Texture: _allocator.destroy((Texture*)obj); break;
@@ -65,13 +66,13 @@ uint64_t hash_name(const char* name)
 	return hash_str(name); 
 }
 
-ResourceHandle ResourceManager::load_material(const char* filename)
+Material& ResourceManager::load_material(const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(resource_type::RenderMaterial, name);
+	auto existing = get(resource_type::Material, name);
 
-	if (existing.type != ResourceHandle::NotInitialized)
-		return existing;
+	if (existing.object != nullptr)
+		return *(Material*)existing.object;
 
 	LoadedFile file = file::load(filename, _allocator);
 	using namespace rapidjson;
@@ -80,7 +81,7 @@ ResourceHandle ResourceManager::load_material(const char* filename)
 	_allocator.deallocate(file.data);
 
 	auto shader_filename = d["shader"].GetString();
-	auto shader_handle = load_shader(shader_filename);
+	auto& shader = load_shader(shader_filename);
 	auto& uniforms = d["uniforms"];
 	unsigned uniforms_dynamic_data_size = 0;
 	unsigned num_uniforms = 0;
@@ -116,23 +117,24 @@ ResourceHandle ResourceManager::load_material(const char* filename)
 	
 	MaterialResourceData mrd;
 	mrd.num_uniforms = num_uniforms;
-	mrd.shader = shader_handle;
-	RenderResourceData material_resource = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
-	material_resource.data = &mrd;
-	
-	_render_interface.create_resource(material_resource, uniforms_dynamic_data, uniforms_dynamic_data_size);
-	add_resource(name, resource_type::RenderMaterial, material_resource.handle);
-	
-	return material_resource.handle;
+	mrd.shader = shader.render_handle;
+	RenderResourceData material_resource_data = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
+	material_resource_data.data = &mrd;	
+	_render_interface.create_resource(material_resource_data, uniforms_dynamic_data, uniforms_dynamic_data_size);
+
+	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
+	add_resource(name, Resource(material));	
+
+	return *material;
 }
 
-ResourceHandle ResourceManager::load_shader(const char* filename)
+Shader& ResourceManager::load_shader(const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(resource_type::Shader, name);
 
-	if (existing.type != ResourceHandle::NotInitialized)
-		return existing;
+	if (existing.object != nullptr)
+		return *(Shader*)existing.object;
 
 	auto shader_source = file::load(filename, _allocator);
 
@@ -150,17 +152,18 @@ ResourceHandle ResourceManager::load_shader(const char* filename)
 	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
 
-	RenderResourceData shader_resource = _render_interface.create_render_resource_data(RenderResourceData::Shader);
-	shader_resource.data = &srd;
-	
-	_render_interface.create_resource(shader_resource, shader_resource_dynamic_data, shader_dynamic_data_size);
-	add_resource(name, resource_type::Shader, shader_resource.handle);
+	RenderResourceData shader_resource_data = _render_interface.create_render_resource_data(RenderResourceData::Shader);
+	shader_resource_data.data = &srd;
+	_render_interface.create_resource(shader_resource_data, shader_resource_dynamic_data, shader_dynamic_data_size);
+
+	auto shader = _allocator.construct<Shader>(shader_resource_data.handle);
+	add_resource(name, Resource(shader));
 
 	_allocator.deallocate(split_shader.vertex_source);
 	_allocator.deallocate(split_shader.fragment_source);
 	_allocator.deallocate(shader_source.data);
 
-	return shader_resource.handle;
+	return *shader;
 }
 
 Image& ResourceManager::load_image(const char* filename)
@@ -178,7 +181,7 @@ Image& ResourceManager::load_image(const char* filename)
 	image->data_size = tex.data_size;
 	image->pixel_format = image::RGBA;
 	
-	add_resource(name, resource_type::Image, ResourceHandle(image));
+	add_resource(name, Resource(image));
 
 	return *image;
 }
@@ -193,7 +196,7 @@ Texture& ResourceManager::load_texture(const char* filename)
 	auto& image = load_image(filename);
 	auto texture = _allocator.construct<Texture>(&image);
 	_render_interface.create_texture(*texture);
-	add_resource(name, resource_type::Texture, ResourceHandle(texture));
+	add_resource(name, Resource(texture));
 	return *texture;	
 }
 
@@ -216,7 +219,7 @@ Font& ResourceManager::load_font(const char* filename)
 	auto rows = d["rows"].GetInt();
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
-	add_resource(name, resource_type::Font, ResourceHandle(font));
+	add_resource(name, Resource(font));
 	return *font;
 }
 
@@ -227,60 +230,70 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(filename));
-	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry);
-	add_resource(name, resource_type::Drawable, ResourceHandle(drawable));
+	LoadedFile file = file::load(filename, _allocator);
+	using namespace rapidjson;
+    Document d;	
+    d.Parse<0>((char*)file.data);
+	_allocator.deallocate(file.data);
+	
+	auto texture_filename = d["texture"].GetString();
+	auto material_filename = d["material"].GetString();
+
+	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(texture_filename));
+	auto& material = load_material(material_filename);
+	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material);
+	add_resource(name, Resource(drawable));
 	return *drawable;
 }
 
 uint64_t ResourceManager::get_name(uint64_t name, ResourceType type)
 {
-	char name_str[500];
+	char name_str[30];
 	sprintf(name_str, "%u%llu", (unsigned)type, name);
 	::uint64_t name_with_type;
 	sscanf(name_str, "%llu", &name_with_type);
 	return name_with_type;
 }
 
-void ResourceManager::add_resource(uint64_t name, ResourceType type, ResourceHandle resource)
+void ResourceManager::add_resource(uint64_t name, Resource resource)
 {
-	hash::set(_resources, get_name(name, type), resource);
+	hash::set(_resources, get_name(name, resource.type), resource);
 }
 
-ResourceHandle ResourceManager::get(ResourceType type, uint64_t name)
+Resource ResourceManager::get(ResourceType type, uint64_t name)
 {
-	return hash::get(_resources, get_name(name, type), ResourceHandle());
+	return hash::get(_resources, get_name(name, type), Resource());
 }
 
-ResourceHandle ResourceManager::load(ResourceType type, const char* filename)
+Resource ResourceManager::load(ResourceType type, const char* filename)
 {
 	switch(type)
 	{
-		case resource_type::RenderMaterial: return load_material(filename);
-		case resource_type::Image: return ResourceHandle(&load_image(filename));
-		case resource_type::Shader: return load_shader(filename);
-		case resource_type::Sprite: return ResourceHandle(&load_sprite_prototype(filename));
-		case resource_type::Texture: return ResourceHandle(&load_texture(filename));
-		case resource_type::Font: return ResourceHandle(&load_font(filename));
-		default: assert(!"Unknown resource type"); return ResourceHandle();
+		case resource_type::Material: return Resource(&load_material(filename));
+		case resource_type::Image: return Resource(&load_image(filename));
+		case resource_type::Shader: return Resource(&load_shader(filename));
+		case resource_type::Sprite: return Resource(&load_sprite_prototype(filename));
+		case resource_type::Texture: return Resource(&load_texture(filename));
+		case resource_type::Font: return Resource(&load_font(filename));
+		default: assert(!"Unknown resource type"); return Resource();
 	}
 }
 
-ResourceHandle ResourceManager::load(const char* type, const char* filename)
+Resource ResourceManager::load(const char* type, const char* filename)
 {
 	return load(resource_type_from_string(type), filename);
 }
 
-void ResourceManager::set_default(ResourceType type, ResourceHandle handle)
+void ResourceManager::set_default(ResourceType type, Resource resource)
 {
-	assert(_default_resources[type].type == ResourceHandle::NotInitialized && "Trying to resassign already assigned default resource.");
-	_default_resources[type] = handle;
+	assert(_default_resources[type].object == 0 && "Trying to resassign already assigned default resource.");
+	_default_resources[type] = resource;
 }
 
-ResourceHandle ResourceManager::get_default(ResourceType type) const
+Resource ResourceManager::get_default(ResourceType type) const
 {
 	auto resource = _default_resources[type];
-	assert(resource.type != ResourceHandle::NotInitialized && "No default resource set for this type.");
+	assert(resource.object != 0 && "No default resource set for this type.");
 	return resource;
 }
 

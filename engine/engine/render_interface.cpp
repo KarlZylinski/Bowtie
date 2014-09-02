@@ -9,6 +9,7 @@
 #include "drawable.h"
 #include "irenderer.h"
 #include "image.h"
+#include "material.h"
 #include "render_fence.h"
 #include "resource_manager.h"
 #include "texture.h"
@@ -24,7 +25,7 @@ RenderInterface::RenderInterface(IRenderer& renderer, Allocator& allocator) : _a
 
 void RenderInterface::create_texture(Texture& texture)
 {
-	assert(texture.render_handle.type == ResourceHandle::NotInitialized && "Trying to create already created texture");
+	assert(texture.render_handle == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
 
 	Image& image = *texture.image;
 
@@ -43,31 +44,31 @@ void RenderInterface::create_texture(Texture& texture)
 	texture.render_handle = texture_resource.handle;
 }
 
-ResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawable& drawable)
+RenderResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawable& drawable)
 {
-	auto shader = drawable.material();
+	auto material = drawable.material();
 
-	if (shader.type != ResourceHandle::NotInitialized)
-		return shader;
+	if (material->render_handle != RenderResourceHandle::NotInitialized)
+		return material->render_handle;
 
-	return resource_manager.get_default(resource_type::RenderMaterial);
+	return ((Material*)resource_manager.get_default(resource_type::Material).object)->render_handle;
 }
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
 {
-	assert(drawable.render_handle().type == ResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
+	assert(drawable.render_handle() == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
 
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
 	DrawableResourceData drawable_resource_data;
 
 	auto texture = drawable.geometry().texture();	
-	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : ResourceHandle();
+	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : RenderResourceHandle();
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
 	drawable_resource_data.material = get_material_or_default(resource_manager, drawable);
 	auto geometry_handle = drawable.geometry_handle();
 
-	if (geometry_handle.type == ResourceHandle::NotInitialized)
+	if (geometry_handle == RenderResourceHandle::NotInitialized)
 	{
 		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
 		GeometryResourceData geometry_data;
@@ -102,7 +103,7 @@ void RenderInterface::unspawn(World& world, Drawable& drawable)
 
 void RenderInterface::create_render_world(World& world)
 {
-	assert(world.render_handle().type == ResourceHandle::NotInitialized);
+	assert(world.render_handle() == RenderResourceHandle::NotInitialized);
 
 	auto render_world_data = create_render_resource_data(RenderResourceData::World);
 	world.set_render_handle(render_world_data.handle);
@@ -148,7 +149,7 @@ void RenderInterface::dispatch(const RendererCommand& command)
 
 void RenderInterface::create_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	assert(resource.handle.type != ResourceHandle::NotInitialized && "Trying to load an uninitialized resource");
+	assert(resource.handle != RenderResourceHandle::NotInitialized && "Trying to load an uninitialized resource");
 
 	RendererCommand rc;
 

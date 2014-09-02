@@ -9,13 +9,13 @@ namespace bowtie
 ////////////////////////////////
 // Public interface.
 
-Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry) : _allocator(allocator), _geometry(geometry),
-	 _pivot(0, 0), _position(0, 0), _render_state_changed(false), _rotation(0.0f)
+Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material) : _allocator(allocator), _geometry(geometry),
+	 _pivot(0, 0), _position(0, 0), _render_state_changed(false), _rotation(0.0f), _material(material)
 {
 }
 
 Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _geometry(other._geometry.clone(_allocator)),
-	_pivot(0, 0), _position(other._position), _render_state_changed(false), _rotation(0.0f)
+	_pivot(0, 0), _position(other._position), _render_state_changed(false), _rotation(0.0f), _material(other._material)
 {
 }
 
@@ -44,12 +44,12 @@ bool Drawable::geometry_changed() const
 	return _geometry.has_changed();
 }
 
-ResourceHandle Drawable::geometry_handle() const
+RenderResourceHandle Drawable::geometry_handle() const
 {
 	return _geometry_handle;
 }
 
-ResourceHandle Drawable::material() const
+Material* Drawable::material() const
 {
 	return _material;
 }
@@ -90,7 +90,7 @@ const Vector2& Drawable::position() const
 	return _position;
 }
 
-ResourceHandle Drawable::render_handle() const
+RenderResourceHandle Drawable::render_handle() const
 {
 	return _render_handle;
 }
@@ -115,12 +115,12 @@ void Drawable::set_color(const Color& color)
 	_geometry.set_color(color);
 }
 
-void Drawable::set_geometry_handle(ResourceHandle handle)
+void Drawable::set_geometry_handle(RenderResourceHandle handle)
 {
 	_geometry_handle = handle;
 }
 
-void Drawable::set_material(ResourceHandle material)
+void Drawable::set_material(Material* material)
 {
 	_material = material;
 	_render_state_changed = true;
@@ -138,9 +138,9 @@ void Drawable::set_position(const Vector2& position)
 	_render_state_changed = true;
 }
 
-void Drawable::set_render_handle(ResourceHandle handle)
+void Drawable::set_render_handle(RenderResourceHandle handle)
 {
-	assert(_render_handle.type == ResourceHandle::NotInitialized && "Trying to reset already initliaized drawable render handle.");
+	assert(_render_handle == RenderResourceHandle::NotInitialized && "Trying to reset already initliaized drawable render handle.");
 	_render_handle = handle;
 }
 

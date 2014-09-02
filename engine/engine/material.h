@@ -1,19 +1,17 @@
 #pragma once
 
-#include <foundation/collection_types.h>
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 
 namespace bowtie
 {
 
-class Material
+struct Shader;
+struct Material
 {
-public:
-	Material(ResourceHandle shader);
-	
-private:
-	Array<Uniform> _uniforms;
-	ResourceHandle _shader;
+	Material(RenderResourceHandle render_handle, Shader* shader) :
+		render_handle(render_handle), shader(shader) {}
+	RenderResourceHandle render_handle;
+	Shader* shader;
 };
 
 }

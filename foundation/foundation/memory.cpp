@@ -5,7 +5,7 @@
 #include <new>
 #include "icallstack_capturer.h"
 
-//#define TRACING 1
+#define TRACING 1
 
 namespace {
 	using namespace bowtie;

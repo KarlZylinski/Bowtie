@@ -26,12 +26,7 @@ int engine(lua_State* lua)
 int load_resource(lua_State* lua)
 {
 	auto resource = s_engine->resource_manager().load(lua_tostring(lua, 1), lua_tostring(lua, 2));
-
-	if (resource.type == ResourceHandle::Handle)
-		lua_pushnumber(lua, resource.handle);
-	else
-		lua_pushlightuserdata(lua, resource.object);
-
+	lua_pushlightuserdata(lua, resource.object);
 	return 1;
 }
 

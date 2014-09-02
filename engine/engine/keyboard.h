@@ -1,7 +1,7 @@
 #pragma once
 
 #include <foundation/keyboard.h>
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 
 namespace bowtie
 {

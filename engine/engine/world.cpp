@@ -3,6 +3,7 @@
 #include <cassert>
 #include <foundation/array.h>
 #include "drawable.h"
+#include "material.h"
 #include "render_interface.h"
 #include "resource_manager.h"
 #include "rectangle_geometry.h"
@@ -23,17 +24,15 @@ World::~World()
 		_allocator.destroy(_drawables[i]);
 }
 
-void World::set_render_handle(ResourceHandle render_handle)
+void World::set_render_handle(RenderResourceHandle render_handle)
 {
-	assert(_render_handle.type == ResourceHandle::NotInitialized && "_render_handle already initialized.");
-
 	_render_handle = render_handle;
 }
 
 Drawable* World::spawn_rectangle(const Rect& rect, const Color& color)
 {
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
-	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry);
+	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)_resource_manager.get_default(resource_type::Material).object);
 	array::push_back(_drawables, rectangle);
 	_render_interface.spawn(*this, *rectangle, _resource_manager);
 	return rectangle;
@@ -56,7 +55,7 @@ void World::unspawn(Drawable& drawable)
 	_allocator.destroy(&drawable);
 }
 
-ResourceHandle World::render_handle()
+RenderResourceHandle World::render_handle()
 {
 	return _render_handle;
 }
@@ -72,7 +71,7 @@ void update_drawable_state(Allocator& allocator, RenderInterface& render_interfa
 		
 	auto& scd = *(DrawableStateReflectionData*)allocator.allocate(sizeof(DrawableStateReflectionData));
 	scd.model = drawable.model_matrix();
-	scd.material = drawable.material();
+	scd.material = drawable.material()->render_handle;
 	scd.drawble = drawable.render_handle();
 	state_changed_command.data = &scd;
 
@@ -129,7 +128,7 @@ Drawable* World::spawn_text(const Font& font, const char* text_str)
 {
 	auto text_geometry = _allocator.construct<TextGeometry>(font, _allocator);
 	text_geometry->set_text(text_str);
-	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry);
+	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry, (Material*)_resource_manager.get_default(resource_type::Material).object);
 	array::push_back(_drawables, text);
 	_render_interface.spawn(*this, *text, _resource_manager);
 	return text;

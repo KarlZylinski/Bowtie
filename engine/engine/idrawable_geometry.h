@@ -1,11 +1,12 @@
 #pragma once
 
-#include "resource_handle.h"
+#include "render_resource_handle.h"
 
 namespace bowtie
 {
 
 class Allocator;
+struct Texture;
 struct Vector4;
 class IDrawableGeometry
 {

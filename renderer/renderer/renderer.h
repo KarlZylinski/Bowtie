@@ -37,12 +37,12 @@ public:
 	Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table);
 	~Renderer();
 
-	typedef std::function<RenderResource(ResourceHandle)> LookupResourceFunction;
+	typedef std::function<RenderResource(RenderResourceHandle)> LookupResourceFunction;
 	
 	void add_renderer_command(const RendererCommand& command);
-	ResourceHandle create_handle();
+	RenderResourceHandle create_handle();
 	void deallocate_processed_commands(Allocator& render_interface_allocator);
-	void free_handle(ResourceHandle handle);
+	void free_handle(RenderResourceHandle handle);
 	bool is_active() const;
 	bool is_setup() const;
 	RenderInterface& render_interface();
@@ -64,7 +64,7 @@ private:
 	std::mutex _unprocessed_commands_exists_mutex;
 	IConcreteRenderer& _concrete_renderer;
 	IRendererContext* _context;
-	Array<ResourceHandle> _free_handles;
+	Array<RenderResourceHandle> _free_handles;
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
 	RenderInterface _render_interface;
