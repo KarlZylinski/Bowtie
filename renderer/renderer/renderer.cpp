@@ -87,16 +87,16 @@ Renderer::~Renderer()
 		switch (resource_object.type)
 		{
 		case RenderResourceData::World:
-			_allocator.destroy((RenderWorld*)resource_object.handle.render_object);
+			_allocator.destroy((RenderWorld*)resource_object.handle.object);
 			break;
 		case RenderResourceData::RenderTarget:
-			_allocator.destroy((RenderTarget*)resource_object.handle.render_object);
+			_allocator.destroy((RenderTarget*)resource_object.handle.object);
 			break;
 		case RenderResourceData::RenderMaterial:
-			_allocator.destroy((RenderMaterial*)resource_object.handle.render_object);
+			_allocator.destroy((RenderMaterial*)resource_object.handle.object);
 			break;
 		default:
-			_allocator.deallocate(resource_object.handle.render_object);
+			_allocator.deallocate(resource_object.handle.object);
 			break;
 		}
 	}
@@ -217,7 +217,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			render_world(_concrete_renderer, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).render_object, rwd.view);
+			render_world(_concrete_renderer, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).object, rwd.view);
 		}
 		break;
 
@@ -261,7 +261,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::DrawableStateReflection:
 		{
 			const auto& data = *(DrawableStateReflectionData*)command.data;
-			drawable_state_reflection(*(RenderDrawable*)_resource_lut.lookup(data.drawble).render_object, _resource_lut, data);
+			drawable_state_reflection(*(RenderDrawable*)_resource_lut.lookup(data.drawble).object, _resource_lut, data);
 		}
 		break;
 
@@ -284,11 +284,11 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::Unspawn:
 		{
 			const auto& unspawn_data = *(UnspawnData*)command.data;
-			auto& render_world = *(RenderWorld*)_resource_lut.lookup(unspawn_data.world).render_object;
-			auto& render_drawable = *(RenderDrawable*)_resource_lut.lookup(unspawn_data.drawable).render_object;
+			auto& render_world = *(RenderWorld*)_resource_lut.lookup(unspawn_data.world).object;
+			auto& render_drawable = *(RenderDrawable*)_resource_lut.lookup(unspawn_data.drawable).object;
 			render_world.remove_drawable(&render_drawable);
 			_concrete_renderer.unload_geometry(render_drawable.geometry);
-			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return &render_drawable == rro.handle.render_object; });
+			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return &render_drawable == rro.handle.object; });
 			_resource_lut.free(unspawn_data.drawable);
 			_allocator.deallocate(&render_drawable);
 		}
@@ -297,7 +297,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::SetUniformValue:
 		{
 			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
-			auto& material = *(RenderMaterial*)_resource_lut.lookup(set_uniform_value_data.material).render_object;
+			auto& material = *(RenderMaterial*)_resource_lut.lookup(set_uniform_value_data.material).object;
 			material.set_uniform_value(set_uniform_value_data.uniform_name, set_uniform_value_data.value);
 		}
 		break;
@@ -342,14 +342,14 @@ RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupT
 	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
 
 	drawable.texture = data.texture != RenderResourceHandle::NotInitialized
-		? (RenderTexture*)resource_lut.lookup(data.texture).render_object
+		? (RenderTexture*)resource_lut.lookup(data.texture).object
 		: nullptr;
 
 	drawable.model = data.model;
-	drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).render_object;
+	drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).object;
 	drawable.geometry = resource_lut.lookup(data.geometry);
 	drawable.num_vertices = data.num_vertices;
-	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).render_object;
+	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).object;
 	rw.add_drawable(&drawable);
 	return RenderResource(&drawable);
 }
@@ -496,7 +496,7 @@ void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLoo
 	drawable.model = data.model;
 
 	if (data.material != RenderResourceHandle::NotInitialized)
-		drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).render_object;
+		drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).object;
 }
 
 void flip(IRendererContext& context)

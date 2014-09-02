@@ -72,7 +72,7 @@ RenderTarget* OpenGLRenderer::create_render_target()
 void OpenGLRenderer::destroy_render_target(const RenderTarget& target)
 {
 	unload_texture(*target.render_texture);
-	glDeleteFramebuffers(1, &target.target_handle.render_handle);
+	glDeleteFramebuffers(1, &target.target_handle.handle);
 }
 
 void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
@@ -86,7 +86,7 @@ void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 
 unsigned OpenGLRenderer::get_uniform_location(RenderResource shader, const char* name)
 {
-	return glGetUniformLocation(shader.render_handle, name);
+	return glGetUniformLocation(shader.handle, name);
 }
 
 void OpenGLRenderer::initialize_thread()
@@ -120,8 +120,8 @@ RenderTexture* OpenGLRenderer::load_texture(const TextureResourceData& trd, void
 
 void OpenGLRenderer::update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data)
 {
-	auto& drawable = *(RenderDrawable*)_resource_lut.lookup(geometry_data.drawable).render_object;
-	auto geometry_handle = drawable.geometry.render_handle;
+	auto& drawable = *(RenderDrawable*)_resource_lut.lookup(geometry_data.drawable).object;
+	auto geometry_handle = drawable.geometry.handle;
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 }
@@ -139,22 +139,22 @@ const Vector2u& OpenGLRenderer::resolution() const
 
 void OpenGLRenderer::set_render_target(const RenderTarget& render_target)
 {
-	set_render_target_internal(_resolution, render_target.target_handle.render_handle);
+	set_render_target_internal(_resolution, render_target.target_handle.handle);
 }
 
 void OpenGLRenderer::unload_geometry(RenderResource handle)
 {
-	glDeleteBuffers(1, &handle.render_handle);
+	glDeleteBuffers(1, &handle.handle);
 }
 
 void OpenGLRenderer::unload_shader(RenderResource handle)
 {
-	glDeleteProgram(handle.render_handle);
+	glDeleteProgram(handle.handle);
 }
 
 void OpenGLRenderer::unload_texture(const RenderTexture& texture)
 {
-	glDeleteTextures(1, &texture.render_handle.render_handle);
+	glDeleteTextures(1, &texture.render_handle.handle);
 }
 
 void OpenGLRenderer::unset_render_target()
@@ -186,7 +186,7 @@ void combine_rendered_world_internal(GLuint fullscreen_rendering_quad, const Arr
 		auto& rt = rw.render_target();
 		
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, rt.render_texture->render_handle.render_handle);
+		glBindTexture(GL_TEXTURE_2D, rt.render_texture->render_handle.handle);
 		glUniform1i(texture_sampler_id, i);
 	}
 
@@ -243,7 +243,7 @@ RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const
 RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution)
 {
 	auto texture = create_texture(allocator, image::RGBA, resolution, 0);
-	auto texture_id = texture->render_handle.render_handle;
+	auto texture_id = texture->render_handle.handle;
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	
 	GLuint fb = 0;
@@ -278,7 +278,7 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 {
 	auto model_view_projection_matrix = drawable.model * view_projection;		
 	auto& material = *drawable.material;
-	auto shader = material.shader().render_handle;
+	auto shader = material.shader().handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
@@ -315,14 +315,14 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 		RenderTexture& drawable_texture = *drawable.texture;
 		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.render_handle);
+		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.handle);
 		glUniform1i(texture_sampler_id, 0);
 		glUniform1i(glGetUniformLocation(shader, "has_texture"), true);
 	}
 	else
 		glUniform1i(glGetUniformLocation(shader, "has_texture"), false);
 
-	auto geometry = drawable.geometry.render_handle;
+	auto geometry = drawable.geometry.handle;
 		
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
 	glEnableVertexAttribArray(0);
