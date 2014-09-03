@@ -56,6 +56,7 @@ void deinit_game(lua_State* lua)
 
 void load_shared_libs(lua_State* lua)
 {
+	script_interface::check_errors(lua, luaL_dofile(lua, "shared/class.lua"));
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector2.lua"));
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector4.lua"));
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/console.lua"));
@@ -64,9 +65,6 @@ void load_shared_libs(lua_State* lua)
 Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
 {
 	luaL_openlibs(_lua);
-	load_main(_lua);
-	load_shared_libs(_lua);
-
 	engine_script_interface::load(_lua, engine);
 	world_script_interface::load(_lua);
 	time_script_interface::load(_lua);
@@ -75,6 +73,8 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	text_script_interface::load(_lua);
 	rectangle_script_interface::load(_lua);
 	material_script_interface::load(_lua, render_interface);
+	load_shared_libs(_lua);
+	load_main(_lua);
 }
 
 Game::~Game()

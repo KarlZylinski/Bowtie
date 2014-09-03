@@ -1,5 +1,3 @@
-require "shared/class"
-
 Vector4 = class(Vector4)
 Color = Vector4
 

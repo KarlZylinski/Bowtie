@@ -1,5 +1,3 @@
-require "shared/class"
-
 local _truncate_array, _update_drawables
 
 Console = class(Console)

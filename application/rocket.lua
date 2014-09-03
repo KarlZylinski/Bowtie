@@ -1,4 +1,3 @@
-require "shared/class"
 require "shared/tuple"
 
 local apply_gravity, apply_thrust, calculate_rotation, calculate_thrust, limit_velocity, limit_vertical_velocity, read_input

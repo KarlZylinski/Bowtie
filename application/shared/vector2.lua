@@ -1,5 +1,3 @@
-require "shared/class"
-
 Vector2 = class(Vector2)
 
 function Vector2:init(x, y)

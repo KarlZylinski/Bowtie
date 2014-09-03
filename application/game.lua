@@ -1,4 +1,3 @@
-require "shared/class"
 require "rocket"
 
 Game = class(Game)
