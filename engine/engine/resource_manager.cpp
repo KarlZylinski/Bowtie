@@ -128,6 +128,53 @@ Material& ResourceManager::load_material(const char* filename)
 	return *material;
 }
 
+RenderResourceData get_create_render_resource_data(RenderInterface& render_interface, RenderResourceData::Type type, void* data)
+{
+	RenderResourceData resource_data = render_interface.create_render_resource_data(type);
+	resource_data.data = data;
+	return resource_data;
+}
+
+RenderResourceData get_update_render_resource_data(RenderResourceData::Type type, RenderResourceHandle handle, void* data)
+{
+	RenderResourceData resource_data = { type, handle, data };
+	return resource_data;
+}
+
+template<typename T> struct RenderResourcePackage
+{
+	RenderResourcePackage(const T& data, void* dynamic_data, unsigned dynamic_data_size)
+		: data(data), dynamic_data(dynamic_data), dynamic_data_size(dynamic_data_size)
+	{}
+
+	T data;
+	void* dynamic_data;
+	unsigned dynamic_data_size;
+};
+
+RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& allocator, const char* filename)
+{
+	auto shader_source = file::load(filename, allocator);
+	auto split_shader = shader_utils::split_shader(shader_source, allocator);
+	allocator.deallocate(shader_source.data);
+	
+	ShaderResourceData srd;
+	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
+	unsigned shader_dynamic_data_offset = 0;
+	void* shader_resource_dynamic_data = allocator.allocate(shader_dynamic_data_size);
+
+	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
+	strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
+	shader_dynamic_data_offset += split_shader.vertex_source_len;
+
+	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
+	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
+	
+	allocator.deallocate(split_shader.vertex_source);
+	allocator.deallocate(split_shader.fragment_source);
+	return RenderResourcePackage<ShaderResourceData>(srd, shader_resource_dynamic_data, shader_dynamic_data_size);
+}
+
 Shader& ResourceManager::load_shader(const char* filename)
 {
 	auto name = hash_name(filename);
@@ -136,33 +183,11 @@ Shader& ResourceManager::load_shader(const char* filename)
 	if (existing.object != nullptr)
 		return *(Shader*)existing.object;
 
-	auto shader_source = file::load(filename, _allocator);
-
-	auto split_shader = shader_utils::split_shader(shader_source, _allocator);
-	
-	ShaderResourceData srd;
-	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
-	unsigned shader_dynamic_data_offset = 0;
-	void* shader_resource_dynamic_data = _allocator.allocate(shader_dynamic_data_size);
-
-	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
-	strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
-	shader_dynamic_data_offset += split_shader.vertex_source_len;
-
-	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
-	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
-
-	RenderResourceData shader_resource_data = _render_interface.create_render_resource_data(RenderResourceData::Shader);
-	shader_resource_data.data = &srd;
-	_render_interface.create_resource(shader_resource_data, shader_resource_dynamic_data, shader_dynamic_data_size);
-
-	auto shader = _allocator.construct<Shader>(shader_resource_data.handle);
+	auto resource_package = get_shader_resource_data(_allocator, filename);
+	auto create_resource_data = get_create_render_resource_data(_render_interface, RenderResourceData::Shader, &resource_package.data);
+	_render_interface.create_resource(create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
+	auto shader = _allocator.construct<Shader>(create_resource_data.handle);
 	add_resource(name, Resource(shader));
-
-	_allocator.deallocate(split_shader.vertex_source);
-	_allocator.deallocate(split_shader.fragment_source);
-	_allocator.deallocate(shader_source.data);
-
 	return *shader;
 }
 
@@ -282,6 +307,29 @@ Resource ResourceManager::load(ResourceType type, const char* filename)
 Resource ResourceManager::load(const char* type, const char* filename)
 {
 	return load(resource_type_from_string(type), filename);
+}
+
+void ResourceManager::reload(const char* type, const char* filename)
+{
+	reload(resource_type_from_string(type), filename);
+}
+
+void ResourceManager::reload(ResourceType type, const char* filename)
+{
+	switch(type)
+	{
+		case resource_type::Shader:
+			{
+				auto& shader = *get<Shader>(type, filename);
+				auto shader_data = get_shader_resource_data(_allocator, filename);
+				auto update_command_data = get_update_render_resource_data(RenderResourceData::Shader, shader.render_handle, &shader_data.data);
+				_render_interface.update_resource(update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);
+			}
+			break;
+		default:
+			assert(!"Tried to reload unsupported resource type");
+			break;
+	}
 }
 
 void ResourceManager::set_default(ResourceType type, Resource resource)

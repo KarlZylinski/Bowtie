@@ -54,6 +54,8 @@ public:
 		return get<T>(type, hash_str(name));
 	}
 
+	void reload(const char* type, const char* filename);
+	void reload(ResourceType type, const char* filename);
 	void set_default(ResourceType type, Resource resource);
 	Resource get_default(ResourceType type) const;
 	

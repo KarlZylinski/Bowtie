@@ -35,6 +35,7 @@ static const NamedKey named_keys[] =
 	{ "Right", keyboard::Right },
 	{ "A", keyboard::A },
 	{ "Z", keyboard::Z },
+	{ "R", keyboard::R },
 	{ "PageUp", keyboard::PageUp },
 	{ "PageDown", keyboard::PageDown },
 	{ "Tilde", keyboard::Tilde }

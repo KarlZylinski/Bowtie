@@ -47,6 +47,17 @@ struct ResourceCreators
 	CreateResourceFunc(void) create_world;
 };
 
+
+#define UpdateResourceFunc(arguments) std::function<RenderResource(arguments)>
+
+struct ResourceUpdaters
+{
+	ResourceUpdaters(const UpdateResourceFunc(const ShaderResourceData&)& update_shader)
+		: update_shader(update_shader) {}
+
+	UpdateResourceFunc(const ShaderResourceData&) update_shader;
+};
+
 RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
 RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
 RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
@@ -61,6 +72,8 @@ void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>&
 void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
 void raise_fence(RenderFence& fence);
 void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view);
+RenderResource update_resource(const RenderResourceData& data, ResourceUpdaters& resource_updaters);
+RenderResource update_shader(IConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data);
 
 }
 
@@ -251,6 +264,31 @@ void Renderer::execute_command(const RendererCommand& command)
 		}
 		break;
 
+	case RendererCommand::UpdateResource:
+		{
+			RenderResourceData& data = *(RenderResourceData*)command.data;
+			void* dynamic_data = command.dynamic_data;
+			const auto& resource = _resource_lut.lookup(data.handle);
+			ResourceUpdaters resource_updaters(
+				std::bind(&update_shader, std::ref(_concrete_renderer), resource, dynamic_data, std::placeholders::_1)
+			);
+
+			auto handle = update_resource(data, resource_updaters);
+			assert(handle.type != RenderResource::NotInitialized && "Failed to load resource!");
+
+			// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
+			_resource_lut.set(data.handle, handle);
+
+			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+			// TODO: FIX, need to store rrh instead of this shait			
+			//if (handle.type == RenderResource::Object)
+			//	array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
+	
+			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
+			array::push_back(_processed_memory, data.data);
+		}
+		break;
+
 	case RendererCommand::Resize:
 		{
 			ResizeData& data = *(ResizeData*)command.data;
@@ -421,8 +459,8 @@ Vector4 get_value_from_str(const char* str)
 
 RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
 {
+	auto material = allocator.construct<RenderMaterial>(allocator, data.shader);
 	auto shader = lookup_table.lookup(data.shader);
-	auto material = allocator.construct<RenderMaterial>(allocator, shader);
 	char* current_uniform = (char*)dynamic_data;
 	
 	for (unsigned i = 0; i < data.num_uniforms; ++i)
@@ -543,6 +581,20 @@ void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& ren
 	concrete_renderer.clear();
 	concrete_renderer.draw(view, render_world);
 	array::push_back(rendered_worlds, &render_world);
+}
+
+RenderResource update_resource(const RenderResourceData& data, ResourceUpdaters& resource_updaters)
+{
+	switch(data.type)
+	{
+		case RenderResourceData::Shader: return resource_updaters.update_shader(*(ShaderResourceData*)data.data);
+		default: assert(!"Unknown render resource type"); return RenderResource();
+	}
+}
+
+RenderResource update_shader(IConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data)
+{
+	return concrete_renderer.update_shader(shader, data, dynamic_data);
 }
 
 } // implementation

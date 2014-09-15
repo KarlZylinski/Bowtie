@@ -29,6 +29,7 @@ public:
 	RendererCommand create_command(RendererCommand::Type type);
 	void dispatch(const RendererCommand& command);
 	void create_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
+	void update_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
 						  
 	// Pass the main thread allocator.
 	void deallocate_processed_commands(Allocator& allocator);

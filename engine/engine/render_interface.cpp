@@ -147,37 +147,37 @@ void RenderInterface::dispatch(const RendererCommand& command)
 	_renderer.add_renderer_command(command);
 }
 
-void RenderInterface::create_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+RendererCommand create_or_update_resource_renderer_command(Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
 {
 	assert(resource.handle != RenderResourceHandle::NotInitialized && "Trying to load an uninitialized resource");
 
 	RendererCommand rc;
 
-	auto copied_resource = (RenderResourceData*)_allocator.allocate(sizeof(RenderResourceData));
+	auto copied_resource = (RenderResourceData*)allocator.allocate(sizeof(RenderResourceData));
 	memcpy(copied_resource, &resource, sizeof(RenderResourceData));
 	rc.data = copied_resource;
-	rc.type = RendererCommand::LoadResource;
+	rc.type = command_type;
 	
 	switch (resource.type)
 	{
 		case RenderResourceData::RenderMaterial:
-			copied_resource->data = _allocator.allocate(sizeof(MaterialResourceData));
+			copied_resource->data = allocator.allocate(sizeof(MaterialResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
 			break;
 		case RenderResourceData::Shader:
-			copied_resource->data = _allocator.allocate(sizeof(ShaderResourceData));
+			copied_resource->data = allocator.allocate(sizeof(ShaderResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));
 			break;
 		case RenderResourceData::Texture:
-			copied_resource->data = _allocator.allocate(sizeof(TextureResourceData));
+			copied_resource->data = allocator.allocate(sizeof(TextureResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
 			break;
 		case RenderResourceData::Drawable:
-			copied_resource->data = _allocator.allocate(sizeof(DrawableResourceData));
+			copied_resource->data = allocator.allocate(sizeof(DrawableResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(DrawableResourceData));
 			break;
 		case RenderResourceData::Geometry:
-			copied_resource->data = _allocator.allocate(sizeof(GeometryResourceData));
+			copied_resource->data = allocator.allocate(sizeof(GeometryResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(GeometryResourceData));
 			break;
 		case RenderResourceData::World:
@@ -191,7 +191,17 @@ void RenderInterface::create_resource(RenderResourceData& resource, void* dynami
 	rc.dynamic_data = dynamic_data;
 	rc.dynamic_data_size = dynamic_data_size;
 
-	dispatch(rc);
+	return rc;
+}
+
+void RenderInterface::create_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+{	
+	dispatch(create_or_update_resource_renderer_command(_allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource));
+}
+
+void RenderInterface::update_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+{
+	dispatch(create_or_update_resource_renderer_command(_allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
 }
 
 void RenderInterface::deallocate_processed_commands(Allocator& allocator)

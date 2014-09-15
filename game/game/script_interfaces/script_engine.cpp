@@ -30,6 +30,12 @@ int load_resource(lua_State* lua)
 	return 1;
 }
 
+int reload_resource(lua_State* lua)
+{
+	s_engine->resource_manager().reload(lua_tostring(lua, 1), lua_tostring(lua, 2));
+	return 0;
+}
+
 int set_default_resource(lua_State* lua)
 {
 	auto resource_type_str = lua_tostring(lua, 1);
@@ -68,10 +74,11 @@ void load(lua_State* lua, Engine& e)
 	const interface_function engine_functions[] = {
 		{ "engine", engine },
 		{ "set_default_resource", set_default_resource },
-		{ "load_resource", load_resource }
+		{ "load_resource", load_resource },
+		{ "reload_resource", reload_resource },
 	};
 
-	script_interface::register_interface(lua, "Engine", engine_functions, 3);
+	script_interface::register_interface(lua, "Engine", engine_functions, 4);
 	
 	const interface_function keyboard_functions[] = {
 		{ "pressed", keyboard_pressed },

@@ -32,6 +32,7 @@ public:
 	virtual RenderTexture* load_texture(const TextureResourceData& trd, void* dynamic_data) = 0;
 	virtual RenderResource load_shader(const ShaderResourceData& shader_data, void* dynamic_data) = 0;
 	virtual void update_geometry(const DrawableGeometryReflectionData& geometry_data, void* dynamic_data) = 0;	
+	virtual RenderResource update_shader(const RenderResource& shader, const ShaderResourceData& shader_data, void* dynamic_data) = 0;	
 	virtual void resize(const Vector2u& size, Array<RenderTarget*>& render_targets) = 0;
 	virtual const Vector2u& resolution() const = 0;
 	virtual void set_render_target(const RenderTarget& render_target) = 0;

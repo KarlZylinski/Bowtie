@@ -126,6 +126,14 @@ void OpenGLRenderer::update_geometry(const DrawableGeometryReflectionData& geome
 	glBufferData(GL_ARRAY_BUFFER, geometry_data.size, dynamic_data, GL_STATIC_DRAW);
 }
 
+RenderResource OpenGLRenderer::update_shader(const RenderResource& shader, const ShaderResourceData& shader_data, void* dynamic_data)
+{
+	auto vertex_source = (char*)memory::pointer_add(dynamic_data, shader_data.vertex_shader_source_offset);
+	auto fragment_source = (char*)memory::pointer_add(dynamic_data, shader_data.fragment_shader_source_offset);
+	glDeleteProgram(shader.handle);
+	return RenderResource(load_shader_internal(vertex_source, fragment_source));	
+}
+
 void OpenGLRenderer::resize(const Vector2u& resolution, Array<RenderTarget*>&)
 {
 	_resolution = resolution;
@@ -274,11 +282,11 @@ GLuint create_fullscreen_rendering_quad()
 	return quad_vertexbuffer;
 }
 
-void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable&)
+void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection;		
 	auto& material = *drawable.material;
-	auto shader = material.shader().handle;
+	auto shader = lookup_table.lookup(material.shader()).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();

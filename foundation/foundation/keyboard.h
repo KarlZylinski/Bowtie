@@ -18,6 +18,7 @@ namespace keyboard
 		Right = VK_RIGHT,
 		A = 0x41,
 		Z = 0x5A,
+		R = 0x52,
 		PageUp = VK_PRIOR,
 		PageDown = VK_NEXT,
 		Tilde = 0xC0

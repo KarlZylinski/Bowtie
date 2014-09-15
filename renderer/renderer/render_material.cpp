@@ -4,7 +4,7 @@
 namespace bowtie
 {
 
-RenderMaterial::RenderMaterial(Allocator& allocator, RenderResource shader) : _shader(shader), _uniforms(allocator)
+RenderMaterial::RenderMaterial(Allocator& allocator, RenderResourceHandle shader) : _shader(shader), _uniforms(allocator)
 {
 }
 
@@ -27,7 +27,7 @@ void RenderMaterial::set_uniform_value(uint64_t name, Vector4 value)
 	}
 }
 
-RenderResource RenderMaterial::shader() const
+RenderResourceHandle RenderMaterial::shader() const
 {
 	return _shader;
 }

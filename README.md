@@ -30,7 +30,7 @@ Todo
 * [x] Make sure to remove hacks from combine_rendered_worlds and split it into multiple methods. Seems to be  some haze with arrays of textures...
 * [x] Change render resource handles in render_world to drawables
 * [x] Make ResourceHandle::handle -> RenderResourceHandle (unsigned typedef ?). RenderResourceHandle -> RenderResource (remove render_ prefix). Move void* in ResourceHandle to Resource struct.
-* [ ] Shader refreshing
+* [x] Shader refreshing
 * [ ] Depth sorting
 * [ ] Parenting with local transform and all that jazz
 * [ ] Break engine and gameplay script and resources apart. Make exe load a settings file which specifies lua boot file, or just always load main.lua or something. Also provide a command line option for specifying where the exe is (so you can debug from vs when devving).
