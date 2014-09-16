@@ -9,12 +9,12 @@ namespace bowtie
 ////////////////////////////////
 // Public interface.
 
-Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material) : _allocator(allocator), _geometry(geometry),
+Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material) : _allocator(allocator), _depth(0), _geometry(geometry),
 	 _pivot(0, 0), _position(0, 0), _render_state_changed(false), _rotation(0.0f), _material(material)
 {
 }
 
-Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _geometry(other._geometry.clone(_allocator)),
+Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _depth(0), _geometry(other._geometry.clone(_allocator)),
 	_pivot(0, 0), _position(other._position), _render_state_changed(false), _rotation(0.0f), _material(other._material)
 {
 }
@@ -27,6 +27,11 @@ Drawable::~Drawable()
 const Color& Drawable::color() const
 {
 	return _geometry.color();
+}
+
+float Drawable::depth() const
+{
+	return _depth;
 }
 
 IDrawableGeometry& Drawable::geometry()
@@ -57,13 +62,9 @@ Material* Drawable::material() const
 Matrix4 Drawable::model_matrix() const
 {
 	auto p = Matrix4();	
-	p[3][0] = (float)_pivot.x;
-	p[3][1] = (float)_pivot.y;
-
-	auto p_inv = Matrix4();	
-	p[3][0] = -(float)_pivot.x;
-	p[3][1] = -(float)_pivot.y;
-
+	p[3][0] = (float)-_pivot.x;
+	p[3][1] = (float)-_pivot.y;
+	
 	auto r = Matrix4();
 	r[0][0] = cos(_rotation);
 	r[1][0] = -sin(_rotation);
@@ -73,11 +74,12 @@ Matrix4 Drawable::model_matrix() const
 	auto t = Matrix4();
 	t[3][0] = _position.x;
 	t[3][1] = _position.y;
+	t[3][2] = _depth;
 
 	if (_pivot.x == 0 && _pivot.y == 0)
 		return r * t;
 	else
-		return p * r * p_inv * t;
+		return p * r * t;
 }
 
 const Vector2i& Drawable::pivot() const
@@ -113,6 +115,12 @@ float Drawable::rotation() const
 void Drawable::set_color(const Color& color)
 {
 	_geometry.set_color(color);
+}
+
+void Drawable::set_depth(float depth)
+{
+	_depth = depth;
+	_render_state_changed = true;
 }
 
 void Drawable::set_geometry_handle(RenderResourceHandle handle)

@@ -54,8 +54,8 @@ Matrix4 View::projection() const
 {	
 	Matrix4 projection_matrix;
 
-	auto near_plane = 0.0f;
-	auto far_plane = 1.0f;
+	auto near_plane = -5;
+	auto far_plane = 1000.0f;
 	
 	projection_matrix[0][0] = 2.0f/(_rect.size.x - 1.0f);
 	projection_matrix[0][1] = 0;

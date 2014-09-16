@@ -20,6 +20,7 @@ public:
 	~Drawable();
 	
 	const Color& color() const;
+	float depth() const;
 	IDrawableGeometry& geometry();
 	const IDrawableGeometry& geometry() const;
 	bool geometry_changed() const;
@@ -33,6 +34,7 @@ public:
 	void reset_state_changed();
 	float rotation() const;
 	void set_color(const Color& color);
+	void set_depth(float depth);
 	void set_geometry_handle(RenderResourceHandle handle);
 	void set_material(Material* material);
 	void set_pivot(const Vector2i& position);
@@ -43,6 +45,7 @@ public:
 
 private:
 	Allocator& _allocator;
+	float _depth;
 	RenderResourceHandle _geometry_handle;
 	IDrawableGeometry& _geometry;
 	Vector2i _pivot;
