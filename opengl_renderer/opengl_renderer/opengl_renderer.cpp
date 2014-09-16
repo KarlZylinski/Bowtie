@@ -56,7 +56,7 @@ OpenGLRenderer::~OpenGLRenderer()
 
 void OpenGLRenderer::clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRenderer::combine_rendered_worlds(const Array<RenderWorld*>& rendered_worlds)
@@ -284,7 +284,7 @@ GLuint create_fullscreen_rendering_quad()
 
 void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
 {
-	auto model_view_projection_matrix = drawable.model * view_projection;		
+	auto model_view_projection_matrix = drawable.model * view_projection;
 	auto& material = *drawable.material;
 	auto shader = lookup_table.lookup(material.shader()).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
@@ -399,7 +399,7 @@ void initialize_gl()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 }
 
 GLuint load_rendered_worlds_combining_shader(Allocator& allocator)
