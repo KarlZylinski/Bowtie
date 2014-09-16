@@ -24,11 +24,11 @@ struct RenderTarget;
 
 struct RendererResourceObject
 {
-	RendererResourceObject(RenderResourceData::Type type, RenderResource handle)
+	RendererResourceObject(RenderResourceData::Type type, RenderResourceHandle handle)
 		: type(type), handle(handle) {}
 
 	RenderResourceData::Type type;
-	RenderResource handle;
+	RenderResourceHandle handle;
 };
 
 class Renderer : public IRenderer
@@ -52,9 +52,11 @@ public:
 	
 private:
 	void consume_command_queue();
+	RenderResource create_resource(const RenderResourceData& data, void* dynamic_data);
 	void execute_command(const RendererCommand& command);
 	void notify_unprocessed_commands_exists();
 	void thread();
+	RenderResource update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource);
 	void wait_for_unprocessed_commands_to_exist();
 	
 	bool _active;
