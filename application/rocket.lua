@@ -21,10 +21,6 @@ function Rocket:spawn(world)
 end
 
 function Rocket:update(dt, view_size)
-    if Keyboard.pressed("R") then
-        Engine.reload_resource("shader", "default.shader")
-    end
-
     local input = read_input()
     local rotation = calculate_rotation(Drawable.rotation(self._sprite), input, dt)
     Drawable.set_rotation(self._sprite, rotation)

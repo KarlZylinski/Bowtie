@@ -52,16 +52,16 @@ void main()
 
     float t = thrust == 0.0 ? 0.0001 : thrust;
 
-    p *= 5000.0/t;
+    p *= 1/-t;
 
-    float color = 3.0 - (3.*length(2.*p));
+    float color = 3.0 - (3.*length(2.3*p));
     
-    vec3 coord = vec3(atan(p.x,p.y)/6.2832+.5, length(p)*.4, .5);
+    vec3 coord = vec3(atan(p.x * 2,p.y)/6.2832+.5, length(p)*.4, .5);
     
     for(int i = 1; i <= 7; i++)
     {
         float power = pow(2.0, float(i));
-        color += (1.5 / power) * snoise(coord + vec3(0.,-time*.05, time*.01), power*16.);
+        color += (1.5 / power) * snoise(coord + vec3(0.,-time*0.5, time*0.3), power*16.);
     }
     gl_FragColor = vec4(color, pow(max(color,0.),2.)*0.4, pow(max(color,0.),3.)*0.15 , 1.0);
 
