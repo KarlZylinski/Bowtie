@@ -18,7 +18,7 @@ function Rocket:spawn(world)
     local sprite_size = Tuple.second(Sprite.rect(self.sprite))
     local fire_size = Tuple.second(Sprite.rect(self.fire))
     Drawable.set_pivot(self.fire, Vector2(fire_size.x * 0.5, 0))
-    Drawable.set_position(self.fire, Vector2(0, sprite_size.y * 0.5 - fire_size.y * 0.5))
+    Drawable.set_position(self.fire, Vector2(0, sprite_size.y * 0.5 - fire_size.y * 0.5 - 3))
     Drawable.set_material(self.fire, self.fire_material)
     Drawable.set_position(self.sprite, Vector2(200, 0))
     Drawable.set_pivot(self.sprite, sprite_size * 0.5);
@@ -44,7 +44,7 @@ function Rocket:update(dt, view_size)
         self.velocity = Vector2(0, 0)
     end
 
-    Material.set_uniform_value(self.fire_material, "thrust", Vector4(self.velocity.y, 0, 0, 0))
+    Material.set_uniform_value(self.fire_material, "thrust", Vector4(self.thrust, 0, 0, 0))
     Drawable.set_position(self.sprite, new_pos)
 end
 

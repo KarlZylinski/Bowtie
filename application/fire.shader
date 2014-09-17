@@ -52,7 +52,7 @@ void main()
 
     float t = thrust == 0.0 ? 0.0001 : thrust;
 
-    p *= 1000.0/t;
+    p *= 5000.0/t;
 
     float color = 3.0 - (3.*length(2.*p));
     
