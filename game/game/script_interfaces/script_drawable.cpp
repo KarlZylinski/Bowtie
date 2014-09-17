@@ -97,6 +97,21 @@ int set_rotation(lua_State* lua)
 	return 0;
 }
 
+int set_parent(lua_State* lua)
+{
+	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
+	auto parent = (Drawable*)lua_touserdata(lua, 2);
+	drawable.set_parent(parent);
+	return 0;
+}
+
+int parent(lua_State* lua)
+{
+	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
+	lua_pushlightuserdata(lua, drawable.parent());
+	return 1;
+}
+
 int unspawn(lua_State* lua)
 {
 	auto& world = *(World*)lua_touserdata(lua, 1);
@@ -120,10 +135,12 @@ void load(lua_State* lua)
 		{ "set_pivot", set_pivot },
 		{ "set_position", set_position },
 		{ "set_rotation", set_rotation },
+		{ "set_parent", set_parent },
+		{ "parent", parent },
 		{ "unspawn", unspawn }
 	};
 
-	script_interface::register_interface(lua, "Drawable", functions, 13);
+	script_interface::register_interface(lua, "Drawable", functions, 15);
 }
 
 } // namespace drawable_script_interface

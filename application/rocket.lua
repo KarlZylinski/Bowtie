@@ -12,12 +12,16 @@ function Rocket:init()
 end
 
 function Rocket:spawn(world)
-    self.fire = Rectangle.spawn(world, Vector2(0,0), Vector2(30,50), Color(1, 1, 1, 0.5))
+    self.fire = Rectangle.spawn(world, Vector2(0,0), Vector2(30,50), Color(1, 1, 1, 1))
     self.sprite = Sprite.spawn(world, "sprites/rocket.sprite")
-    Drawable.set_pivot(self.fire, Vector2(15, 25))
+    Drawable.set_parent(self.fire, self.sprite)
+    local sprite_size = Tuple.second(Sprite.rect(self.sprite))
+    local fire_size = Tuple.second(Sprite.rect(self.fire))
+    Drawable.set_pivot(self.fire, Vector2(fire_size.x * 0.5, 0))
+    Drawable.set_position(self.fire, Vector2(0, sprite_size.y * 0.5 - fire_size.y * 0.5))
     Drawable.set_material(self.fire, self.fire_material)
     Drawable.set_position(self.sprite, Vector2(200, 0))
-    Drawable.set_pivot(self.sprite, Tuple.second(Sprite.rect(self.sprite)) * 0.5);
+    Drawable.set_pivot(self.sprite, sprite_size * 0.5);
 end
 
 function Rocket:update(dt, view_size)
@@ -42,7 +46,6 @@ function Rocket:update(dt, view_size)
 
     Material.set_uniform_value(self.fire_material, "thrust", Vector4(self.velocity.y, 0, 0, 0))
     Drawable.set_position(self.sprite, new_pos)
-    Drawable.set_position(self.fire, new_pos + Vector2(0, sprite_size.y * 0.5 - 3))
 end
 
 apply_gravity = function(current_velocity, dt)
