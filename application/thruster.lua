@@ -11,7 +11,7 @@ end
 function Thruster:spawn(world)
     self._sprite = Rectangle.spawn(world, Vector2(0,0), Vector2(30,80), Color(1, 1, 1, 1))
     local sprite_size = Tuple.second(Sprite.rect(self._sprite))
-    Drawable.set_pivot(self._sprite, Vector2(sprite_size.x * 0.5, 0))    
+    Drawable.set_pivot(self._sprite, Vector2(sprite_size.x * 0.5, 0))
     Drawable.set_material(self._sprite, self._material)
 end
 
@@ -23,10 +23,6 @@ function Thruster:set_parent(parent)
 end
 
 function Thruster:update(input, dt)
-    if Keyboard.pressed("R") then
-        Engine.reload_resource("shader", "fire.shader")
-    end
-
     max_thrust = 5000
     self._thrust = input.y * max_thrust
     self._flare = self._flare - dt * 4

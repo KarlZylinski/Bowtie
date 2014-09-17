@@ -2,7 +2,10 @@
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec2 in_texcoord;
+layout(location = 2) in vec4 in_color;
+out vec2 world_position;
 out vec2 texcoord;
+out vec4 vertex_color;
 
 uniform mat4 model_view_projection_matrix;
 
@@ -10,18 +13,23 @@ void main()
 {
     vec4 position4 = vec4(in_position, 1);
     texcoord = in_texcoord;
+    vertex_color = in_color;
     gl_Position = model_view_projection_matrix * position4;
 }
 
 #fragment
 #version 410 core
 
+in vec2 world_position;
 in vec2 texcoord;
+in vec4 vertex_color;
 
-uniform float time;
-uniform float thrust;
+uniform sampler2D texture_sampler;
+uniform bool has_texture;
+uniform float height;
 
 layout(location = 0) out vec4 color;
+
 
 float snoise(vec3 uv, float res)
 {
@@ -48,23 +56,5 @@ float snoise(vec3 uv, float res)
 
 void main()
 {
-    vec2 p = -.5 + texcoord;
-
-    float t = thrust == 0.0 ? 0.0001 : thrust;
-
-    p *= 1/-t;
-
-    float color = 3.0 - (3.*length(2.3*p));
-    
-    vec3 coord = vec3(atan(p.x * 2,p.y)/6.2832+.5, length(p)*.4, .5);
-    
-    for(int i = 1; i <= 7; i++)
-    {
-        float power = pow(2.0, float(i));
-        color += (1.5 / power) * snoise(coord + vec3(0.,-time*0.5, time*0.3), power*16.);
-    }
-    gl_FragColor = vec4(color, pow(max(color,0.),2.)*0.4, pow(max(color,0.),3.)*0.15 , color);
-
-    if (p.y > 0)
-        gl_FragColor = vec4(0, 0, 0, 0);
+    color = vec4(0.1 * height, 0.4 * height, height - clamp(snoise(vec3(texcoord.x, texcoord.y + height, 1), 10) * 0.1, 0.0, 1.0), 1);
 }
