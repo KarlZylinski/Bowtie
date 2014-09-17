@@ -99,8 +99,8 @@ Matrix4 View::view() const
 	view_matrix[2][2] = 1;
 	view_matrix[2][3] = 0;
 	
-	view_matrix[3][0] = -_rect.position.x + _rect.size.x * 0.5f;
-	view_matrix[3][1] = -_rect.position.y + _rect.size.y * 0.5f;
+	view_matrix[3][0] = _rect.position.x;
+	view_matrix[3][1] = _rect.position.y;
 	view_matrix[3][2] = 0;
 	view_matrix[3][3] = 1;
 	

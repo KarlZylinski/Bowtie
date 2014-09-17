@@ -20,7 +20,7 @@ end
 
 function Game:update(dt)
     self.rocket:update(dt, self.view_size)
-    self.view_pos = self.rocket:position()
+    self.view_pos = self.rocket:position() * -1 + self.view_size * 0.5
     World.update(self.world)
 end
 

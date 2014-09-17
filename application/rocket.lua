@@ -1,4 +1,5 @@
 require "shared/tuple"
+require "thruster"
 
 local apply_gravity, apply_thrust, calculate_rotation, calculate_thrust, limit_velocity, limit_vertical_velocity, read_input
 
@@ -6,20 +7,15 @@ Rocket = class(Rocket)
 
 function Rocket:init()
     Engine.load_resource("sprite", "sprites/rocket.sprite")
-    self.fire_material = Engine.load_resource("material", "fire.material")
+    self.thruster = Thruster()
     self.velocity = Vector2(0, 0)
-    self.thrust = 0
 end
 
 function Rocket:spawn(world)
-    self.fire = Rectangle.spawn(world, Vector2(0,0), Vector2(30,50), Color(1, 1, 1, 1))
+    self.thruster:spawn(world)
     self.sprite = Sprite.spawn(world, "sprites/rocket.sprite")
-    Drawable.set_parent(self.fire, self.sprite)
+    self.thruster:set_parent(self.sprite)
     local sprite_size = Tuple.second(Sprite.rect(self.sprite))
-    local fire_size = Tuple.second(Sprite.rect(self.fire))
-    Drawable.set_pivot(self.fire, Vector2(fire_size.x * 0.5, 0))
-    Drawable.set_position(self.fire, Vector2(0, sprite_size.y * 0.5 - fire_size.y * 0.5 - 3))
-    Drawable.set_material(self.fire, self.fire_material)
     Drawable.set_position(self.sprite, Vector2(200, 0))
     Drawable.set_pivot(self.sprite, sprite_size * 0.5);
 end
@@ -33,8 +29,8 @@ function Rocket:update(dt, view_size)
     local rotation = calculate_rotation(Drawable.rotation(self.sprite), input, dt)
     Drawable.set_rotation(self.sprite, rotation)
     self.velocity = apply_gravity(self.velocity, dt)
-    self.thrust = calculate_thrust(self.thrust, input, dt)
-    self.velocity = apply_thrust(self.velocity, self.thrust, rotation, dt)
+    self.thruster:update(input, dt)
+    self.velocity = apply_thrust(self.velocity, self.thruster:thrust(), rotation, dt)
     self.velocity = limit_velocity(self.velocity)
     local new_pos = Drawable.position(self.sprite) + self.velocity * dt
     local sprite_size = Tuple.second(Sprite.rect(self.sprite))
@@ -44,7 +40,6 @@ function Rocket:update(dt, view_size)
         self.velocity = Vector2(0, 0)
     end
 
-    Material.set_uniform_value(self.fire_material, "thrust", Vector4(self.thrust, 0, 0, 0))
     Drawable.set_position(self.sprite, new_pos)
 end
 
@@ -64,10 +59,6 @@ end
 
 calculate_rotation = function(current_rotation, input, dt)
     return current_rotation + input.x * 5 * dt
-end
-
-calculate_thrust = function(current_thrust, input, dt)
-    return input.y * 5000
 end
 
 limit_velocity = function(current_velocity)
