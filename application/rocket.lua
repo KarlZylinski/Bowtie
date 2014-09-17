@@ -48,6 +48,10 @@ function Rocket:update(dt, view_size)
     Drawable.set_position(self.sprite, new_pos)
 end
 
+function Rocket:position()
+    return Drawable.position(self.sprite)
+end
+
 apply_gravity = function(current_velocity, dt)
     return current_velocity + Vector2(0, 9.82 * 300 * dt);
 end
