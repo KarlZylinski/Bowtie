@@ -32,7 +32,6 @@ function Thruster:update(input, dt)
     self._flare = self._flare - dt * 4
     self._flare = self._flare - input.y * dt * 20
     self._flare = clamp(self._flare, 0, 1)
-    console:write(self._flare)
     Material.set_uniform_value(self._material, "thrust", Vector4(self._flare, 0, 0, 0))
 end
 
