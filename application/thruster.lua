@@ -9,7 +9,7 @@ function Thruster:init()
 end
 
 function Thruster:spawn(world)
-    self._sprite = Rectangle.spawn(world, Vector2(0,0), Vector2(30,80), Color(1, 1, 1, 1))
+    self._sprite = Rectangle.spawn(world, Vector2(0,0), Vector2(30,80), Color(1, 1, 1, 1), 20)
     local sprite_size = Tuple.second(Sprite.rect(self._sprite))
     Drawable.set_pivot(self._sprite, Vector2(sprite_size.x * 0.5, 0))
     Drawable.set_material(self._sprite, self._material)

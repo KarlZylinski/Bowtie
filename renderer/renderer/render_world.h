@@ -18,6 +18,7 @@ public:
 
 	void add_drawable(RenderDrawable* drawable);
 	void remove_drawable(RenderDrawable* drawable);
+	void sort();
 	const RenderTarget& render_target() const;
 	RenderTarget& render_target();
 	const Array<RenderDrawable*>& drawables() const;

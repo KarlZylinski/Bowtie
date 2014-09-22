@@ -40,8 +40,12 @@ int spawn(lua_State* lua)
 {
 	auto& world = *(World*)lua_touserdata(lua, 1);
 	auto name = lua_tostring(lua, 2);
+	int depth = 0;
 
-	lua_pushlightuserdata(lua, world.spawn_sprite(name));
+	if (lua_isnumber(lua, 3))
+		depth = (int)lua_tonumber(lua, 3);
+
+	lua_pushlightuserdata(lua, world.spawn_sprite(name, depth));
 
 	return 1;
 }

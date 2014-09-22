@@ -66,6 +66,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
 	drawable_resource_data.material = get_material_or_default(resource_manager, drawable);
+	drawable_resource_data.depth = drawable.depth();
 	auto geometry_handle = drawable.geometry_handle();
 
 	if (geometry_handle == RenderResourceHandle::NotInitialized)

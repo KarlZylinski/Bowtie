@@ -3,6 +3,7 @@
 #include <foundation/array.h>
 #include "render_target.h"
 #include "render_drawable.h"
+#include <algorithm>
 
 namespace bowtie
 {
@@ -24,6 +25,11 @@ void RenderWorld::add_drawable(RenderDrawable* drawable)
 void RenderWorld::remove_drawable(RenderDrawable* drawable)
 {
 	array::remove(_drawables, drawable);
+}
+
+void RenderWorld::sort()
+{
+	std::sort(&_drawables[0], &_drawables[array::size(_drawables)], [](RenderDrawable* x, RenderDrawable* y){ return x->depth < y->depth; });
 }
 
 const RenderTarget& RenderWorld::render_target() const

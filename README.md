@@ -33,7 +33,7 @@ Todo
 * [x] Shader refreshing
 * [x] Remove bad lambdas
 * [/] Depth sorting
-* [ ] Parenting with local transform and all that jazz
+* [/] Parenting with local transform and all that jazz
 * [ ] Break engine and gameplay script and resources apart. Make exe load a settings file which specifies lua boot file, or just always load main.lua or something. Also provide a command line option for specifying where the exe is (so you can debug from vs when devving).
 * [ ] Move game code to separate repository.
 * [ ] Deffered lighting

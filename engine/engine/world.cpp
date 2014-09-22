@@ -29,19 +29,20 @@ void World::set_render_handle(RenderResourceHandle render_handle)
 	_render_handle = render_handle;
 }
 
-Drawable* World::spawn_rectangle(const Rect& rect, const Color& color)
+Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth)
 {
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
-	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)_resource_manager.get_default(resource_type::Material).object);
+	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)_resource_manager.get_default(resource_type::Material).object, depth);
 	array::push_back(_drawables, rectangle);
 	_render_interface.spawn(*this, *rectangle, _resource_manager);
 	return rectangle;
 }
 
-Drawable* World::spawn_sprite(const char* sprite_name)
+Drawable* World::spawn_sprite(const char* sprite_name, int depth)
 {
 	auto sprite_prototype = _resource_manager.get<Drawable>(resource_type::Drawable, sprite_name);
 	auto sprite = _allocator.construct<Drawable>(*sprite_prototype);
+	sprite->set_depth(depth);
 	array::push_back(_drawables, sprite);
 	_render_interface.spawn(*this, *sprite, _resource_manager);
 
@@ -73,6 +74,7 @@ void update_drawable_state(Allocator& allocator, RenderInterface& render_interfa
 	scd.model = drawable.model_matrix();
 	scd.material = drawable.material()->render_handle;
 	scd.drawble = drawable.render_handle();
+	scd.depth = drawable.depth();
 	state_changed_command.data = &scd;
 
 	drawable.reset_state_changed();
@@ -124,11 +126,11 @@ void World::draw(const View& view)
 	_render_interface.dispatch(render_world_command);
 }
 
-Drawable* World::spawn_text(const Font& font, const char* text_str)
+Drawable* World::spawn_text(const Font& font, const char* text_str, int depth)
 {
 	auto text_geometry = _allocator.construct<TextGeometry>(font, _allocator);
 	text_geometry->set_text(text_str);
-	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry, (Material*)_resource_manager.get_default(resource_type::Material).object);
+	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry, (Material*)_resource_manager.get_default(resource_type::Material).object, depth);
 	array::push_back(_drawables, text);
 	_render_interface.spawn(*this, *text, _resource_manager);
 	return text;

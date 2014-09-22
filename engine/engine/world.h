@@ -22,10 +22,10 @@ public:
 	~World();
 
 	void set_render_handle(RenderResourceHandle render_handle);
-	Drawable* spawn_rectangle(const Rect& rect, const Vector4& color);
-	Drawable* spawn_sprite(const char* name);
+	Drawable* spawn_rectangle(const Rect& rect, const Vector4& color, int depth);
+	Drawable* spawn_sprite(const char* name, int depth);
 	void unspawn(Drawable& sprite);
-	Drawable* spawn_text(const Font& font, const char* text);
+	Drawable* spawn_text(const Font& font, const char* text, int depth);
 	void update();
 	void draw(const View& view);
 	RenderResourceHandle render_handle();

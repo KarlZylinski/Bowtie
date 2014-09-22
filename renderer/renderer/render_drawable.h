@@ -16,6 +16,7 @@ struct RenderDrawable
 	RenderResource geometry;
 	unsigned num_vertices;
 	Matrix4 model;
+	int depth;
 };
 
 }

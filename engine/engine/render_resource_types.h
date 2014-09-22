@@ -48,6 +48,7 @@ struct DrawableResourceData
 	RenderResourceHandle geometry;
 	unsigned num_vertices;
 	Matrix4 model;
+	int depth;
 };
 
 struct GeometryResourceData

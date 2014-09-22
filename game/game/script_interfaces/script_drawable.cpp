@@ -64,7 +64,7 @@ int set_color(lua_State* lua)
 int set_depth(lua_State* lua)
 {
 	auto& drawable = *(Drawable*)lua_touserdata(lua, 1);
-	drawable.set_depth((float)lua_tonumber(lua, 2));
+	drawable.set_depth((int)lua_tonumber(lua, 2));
 	return 0;
 }
 

@@ -266,7 +266,7 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 
 	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(texture_filename));
 	auto& material = load_material(material_filename);
-	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material);
+	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
 	add_resource(name, Resource(drawable));
 	return *drawable;
 }

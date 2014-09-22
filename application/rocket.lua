@@ -13,7 +13,7 @@ end
 
 function Rocket:spawn(world)
     self._thruster:spawn(world)
-    self._sprite = Sprite.spawn(world, "sprites/rocket.sprite")
+    self._sprite = Sprite.spawn(world, "sprites/rocket.sprite", 50)
     self._thruster:set_parent(self._sprite)
     local sprite_size = Tuple.second(Sprite.rect(self._sprite))
     Drawable.set_position(self._sprite, Vector2(200, 0))
@@ -36,6 +36,7 @@ function Rocket:update(dt, view_size)
         self._velocity = Vector2(0, 0)
     end
 
+    console:write(new_pos.y)
     Drawable.set_position(self._sprite, new_pos)
 end
 

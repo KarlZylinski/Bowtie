@@ -364,6 +364,7 @@ RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupT
 	drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).object;
 	drawable.geometry = resource_lut.lookup(data.geometry);
 	drawable.num_vertices = data.num_vertices;
+	drawable.depth = data.depth;
 	auto& rw = *(RenderWorld*)resource_lut.lookup(data.render_world).object;
 	rw.add_drawable(&drawable);
 	return RenderResource(&drawable);
@@ -494,6 +495,7 @@ RenderResource create_world(Allocator& allocator, IConcreteRenderer& concrete_re
 void drawable_state_reflection(RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut, const DrawableStateReflectionData& data)
 {
 	drawable.model = data.model;
+	drawable.depth = data.depth;
 
 	if (data.material != RenderResourceHandle::NotInitialized)
 		drawable.material = (RenderMaterial*)resource_lut.lookup(data.material).object;
@@ -539,6 +541,7 @@ void raise_fence(RenderFence& fence)
 
 void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
 {
+	render_world.sort();
 	concrete_renderer.set_render_target(render_world.render_target());
 	concrete_renderer.clear();
 	concrete_renderer.draw(view, render_world);

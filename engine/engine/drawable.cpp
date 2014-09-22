@@ -10,12 +10,12 @@ namespace bowtie
 ////////////////////////////////
 // Public interface.
 
-	Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material) : _allocator(allocator), _children(_allocator), _depth(0), _geometry(geometry),
+Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material, int depth) : _allocator(allocator), _children(_allocator), _depth(depth), _geometry(geometry),
 	 _pivot(0, 0), _parent(nullptr), _position(0, 0), _render_state_changed(false), _rotation(0.0f), _material(material)
 {
 }
 
-	Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _children(other._children), _depth(0), _geometry(other._geometry.clone(_allocator)),
+Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _children(other._children), _depth(other._depth), _geometry(other._geometry.clone(_allocator)),
 	_pivot(0, 0), _parent(other._parent), _position(other._position), _render_state_changed(false), _rotation(0.0f), _material(other._material)
 {
 }
@@ -54,7 +54,7 @@ const Color& Drawable::color() const
 	return _geometry.color();
 }
 
-float Drawable::depth() const
+int Drawable::depth() const
 {
 	return _depth;
 }
@@ -105,7 +105,6 @@ Matrix4 Drawable::model_matrix() const
 	auto t = Matrix4();
 	t[3][0] = _position.x;
 	t[3][1] = _position.y;
-	t[3][2] = _depth;
 
 	if (_parent == nullptr)
 		return p * r * t;
@@ -159,7 +158,7 @@ void Drawable::set_color(const Color& color)
 	_geometry.set_color(color);
 }
 
-void Drawable::set_depth(float depth)
+void Drawable::set_depth(int depth)
 {
 	_depth = depth;
 	set_state_changed();

@@ -16,9 +16,13 @@ int spawn(lua_State* lua)
 	auto& world = *(World*)lua_touserdata(lua, 1);
 	auto position = script_interface::to_vector2(lua, 2);
 	auto size = script_interface::to_vector2(lua, 3);
-	auto color = script_interface::to_color(lua, 4);
+	auto color = script_interface::to_color(lua, 4);	
+	int depth = 0;
 
-	lua_pushlightuserdata(lua, world.spawn_rectangle(Rect(position, size), color));
+	if (lua_isnumber(lua, 5))
+		depth = (int)lua_tonumber(lua, 5);
+
+	lua_pushlightuserdata(lua, world.spawn_rectangle(Rect(position, size), color, depth));
 
 	return 1;
 }

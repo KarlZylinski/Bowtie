@@ -14,9 +14,13 @@ int spawn(lua_State* lua)
 {
 	auto& world = *(World*)lua_touserdata(lua, 1);
 	auto& font = *(Font*)lua_touserdata(lua, 2);
-	auto text = lua_tostring(lua, 3);
+	auto text = lua_tostring(lua, 3);	
+	int depth = 0;
 
-	lua_pushlightuserdata(lua, world.spawn_text(font, text));
+	if (lua_isnumber(lua, 4))
+		depth = (int)lua_tonumber(lua, 4);
+
+	lua_pushlightuserdata(lua, world.spawn_text(font, text, depth));
 
 	return 1;
 }

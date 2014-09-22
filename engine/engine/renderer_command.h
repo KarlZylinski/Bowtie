@@ -40,6 +40,7 @@ struct DrawableStateReflectionData
 	RenderResourceHandle drawble;
 	RenderResourceHandle material;
 	Matrix4 model;
+	int depth;
 };
 
 struct DrawableGeometryReflectionData
