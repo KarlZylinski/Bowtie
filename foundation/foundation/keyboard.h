@@ -12,6 +12,7 @@ namespace keyboard
 #ifdef _WIN32
 	enum Key
 	{
+		F5 = VK_F5,
 		Up = VK_UP,
 		Down = VK_DOWN,
 		Left = VK_LEFT,

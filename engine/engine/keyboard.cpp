@@ -29,6 +29,7 @@ struct NamedKey
 
 static const NamedKey named_keys[] = 
 {
+	{ "F5", keyboard::F5 },
 	{ "Up", keyboard::Up },
 	{ "Down", keyboard::Down },
 	{ "Left", keyboard::Left },

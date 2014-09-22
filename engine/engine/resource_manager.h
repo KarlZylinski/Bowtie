@@ -56,6 +56,7 @@ public:
 
 	void reload(const char* type, const char* filename);
 	void reload(ResourceType type, const char* filename);
+	void reload_all();
 	void set_default(ResourceType type, Resource resource);
 	Resource get_default(ResourceType type) const;
 	

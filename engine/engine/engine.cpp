@@ -93,6 +93,9 @@ void Engine::update()
 	
 	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
 
+	if (_keyboard.key_pressed(keyboard::F5))
+		_resource_manager.reload_all();
+
 	_keyboard = Keyboard::from_previous_frame(_keyboard);
 }
 

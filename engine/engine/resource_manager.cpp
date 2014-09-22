@@ -332,6 +332,11 @@ void ResourceManager::reload(ResourceType type, const char* filename)
 	}
 }
 
+void ResourceManager::reload_all()
+{
+	// TODO: Find all resources through FS thingy and send them off to reload.
+}
+
 void ResourceManager::set_default(ResourceType type, Resource resource)
 {
 	assert(_default_resources[type].object == 0 && "Trying to resassign already assigned default resource.");
