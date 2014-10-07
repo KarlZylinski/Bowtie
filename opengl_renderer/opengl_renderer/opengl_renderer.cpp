@@ -331,6 +331,8 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : *(GLuint*)value);
 			glUniform1i(uniform.location, 0);
 			break;
+		default:
+			assert(!"Unknown uniform type");
 		}
 	}
 
