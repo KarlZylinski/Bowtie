@@ -59,7 +59,6 @@ struct SetUniformValueData
 {
 	RenderResourceHandle material;
 	uint64_t uniform_name;
-	Vector4 value;
 };
 
 }

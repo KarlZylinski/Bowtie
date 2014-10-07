@@ -27,6 +27,7 @@ public:
 	void create_render_world(World& world);
 	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
 	RendererCommand create_command(RendererCommand::Type type);
+	void dispatch(const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size);
 	void dispatch(const RendererCommand& command);
 	void create_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
 	void update_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);

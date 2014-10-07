@@ -32,7 +32,7 @@ GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type);
 GLuint create_fullscreen_rendering_quad();
 RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data);
 RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution);
-void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& resource_lut);
+void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table);
 GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format);
 void initialize_gl();
 GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders);
@@ -77,11 +77,12 @@ void OpenGLRenderer::destroy_render_target(const RenderTarget& target)
 
 void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 {	
-	auto view_projection = view.view_projection();
+	auto view_matrix = view.view();
+	auto view_projection_matrix = view_matrix * view.projection();
 	auto& drawables = render_world.drawables();
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)
-		draw_drawable(view_projection, *drawables[i], _resource_lut);
+		draw_drawable(view_matrix, view_projection_matrix, *drawables[i], _resource_lut);
 }
 
 unsigned OpenGLRenderer::get_uniform_location(RenderResource shader, const char* name)
@@ -282,9 +283,10 @@ GLuint create_fullscreen_rendering_quad()
 	return quad_vertexbuffer;
 }
 
-void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
+void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
 {
-	auto model_view_projection_matrix = drawable.model * view_projection;
+	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
+	auto model_view_matrix = drawable.model * view_matrix;
 	auto& material = *drawable.material;
 	auto shader = lookup_table.lookup(material.shader()).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
@@ -295,40 +297,42 @@ void draw_drawable(const Matrix4& view_projection, const RenderDrawable& drawabl
 	for (unsigned i = 0; i < array::size(uniforms); ++i)
 	{
 		const auto& uniform = uniforms[i];
-		auto value = &uniform.value.x;
+		auto value = uniform.value;
 
 		switch (uniform.automatic_value)
 		{
 		case Uniform::ModelViewProjectionMatrix:
-			value = &model_view_projection_matrix[0][0];
+			value = (void*)&model_view_projection_matrix[0][0];
+			break;
+		case Uniform::ModelViewMatrix:
+			value = (void*)&model_view_matrix[0][0];
+			break;
+		case Uniform::ModelMatrix:
+			value = (void*)&drawable.model[0][0];
 			break;
 		case Uniform::Time:
 			value = &time;
+			break;
+		case Uniform::DrawableTexture:
+			value = &drawable.texture->render_handle.handle;
 			break;
 		}
 
 		switch (uniform.type)
 		{
-		case Uniform::Float: glUniform1fv(uniform.location, 1, value); break;
-		case Uniform::Vec2: glUniform2fv(uniform.location, 1, value); break;
-		case Uniform::Vec3: glUniform3fv(uniform.location, 1, value); break;
-		case Uniform::Vec4: glUniform4fv(uniform.location, 1, value); break;
-		case Uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, value); break;
-		case Uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, value); break;
+		case Uniform::Float: glUniform1fv(uniform.location, 1, (GLfloat*)value); break;
+		case Uniform::Vec2: glUniform2fv(uniform.location, 1, (GLfloat*)value); break;
+		case Uniform::Vec3: glUniform3fv(uniform.location, 1, (GLfloat*)value); break;
+		case Uniform::Vec4: glUniform4fv(uniform.location, 1, (GLfloat*)value); break;
+		case Uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case Uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case Uniform::Texture1:
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : *(GLuint*)value);
+			glUniform1i(uniform.location, 0);
+			break;
 		}
 	}
-		
-	if (drawable.texture != nullptr)
-	{
-		RenderTexture& drawable_texture = *drawable.texture;
-		GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_sampler");
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, drawable_texture.render_handle.handle);
-		glUniform1i(texture_sampler_id, 0);
-		glUniform1i(glGetUniformLocation(shader, "has_texture"), true);
-	}
-	else
-		glUniform1i(glGetUniformLocation(shader, "has_texture"), false);
 
 	auto geometry = drawable.geometry.handle;
 		

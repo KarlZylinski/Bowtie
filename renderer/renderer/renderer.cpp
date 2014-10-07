@@ -13,6 +13,7 @@
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
+#include "uniform_utils.h"
 
 namespace bowtie
 {
@@ -304,7 +305,7 @@ void Renderer::execute_command(const RendererCommand& command)
 		{
 			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
 			auto& material = *(RenderMaterial*)_resource_lut.lookup(set_uniform_value_data.material).object;
-			material.set_uniform_value(set_uniform_value_data.uniform_name, set_uniform_value_data.value);
+			material.set_uniform_value(_allocator, set_uniform_value_data.uniform_name, command.dynamic_data);
 		}
 		break;
 
@@ -390,7 +391,7 @@ Array<char*> split(Allocator& allocator, const char* str, char delimiter)
 	{
 		if (str[i] == delimiter || i == len - 1)
 		{
-			char* word = (char*)allocator.allocate(current_word_len);
+			char* word = (char*)allocator.allocate(current_word_len + 1);
 			memcpy(word, str + i - current_word_len, current_word_len);
 			word[current_word_len] = 0;
 			array::push_back(words, word);
@@ -405,7 +406,7 @@ Array<char*> split(Allocator& allocator, const char* str, char delimiter)
 
 Uniform::Type get_uniform_type_from_str(const char* str)
 {
-	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4" };
+	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4", "texture1", "texture2", "texture3" };
 	
 	for (unsigned i = 0; i < Uniform::NumUniformTypes; ++i)
 	{
@@ -419,7 +420,7 @@ Uniform::Type get_uniform_type_from_str(const char* str)
 
 Uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 {
-	static const char* types_as_str[] = { "none", "mvp", "time" };
+	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture" };
 	
 	for (unsigned i = 0; i < Uniform::NumAutomaticValues; ++i)
 	{
@@ -430,9 +431,14 @@ Uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 	return Uniform::None;
 }
 
-Vector4 get_value_from_str(const char* str)
+float get_float_from_str(const char* str)
 {
-	return Vector4((float)strtod(str, nullptr), 0, 0, 0);
+	return (float)strtod(str, nullptr);
+}
+
+unsigned get_unsigned_from_str(const char* str)
+{
+	return (unsigned)strtoul(str, nullptr, 10);
 }
 
 RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
@@ -459,10 +465,21 @@ RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete
 			if (automatic_value != Uniform::None)
 				material->add_uniform(Uniform(type, name_hash, location, automatic_value));
 			else
-				material->add_uniform(Uniform(type, name_hash, location, get_value_from_str(value_str)));
+			{
+				Uniform u(type, name_hash, location);
+
+				switch (type)
+				{
+				case Uniform::Float:
+					uniform::SetValue(u, allocator, get_float_from_str(value_str));
+					break;
+				}
+				
+				material->add_uniform(u);
+			}
 		}
 		else
-			material->add_uniform(Uniform(type, name_hash, location, Vector4()));
+			material->add_uniform(Uniform(type, name_hash, location));
 
 		current_uniform += strlen(current_uniform) + 1;
 	}

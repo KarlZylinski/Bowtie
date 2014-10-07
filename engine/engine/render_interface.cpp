@@ -61,7 +61,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
 	DrawableResourceData drawable_resource_data;
 
-	auto texture = drawable.geometry().texture();	
+	auto texture = drawable.geometry().texture();
 	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : RenderResourceHandle();
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
@@ -146,6 +146,15 @@ bool RenderInterface::is_active() const
 void RenderInterface::dispatch(const RendererCommand& command)
 {
 	_renderer.add_renderer_command(command);
+}
+
+void RenderInterface::dispatch(const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size)
+{
+	auto command_with_dynamic_data = command;
+	command_with_dynamic_data.dynamic_data = _allocator.allocate(dynamic_data_size);
+	command_with_dynamic_data.dynamic_data_size = dynamic_data_size;
+	memcpy(command_with_dynamic_data.dynamic_data, dynamic_data, dynamic_data_size);
+	_renderer.add_renderer_command(command_with_dynamic_data);
 }
 
 RendererCommand create_or_update_resource_renderer_command(Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
