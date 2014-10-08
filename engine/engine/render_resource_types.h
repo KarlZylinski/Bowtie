@@ -3,6 +3,7 @@
 #include <foundation/matrix4.h>
 
 #include "image.h"
+#include "uniform.h"
 #include "render_resource_handle.h"
 
 namespace bowtie
@@ -49,6 +50,14 @@ struct DrawableResourceData
 	unsigned num_vertices;
 	Matrix4 model;
 	int depth;
+};
+
+struct UniformResourceData
+{
+	uniform::AutomaticValue automatic_value;
+	char* name;
+	uniform::Type type;
+	void* value;
 };
 
 struct GeometryResourceData

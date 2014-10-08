@@ -13,7 +13,7 @@
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
-#include "uniform_utils.h"
+#include "render_uniform_utils.h"
 
 namespace bowtie
 {
@@ -376,112 +376,32 @@ RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynam
 	return concrete_renderer.load_geometry(data, dynamic_data);
 }
 
-Array<char*> split(Allocator& allocator, const char* str, char delimiter)
+RenderUniform create_uniform(IConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data)
 {
-	Array<char*> words(allocator);
-	auto len_str = strlen(str);
+	auto location = concrete_renderer.get_uniform_location(shader, uniform_data.name);
+	auto name_hash = hash_str(uniform_data.name);
 
-	if (len_str == 0)
-		return words;
-
-	auto len = len_str + 1;
-	unsigned current_word_len = 0;
-
-	for (unsigned i = 0; i < len; ++i)
-	{
-		if (str[i] == delimiter || i == len - 1)
-		{
-			char* word = (char*)allocator.allocate(current_word_len + 1);
-			memcpy(word, str + i - current_word_len, current_word_len);
-			word[current_word_len] = 0;
-			array::push_back(words, word);
-			current_word_len = 0;
-		}
-		else
-			++current_word_len;
-	}
-
-	return words;
-}
-
-Uniform::Type get_uniform_type_from_str(const char* str)
-{
-	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4", "texture1", "texture2", "texture3" };
-	
-	for (unsigned i = 0; i < Uniform::NumUniformTypes; ++i)
-	{
-		if (!strcmp(str, types_as_str[i]))
-			return (Uniform::Type)i;
-	}
-
-	assert(!"Unknown uniform type");
-	return Uniform::NumUniformTypes;
-}
-
-Uniform::AutomaticValue get_automatic_value_from_str(const char* str)
-{
-	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture" };
-	
-	for (unsigned i = 0; i < Uniform::NumAutomaticValues; ++i)
-	{
-		if (!strcmp(str, types_as_str[i]))
-			return (Uniform::AutomaticValue)i;
-	}
-
-	return Uniform::None;
-}
-
-float get_float_from_str(const char* str)
-{
-	return (float)strtod(str, nullptr);
-}
-
-unsigned get_unsigned_from_str(const char* str)
-{
-	return (unsigned)strtoul(str, nullptr, 10);
+	if (uniform_data.automatic_value == uniform::None)
+		return RenderUniform(uniform_data.type, name_hash, location);
+	else
+		return RenderUniform(uniform_data.type, name_hash, location, uniform_data.automatic_value);
 }
 
 RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
 {
 	auto material = allocator.construct<RenderMaterial>(allocator, data.shader);
 	auto shader = lookup_table.lookup(data.shader);
-	char* current_uniform = (char*)dynamic_data;
+	auto uniforms_data = (UniformResourceData*)dynamic_data;
 	
 	for (unsigned i = 0; i < data.num_uniforms; ++i)
 	{
-		TempAllocator4096 ta;
-		auto split_uniform = split(ta, current_uniform, ' ');
-		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
-		auto type = get_uniform_type_from_str(split_uniform[0]);
-		auto name = split_uniform[1];
-		auto name_hash = hash_str(name);
-		auto location = concrete_renderer.get_uniform_location(shader, name);
-		
-		if (array::size(split_uniform) > 2)
-		{
-			auto value_str = split_uniform[2];
-			auto automatic_value = get_automatic_value_from_str(value_str);
+		const auto& uniform_data = uniforms_data[i];
+		auto uniform = create_uniform(concrete_renderer, shader, uniform_data);
 
-			if (automatic_value != Uniform::None)
-				material->add_uniform(Uniform(type, name_hash, location, automatic_value));
-			else
-			{
-				Uniform u(type, name_hash, location);
+		if (uniform_data.value != nullptr)
+			render_uniform::set_value(uniform, allocator, uniform_data.value);
 
-				switch (type)
-				{
-				case Uniform::Float:
-					uniform::SetValue(u, allocator, get_float_from_str(value_str));
-					break;
-				}
-				
-				material->add_uniform(u);
-			}
-		}
-		else
-			material->add_uniform(Uniform(type, name_hash, location));
-
-		current_uniform += strlen(current_uniform) + 1;
+		material->add_uniform(uniform);
 	}
 
 	return RenderResource(material);

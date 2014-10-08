@@ -66,6 +66,33 @@ uint64_t hash_name(const char* name)
 	return hash_str(name); 
 }
 
+uniform::Type get_uniform_type_from_str(const char* str)
+{
+	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4", "texture1", "texture2", "texture3" };
+	
+	for (unsigned i = 0; i < uniform::NumUniformTypes; ++i)
+	{
+		if (!strcmp(str, types_as_str[i]))
+			return (uniform::Type)i;
+	}
+
+	assert(!"Unknown uniform type");
+	return uniform::NumUniformTypes;
+}
+
+uniform::AutomaticValue get_automatic_value_from_str(const char* str)
+{
+	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture" };
+	
+	for (unsigned i = 0; i < uniform::NumAutomaticValues; ++i)
+	{
+		if (!strcmp(str, types_as_str[i]))
+			return (uniform::AutomaticValue)i;
+	}
+
+	return uniform::None;
+}
+
 Material& ResourceManager::load_material(const char* filename)
 {
 	auto name = hash_name(filename);
@@ -82,45 +109,106 @@ Material& ResourceManager::load_material(const char* filename)
 
 	auto shader_filename = d["shader"].GetString();
 	auto& shader = load_shader(shader_filename);
-	auto& uniforms = d["uniforms"];
-	unsigned uniforms_dynamic_data_size = 0;
-	unsigned num_uniforms = 0;
+	auto& uniforms_json = d["uniforms"];
 
-	for(auto uniform_iter = uniforms.Begin(); uniform_iter != uniforms.End(); ++uniform_iter)
+	Array<UniformResourceData> uniforms(_allocator);
+
+	for(auto uniform_iter = uniforms_json.Begin(); uniform_iter != uniforms_json.End(); ++uniform_iter)
 	{
-		auto& uniform = *uniform_iter;
+		auto& uniform_json = *uniform_iter;
 
-		if (!uniform.IsString())
-			continue;
-
-		uniforms_dynamic_data_size += uniform.GetStringLength() + 1;
-		++num_uniforms;
-	}
-
-	char* uniforms_dynamic_data = num_uniforms != 0
-		? (char*)_allocator.allocate(uniforms_dynamic_data_size)
-		: nullptr;
-
-	char* uniforms_dynamic_data_writer = uniforms_dynamic_data;
-	for(auto uniform_iter = uniforms.Begin(); uniform_iter != uniforms.End(); ++uniform_iter)
-	{
-		auto& uniform = *uniform_iter;
-
-		if (!uniform.IsString())
+		if (!uniform_json.IsString())
 			continue;
 		
-		auto uniform_str = uniform.GetString();
-		unsigned uniform_str_len = uniform.GetStringLength() + 1;
-		memcpy(uniforms_dynamic_data_writer, uniform_str, uniform_str_len);
-		uniforms_dynamic_data_writer += uniform_str_len;
+		TempAllocator4096 ta;
+		auto uniform_str = uniform_json.GetString();
+		auto split_uniform = split(ta, uniform_str, ' ');
+		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
+		auto type = get_uniform_type_from_str(split_uniform[0]);
+
+		UniformResourceData uniform;
+		uniform.type = type;
+		uniform.name = copy_str(_allocator, split_uniform[1]);
+		uniform.value = nullptr;
+
+		if (array::size(split_uniform) > 2)
+		{
+			auto value_str = split_uniform[2];
+			auto automatic_value = get_automatic_value_from_str(value_str);
+
+			if (automatic_value != uniform::None)
+				uniform.automatic_value = automatic_value;
+			else
+			{
+				switch (type)
+				{
+				case uniform::Float:
+					uniform.value = _allocator.construct<float>(float_from_str(value_str));
+					break;
+				}
+			}
+		}
+
+		array::push_back(uniforms, uniform);
 	}
+
+
+	/*
+
+	char* current_uniform = (char*)dynamic_data;
+	
+	for (unsigned i = 0; i < data.num_uniforms; ++i)
+	{
+		TempAllocator4096 ta;
+		auto split_uniform = split(ta, current_uniform, ' ');
+		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
+		auto type = get_uniform_type_from_str(split_uniform[0]);
+		auto name = split_uniform[1];
+		auto name_hash = hash_str(name);
+		auto location = concrete_renderer.get_uniform_location(shader, name);
+		
+		if (array::size(split_uniform) > 2)
+		{
+			auto value_str = split_uniform[2];
+			auto automatic_value = get_automatic_value_from_str(value_str);
+
+			if (automatic_value != Uniform::None)
+				material->add_uniform(Uniform(type, name_hash, location, automatic_value));
+			else
+			{
+				Uniform u(type, name_hash, location);
+
+				switch (type)
+				{
+				case Uniform::Float:
+					uniform::SetValue(u, allocator, get_float_from_str(value_str));
+					break;
+				}
+				
+				material->add_uniform(u);
+			}
+		}
+		else
+			material->add_uniform(Uniform(type, name_hash, location));
+
+		current_uniform += strlen(current_uniform) + 1;
+	}
+
+
+
+	*/
+
+	auto num_uniforms = array::size(uniforms);
+	auto uniform_data_size = unsigned(num_uniforms * sizeof(UniformResourceData));
+	auto uniforms_data = _allocator.allocate(uniform_data_size);
+	memcpy(uniforms_data, &uniforms[0], uniform_data_size);
 	
 	MaterialResourceData mrd;
 	mrd.num_uniforms = num_uniforms;
 	mrd.shader = shader.render_handle;
 	RenderResourceData material_resource_data = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
 	material_resource_data.data = &mrd;	
-	_render_interface.create_resource(material_resource_data, uniforms_dynamic_data, uniforms_dynamic_data_size);
+	_render_interface.create_resource(material_resource_data, uniforms_data, uniform_data_size);
 
 	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
 	add_resource(name, Resource(material));	

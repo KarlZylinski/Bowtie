@@ -1,6 +1,6 @@
 #include "render_material.h"
 #include <foundation/array.h>
-#include "uniform_utils.h"
+#include "render_uniform_utils.h"
 
 namespace bowtie
 {
@@ -9,7 +9,7 @@ RenderMaterial::RenderMaterial(Allocator& allocator, RenderResourceHandle shader
 {
 }
 
-void RenderMaterial::add_uniform(const Uniform& uniform)
+void RenderMaterial::add_uniform(const RenderUniform& uniform)
 {
 	array::push_back(_uniforms, uniform);
 }
@@ -22,12 +22,7 @@ void RenderMaterial::set_uniform_value(Allocator& allocator, uint64_t name, void
 
 		if (uniform.name == name)
 		{
-			switch (uniform.type)
-			{
-			case Uniform::Float:
-				uniform::SetValue(uniform, allocator, *(float*)value);
-				break;
-			}
+			render_uniform::set_value(uniform, allocator, value);
 			break;
 		}
 	}
@@ -38,7 +33,7 @@ RenderResourceHandle RenderMaterial::shader() const
 	return _shader;
 }
 
-const Array<Uniform>& RenderMaterial::uniforms() const
+const Array<RenderUniform>& RenderMaterial::uniforms() const
 {
 	return _uniforms;
 }

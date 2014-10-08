@@ -47,5 +47,6 @@
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\material.h" />
     <ClInclude Include="engine\shader.h" />
+    <ClInclude Include="engine\uniform.h" />
   </ItemGroup>
 </Project>

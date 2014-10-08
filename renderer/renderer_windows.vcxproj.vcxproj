@@ -29,8 +29,8 @@
     <ClInclude Include="renderer\render_texture.h" />
     <ClInclude Include="renderer\render_world.h" />
     <ClInclude Include="renderer\render_resource.h" />
-    <ClInclude Include="renderer\uniform.h" />
-    <ClInclude Include="renderer\uniform_utils.h" />
+    <ClInclude Include="renderer\render_uniform.h" />
+    <ClInclude Include="renderer\render_uniform_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="renderer\render_material.cpp" />
@@ -38,8 +38,8 @@
     <ClCompile Include="renderer\render_resource_lookup_table.cpp" />
     <ClCompile Include="renderer\render_target.cpp" />
     <ClCompile Include="renderer\render_world.cpp" />
-    <ClCompile Include="renderer\uniform.cpp" />
-    <ClCompile Include="renderer\uniform_utils.cpp" />
+    <ClCompile Include="renderer\render_uniform.cpp" />
+    <ClCompile Include="renderer\render_uniform_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

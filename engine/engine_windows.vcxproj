@@ -45,6 +45,7 @@
     <ClInclude Include="engine\text_geometry.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
+    <ClInclude Include="engine\uniform.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\world.h" />
   </ItemGroup>

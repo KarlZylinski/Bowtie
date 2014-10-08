@@ -301,32 +301,32 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 
 		switch (uniform.automatic_value)
 		{
-		case Uniform::ModelViewProjectionMatrix:
+		case uniform::ModelViewProjectionMatrix:
 			value = (void*)&model_view_projection_matrix[0][0];
 			break;
-		case Uniform::ModelViewMatrix:
+		case uniform::ModelViewMatrix:
 			value = (void*)&model_view_matrix[0][0];
 			break;
-		case Uniform::ModelMatrix:
+		case uniform::ModelMatrix:
 			value = (void*)&drawable.model[0][0];
 			break;
-		case Uniform::Time:
+		case uniform::Time:
 			value = &time;
 			break;
-		case Uniform::DrawableTexture:
+		case uniform::DrawableTexture:
 			value = &drawable.texture->render_handle.handle;
 			break;
 		}
 
 		switch (uniform.type)
 		{
-		case Uniform::Float: glUniform1fv(uniform.location, 1, (GLfloat*)value); break;
-		case Uniform::Vec2: glUniform2fv(uniform.location, 1, (GLfloat*)value); break;
-		case Uniform::Vec3: glUniform3fv(uniform.location, 1, (GLfloat*)value); break;
-		case Uniform::Vec4: glUniform4fv(uniform.location, 1, (GLfloat*)value); break;
-		case Uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
-		case Uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
-		case Uniform::Texture1:
+		case uniform::Float: glUniform1fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec2: glUniform2fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec3: glUniform3fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec4: glUniform4fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case uniform::Texture1:
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : *(GLuint*)value);
 			glUniform1i(uniform.location, 0);

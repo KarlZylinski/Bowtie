@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include "array.h"
 
 namespace bowtie
 {
@@ -22,6 +23,57 @@ inline unsigned strlen32(const char* str)
 		return 0;
 
 	return unsigned(strlen(str));
+}
+
+inline Array<char*> split(Allocator& allocator, const char* str, char delimiter)
+{
+	Array<char*> words(allocator);
+	auto len_str = strlen(str);
+
+	if (len_str == 0)
+		return words;
+
+	auto len = len_str + 1;
+	unsigned current_word_len = 0;
+
+	for (unsigned i = 0; i < len; ++i)
+	{
+		if (str[i] == delimiter || i == len - 1)
+		{
+			char* word = (char*)allocator.allocate(current_word_len + 1);
+			memcpy(word, str + i - current_word_len, current_word_len);
+			word[current_word_len] = 0;
+			array::push_back(words, word);
+			current_word_len = 0;
+		}
+		else
+			++current_word_len;
+	}
+
+	return words;
+}
+
+inline float float_from_str(const char* str)
+{
+	return (float)strtod(str, nullptr);
+}
+
+inline unsigned unsigned_from_str(const char* str)
+{
+	return (unsigned)strtoul(str, nullptr, 10);
+}
+
+inline char* copy_str(Allocator& allocator, const char* str, unsigned len)
+{
+	auto size = len + 1;
+	auto new_str = (char*)allocator.allocate(size);
+	strcpy_s(new_str, size, str);
+	return new_str;
+}
+
+inline char* copy_str(Allocator& allocator, const char* str)
+{
+	return copy_str(allocator, str, strlen32(str));
 }
 
 }

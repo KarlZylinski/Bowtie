@@ -1,19 +1,19 @@
 #pragma once
 
-#include <foundation/collection_types.h>
-#include "resource_handle.h"
-
 namespace bowtie
 {
-
-class Material
+namespace uniform
 {
-public:
-	Material(ResourceHandle shader);
-	
-private:
-	Array<Uniform> _uniforms;
-	ResourceHandle _shader;
+
+enum Type
+{
+	Float, Vec2, Vec3, Vec4, Mat3, Mat4, Texture1, Texture2, Texture3, NumUniformTypes
 };
 
+enum AutomaticValue
+{
+	None, ModelViewProjectionMatrix, ModelViewMatrix, ModelMatrix, Time, DrawableTexture, NumAutomaticValues
+};
+
+}
 }
