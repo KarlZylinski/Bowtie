@@ -327,10 +327,13 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 		case uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
 		case uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
 		case uniform::Texture1:
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : *(GLuint*)value);
-			glUniform1i(uniform.location, 0);
-			break;
+			{
+				glActiveTexture(GL_TEXTURE0);
+				auto texture_handle = *(RenderResourceHandle*)value;
+				auto texture = *(RenderTexture*)lookup_table.lookup(texture_handle).object;
+				glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : texture.render_handle.handle);
+				glUniform1i(uniform.location, 0);
+			} break;
 		default:
 			assert(!"Unknown uniform type");
 		}

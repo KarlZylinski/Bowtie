@@ -143,59 +143,21 @@ Material& ResourceManager::load_material(const char* filename)
 				case uniform::Float:
 					uniform.value = _allocator.construct<float>(float_from_str(value_str));
 					break;
+				case uniform::Texture1:
+				case uniform::Texture2:
+				case uniform::Texture3:
+					{
+						auto texture = load_texture(value_str);						
+						uniform.value = _allocator.construct<unsigned>(texture.render_handle.handle);
+					}
+					break;
 				}
 			}
 		}
 
 		array::push_back(uniforms, uniform);
 	}
-
-
-	/*
-
-	char* current_uniform = (char*)dynamic_data;
 	
-	for (unsigned i = 0; i < data.num_uniforms; ++i)
-	{
-		TempAllocator4096 ta;
-		auto split_uniform = split(ta, current_uniform, ' ');
-		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
-		auto type = get_uniform_type_from_str(split_uniform[0]);
-		auto name = split_uniform[1];
-		auto name_hash = hash_str(name);
-		auto location = concrete_renderer.get_uniform_location(shader, name);
-		
-		if (array::size(split_uniform) > 2)
-		{
-			auto value_str = split_uniform[2];
-			auto automatic_value = get_automatic_value_from_str(value_str);
-
-			if (automatic_value != Uniform::None)
-				material->add_uniform(Uniform(type, name_hash, location, automatic_value));
-			else
-			{
-				Uniform u(type, name_hash, location);
-
-				switch (type)
-				{
-				case Uniform::Float:
-					uniform::SetValue(u, allocator, get_float_from_str(value_str));
-					break;
-				}
-				
-				material->add_uniform(u);
-			}
-		}
-		else
-			material->add_uniform(Uniform(type, name_hash, location));
-
-		current_uniform += strlen(current_uniform) + 1;
-	}
-
-
-
-	*/
-
 	auto num_uniforms = array::size(uniforms);
 	auto uniform_data_size = unsigned(num_uniforms * sizeof(UniformResourceData));
 	auto uniforms_data = _allocator.allocate(uniform_data_size);
