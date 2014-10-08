@@ -9,7 +9,7 @@ RenderUniform::RenderUniform(uniform::Type type, uint64_t name, unsigned locatio
 
 
 RenderUniform::RenderUniform(uniform::Type type, uint64_t name, unsigned location) :
-	name(name), location(location), type(type), value(nullptr)
+	automatic_value(uniform::None), name(name), location(location), type(type), value(nullptr)
 {}
 
 }

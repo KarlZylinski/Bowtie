@@ -45,18 +45,19 @@ void set_value(RenderUniform& uniform, Allocator& allocator, void* value)
 	{
 	case uniform::Float:
 		set_value(uniform, allocator, *(float*)value);
-		return;
+		break;
 	case uniform::Texture1:
 	case uniform::Texture2:
 	case uniform::Texture3:
 		set_value(uniform, allocator, *(unsigned*)value);
-		return;
+		break;
 	case uniform::Vec4:
 		set_value(uniform, allocator, *(Vector4*)value);
-		return;
+		break;
+	default:
+		assert(!"Unknown uniform type");
+		break;
 	}
-
-	assert(!"Unknown uniform type");
 }
 
 };

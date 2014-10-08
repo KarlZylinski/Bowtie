@@ -134,11 +134,9 @@ Material& ResourceManager::load_material(const char* filename)
 		if (array::size(split_uniform) > 2)
 		{
 			auto value_str = split_uniform[2];
-			auto automatic_value = get_automatic_value_from_str(value_str);
-
-			if (automatic_value != uniform::None)
-				uniform.automatic_value = automatic_value;
-			else
+			uniform.automatic_value = get_automatic_value_from_str(value_str);
+			
+			if (uniform.automatic_value == uniform::None)
 			{
 				switch (type)
 				{
