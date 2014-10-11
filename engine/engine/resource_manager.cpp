@@ -117,7 +117,7 @@ Material& ResourceManager::load_material(const char* filename)
 		return *(Material*)existing.object;
 
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator); 
 	assert(parse_result.success && "Failed to parse font");
 	auto jzon = parse_result.output;
 	_allocator.deallocate(file.data);
@@ -187,7 +187,7 @@ Material& ResourceManager::load_material(const char* filename)
 
 	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
 	add_resource(name, Resource(material));	
-	jzon_free(jzon, &jzon_allocator);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *material;
 }
 
@@ -297,7 +297,7 @@ Font& ResourceManager::load_font(const char* filename)
 		return *existing;
 	
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(parse_result.success && "Failed to parse font");
 	auto jzon = parse_result.output;
 	_allocator.deallocate(file.data);
@@ -307,7 +307,7 @@ Font& ResourceManager::load_font(const char* filename)
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, Resource(font));
-	jzon_free(jzon, &jzon_allocator);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *font;
 }
 
@@ -315,11 +315,12 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get<Drawable>(resource_type::Drawable, name);
+
 	if (existing != nullptr)
 		return *existing;
 
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(parse_result.success && "Failed to parse font");
 	auto jzon = parse_result.output;
 	auto texture_filename = jzon_get(jzon, "texture")->string_value;
@@ -329,7 +330,7 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 	auto& material = load_material(material_filename);
 	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
 	add_resource(name, Resource(drawable));
-	jzon_free(jzon, &jzon_allocator);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *drawable;
 }
 
