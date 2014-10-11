@@ -5,7 +5,7 @@
 #include <foundation/file.h>
 #include <foundation/memory.h>
 #include <foundation/murmur_hash.h>
-#include <foundation/rapidjson/document.h>
+#include <foundation/jzon.h>
 #include <foundation/string_utils.h>
 #include <foundation/temp_allocator.h>
 #include <resource_path.h>
@@ -20,6 +20,19 @@
 #include "sprite_geometry.h"
 #include "texture.h"
 
+static bowtie::Allocator* static_allocator;
+static JzonAllocator jzon_allocator;
+
+static void* jzon_static_allocate(size_t size)
+{
+	return static_allocator->allocate((uint32_t)size);
+}
+
+static void jzon_static_deallocate(void* ptr)
+{
+	return static_allocator->deallocate(ptr);
+}
+
 namespace bowtie
 {
 
@@ -28,6 +41,9 @@ const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprit
 
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
 {
+	static_allocator = &allocator;
+	jzon_allocator.allocate = jzon_static_allocate;
+	jzon_allocator.deallocate = jzon_static_deallocate;
 }
 
 ResourceManager::~ResourceManager()
@@ -59,7 +75,6 @@ ResourceType ResourceManager::resource_type_from_string(const char* type)
 	assert(!"Unknown resource type string");
 	return ResourceType::NumResourceTypes;
 }
-
 
 uint64_t hash_name(const char* name)
 {
@@ -102,26 +117,26 @@ Material& ResourceManager::load_material(const char* filename)
 		return *(Material*)existing.object;
 
 	LoadedFile file = file::load(filename, _allocator);
-	using namespace rapidjson;
-    Document d;	
-    d.Parse<0>((char*)file.data);
+	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	assert(parse_result.success && "Failed to parse font");
+	auto jzon = parse_result.output;
 	_allocator.deallocate(file.data);
 
-	auto shader_filename = d["shader"].GetString();
+	auto shader_filename = jzon_get(jzon, "shader")->string_value;
 	auto& shader = load_shader(shader_filename);
-	auto& uniforms_json = d["uniforms"];
+	auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
 	Array<UniformResourceData> uniforms(_allocator);
 
-	for(auto uniform_iter = uniforms_json.Begin(); uniform_iter != uniforms_json.End(); ++uniform_iter)
+	for(unsigned i = 0; i < uniforms_jzon->size; ++i)
 	{
-		auto& uniform_json = *uniform_iter;
+		auto uniform_json = uniforms_jzon->array_values[i];
 
-		if (!uniform_json.IsString())
+		if (!uniform_json->is_string)
 			continue;
 		
 		TempAllocator4096 ta;
-		auto uniform_str = uniform_json.GetString();
+		auto uniform_str = uniform_json->string_value;
 		auto split_uniform = split(ta, uniform_str, ' ');
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
@@ -172,7 +187,7 @@ Material& ResourceManager::load_material(const char* filename)
 
 	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
 	add_resource(name, Resource(material));	
-
+	jzon_free(jzon, &jzon_allocator);
 	return *material;
 }
 
@@ -282,17 +297,17 @@ Font& ResourceManager::load_font(const char* filename)
 		return *existing;
 	
 	LoadedFile file = file::load(filename, _allocator);
-	using namespace rapidjson;
-    Document d;	
-    d.Parse<0>((char*)file.data);
+	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	assert(parse_result.success && "Failed to parse font");
+	auto jzon = parse_result.output;
 	_allocator.deallocate(file.data);
-	
-	auto texture_filename = d["texture"].GetString();
-	auto columns = d["columns"].GetInt();
-	auto rows = d["rows"].GetInt();
+	auto texture_filename = jzon_get(jzon, "texture")->string_value;
+	auto columns = jzon_get(jzon, "columns")->int_value;
+	auto rows = jzon_get(jzon, "columns")->int_value;
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, Resource(font));
+	jzon_free(jzon, &jzon_allocator);
 	return *font;
 }
 
@@ -304,18 +319,17 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 		return *existing;
 
 	LoadedFile file = file::load(filename, _allocator);
-	using namespace rapidjson;
-    Document d;	
-    d.Parse<0>((char*)file.data);
-	_allocator.deallocate(file.data);
-	
-	auto texture_filename = d["texture"].GetString();
-	auto material_filename = d["material"].GetString();
+	auto parse_result = jzon_parse((char*)file.data, &jzon_allocator); 
+	assert(parse_result.success && "Failed to parse font");
+	auto jzon = parse_result.output;
+	auto texture_filename = jzon_get(jzon, "texture")->string_value;
+	auto material_filename = jzon_get(jzon, "material")->string_value;
 
 	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(texture_filename));
 	auto& material = load_material(material_filename);
 	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
 	add_resource(name, Resource(drawable));
+	jzon_free(jzon, &jzon_allocator);
 	return *drawable;
 }
 

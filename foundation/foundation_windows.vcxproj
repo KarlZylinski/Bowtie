@@ -24,6 +24,7 @@
     <ClInclude Include="foundation\file.h" />
     <ClInclude Include="foundation\hash.h" />
     <ClInclude Include="foundation\icallstack_capturer.h" />
+    <ClInclude Include="foundation\jzon.h" />
     <ClInclude Include="foundation\keyboard.h" />
     <ClInclude Include="foundation\math_types.h" />
     <ClInclude Include="foundation\matrix4.h" />
@@ -53,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="foundation\file.cpp" />
+    <ClCompile Include="foundation\jzon.c" />
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />
     <ClCompile Include="foundation\string_stream.cpp" />
@@ -134,6 +136,7 @@
       <AdditionalOptions>/wd4530  /wd4127</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
