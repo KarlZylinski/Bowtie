@@ -12,7 +12,7 @@ enum Type
 
 enum AutomaticValue
 {
-	None, ModelViewProjectionMatrix, ModelViewMatrix, ModelMatrix, Time, DrawableTexture, NumAutomaticValues
+	None, ModelViewProjectionMatrix, ModelViewMatrix, ModelMatrix, Time, DrawableTexture, ViewResolution, ViewResolutionRatio, Resolution, NumAutomaticValues
 };
 
 }

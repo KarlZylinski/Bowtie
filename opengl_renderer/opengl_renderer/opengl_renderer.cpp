@@ -32,7 +32,7 @@ GLuint compile_glsl_shader(const char* shader_source, GLenum shader_type);
 GLuint create_fullscreen_rendering_quad();
 RenderTexture* create_texture(Allocator& allocator, image::PixelFormat pf, const Vector2u& resolution, void* data);
 RenderTarget* create_render_target_internal(Allocator& allocator, const Vector2u& resolution);
-void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table);
+void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table);
 GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format);
 void initialize_gl();
 GLuint link_glsl_program(const GLuint* shaders, int shader_count, bool delete_shaders);
@@ -82,7 +82,7 @@ void OpenGLRenderer::draw(const View& view, const RenderWorld& render_world)
 	auto& drawables = render_world.drawables();
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)
-		draw_drawable(view_matrix, view_projection_matrix, *drawables[i], _resource_lut);
+		draw_drawable(resolution(), view, view_matrix, view_projection_matrix, *drawables[i], _resource_lut);
 }
 
 unsigned OpenGLRenderer::get_uniform_location(RenderResource shader, const char* name)
@@ -283,7 +283,7 @@ GLuint create_fullscreen_rendering_quad()
 	return quad_vertexbuffer;
 }
 
-void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
+void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
 	auto model_view_matrix = drawable.model * view_matrix;
@@ -292,6 +292,8 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
+	auto view_resolution_ratio = view.rect().size.y / resolution.y;
+	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
 
 	auto uniforms = material.uniforms();
 	for (unsigned i = 0; i < array::size(uniforms); ++i)
@@ -315,6 +317,15 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 			break;
 		case uniform::DrawableTexture:
 			value = (void*)&drawable.texture;
+			break;
+		case uniform::ViewResolution:
+			value = (void*)&view.rect().size;
+			break;
+		case uniform::ViewResolutionRatio: 
+			value = (void*)&view_resolution_ratio;
+			break;
+		case uniform::Resolution:
+			value = (void*)&resoultion_float;
 			break;
 		}
 

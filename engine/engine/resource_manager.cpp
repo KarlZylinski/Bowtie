@@ -97,7 +97,7 @@ uniform::Type get_uniform_type_from_str(const char* str)
 
 uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 {
-	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture" };
+	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture", "view_resolution", "view_resolution_ratio", "resolution" };
 	
 	for (unsigned i = 0; i < uniform::NumAutomaticValues; ++i)
 	{

@@ -27,3 +27,5 @@
 *.idb
 *.ilk
 *.suo
+*.psess
+*.vsp
