@@ -76,4 +76,17 @@ inline char* copy_str(Allocator& allocator, const char* str)
 	return copy_str(allocator, str, strlen32(str));
 }
 
+inline char* concat_str(Allocator& allocator, const char* str1, unsigned str1_len, const char* str2, unsigned str2_len)
+{
+	auto size = str1_len + str2_len + 1;
+	auto new_str = (char*)allocator.allocate(size);
+	strcat(strcat(new_str, str1), str2);
+	return new_str;
+}
+
+inline char* concat_str(Allocator& allocator, const char* str1, const char* str2)
+{
+	return concat_str(allocator, str1, strlen32(str1), str2, strlen32(str2));
+}
+
 }

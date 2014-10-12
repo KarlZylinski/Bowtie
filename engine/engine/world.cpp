@@ -32,7 +32,8 @@ void World::set_render_handle(RenderResourceHandle render_handle)
 Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth)
 {
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
-	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)_resource_manager.get_default(resource_type::Material).object, depth);
+	auto material = _resource_manager.load(resource_type::Material, "shared/default_resources/rect.material");
+	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)material.object, depth);
 	array::push_back(_drawables, rectangle);
 	_render_interface.spawn(*this, *rectangle, _resource_manager);
 	return rectangle;

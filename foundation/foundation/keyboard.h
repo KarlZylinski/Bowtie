@@ -22,7 +22,7 @@ namespace keyboard
 		R = 0x52,
 		PageUp = VK_PRIOR,
 		PageDown = VK_NEXT,
-		Tilde = 0xC0
+		Tilde = 0xDC
 	};
 
 #endif

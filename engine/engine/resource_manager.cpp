@@ -303,7 +303,7 @@ Font& ResourceManager::load_font(const char* filename)
 	_allocator.deallocate(file.data);
 	auto texture_filename = jzon_get(jzon, "texture")->string_value;
 	auto columns = jzon_get(jzon, "columns")->int_value;
-	auto rows = jzon_get(jzon, "columns")->int_value;
+	auto rows = jzon_get(jzon, "rows")->int_value;
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, Resource(font));

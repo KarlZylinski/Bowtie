@@ -1,7 +1,7 @@
 #pragma once
 
 #include <foundation/matrix4.h>
-#include "render_resource.h"
+#include <engine/render_resource_handle.h>
 
 namespace bowtie
 {
@@ -11,9 +11,9 @@ struct RenderTexture;
 
 struct RenderDrawable
 {
-	RenderTexture* texture;
-	RenderMaterial* material;
-	RenderResource geometry;
+	RenderResourceHandle texture;
+	RenderResourceHandle material;
+	RenderResourceHandle geometry;
 	unsigned num_vertices;
 	Matrix4 model;
 	int depth;

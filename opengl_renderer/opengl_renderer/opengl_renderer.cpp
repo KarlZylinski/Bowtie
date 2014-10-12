@@ -287,7 +287,7 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 {
 	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
 	auto model_view_matrix = drawable.model * view_matrix;
-	auto& material = *drawable.material;
+	auto& material = *(RenderMaterial*)lookup_table.lookup(drawable.material).object;
 	auto shader = lookup_table.lookup(material.shader()).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
@@ -314,7 +314,7 @@ void draw_drawable(const Matrix4& view_matrix, const Matrix4& view_projection_ma
 			value = &time;
 			break;
 		case uniform::DrawableTexture:
-			value = &drawable.texture->render_handle.handle;
+			value = (void*)&drawable.texture;
 			break;
 		}
 
