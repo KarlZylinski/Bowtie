@@ -54,7 +54,7 @@ void arr_grow(Array* arr, JzonAllocator* allocator)
 {
 	int new_capacity = arr->capacity == 0 ? 1 : arr->capacity * 2;
 	void** new_arr = (void**)allocator->allocate(new_capacity * sizeof(void**));
-	memcpy(new_arr, arr->arr, arr->size * sizeof(void*));
+	memcpy(new_arr, arr->arr, arr->size * sizeof(void**));
 	allocator->deallocate(arr->arr);
 	arr->arr = new_arr;
 	arr->capacity = new_capacity;
@@ -432,12 +432,12 @@ int parse_number(const char** input, JzonValue* output, JzonAllocator* allocator
 	if (is_float)
 	{
 		output->is_float = true;
-		output->float_value = (float)atof(num.str);
+		output->float_value = (float)strtod(num.str, NULL);
 	}
 	else
 	{
 		output->is_int = true;
-		output->int_value = atoi(num.str);
+		output->int_value = (int)strtol(num.str, NULL, 10);
 	}
 
 	allocator->deallocate(num.str);
