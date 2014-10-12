@@ -1,5 +1,3 @@
-{
-    "columns": 32,
-    "rows": 4,
-    "texture": "fonts/stolen.png"
-}
+columns: 32
+rows: 4
+texture: "shared/fonts/stolen.png"

@@ -1,0 +1,4 @@
+shader: "shared/default_resources/rect.shader"
+uniforms: [
+    "mat4 model_view_projection_matrix mvp"
+]
