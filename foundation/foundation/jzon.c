@@ -17,11 +17,9 @@ void str_grow(String* str, JzonAllocator* allocator)
 	int new_capacity = str->capacity == 0 ? 2 : str->capacity * 2;
 	char* new_str = (char*)allocator->allocate(new_capacity);
 	
-	if (str->str == NULL)
-		new_str[0] = 0;
-	else
+	if (str->str != NULL)
 		strcpy(new_str, str->str);
-
+	
 	allocator->deallocate(str->str);
 	str->str = new_str;
 	str->capacity = new_capacity;
@@ -55,7 +53,7 @@ typedef struct Array
 void arr_grow(Array* arr, JzonAllocator* allocator)
 {
 	int new_capacity = arr->capacity == 0 ? 1 : arr->capacity * 2;
-	void** new_arr = (void**)allocator->allocate(new_capacity * sizeof(void*));
+	void** new_arr = (void**)allocator->allocate(new_capacity * sizeof(void**));
 	memcpy(new_arr, arr->arr, arr->size * sizeof(void*));
 	allocator->deallocate(arr->arr);
 	arr->arr = new_arr;
@@ -69,6 +67,76 @@ void arr_add(Array* arr, void* e, JzonAllocator* allocator)
 
 	arr->arr[arr->size] = e;
 	++arr->size;
+}
+
+void arr_insert(Array* arr, void* e, unsigned index, JzonAllocator* allocator)
+{
+	if (arr->size == arr->capacity)
+		arr_grow(arr, allocator);
+
+	memmove(arr->arr + index + 1, arr->arr + index, (arr->size - index) * sizeof(void**));
+	arr->arr[index] = e;
+	++arr->size;
+}
+
+
+// Hash function used for hashing object keys.
+// From http://murmurhash.googlepages.com/
+
+uint64_t hash_str(const char* str)
+{
+	size_t len = strlen(str);
+	uint64_t seed = 0;
+
+	const uint64_t m = 0xc6a4a7935bd1e995ULL;
+	const uint32_t r = 47;
+
+	uint64_t h = seed ^ (len * m);
+
+	const uint64_t * data = (const uint64_t *)str;
+	const uint64_t * end = data + (len / 8);
+
+	while (data != end)
+	{
+#ifdef PLATFORM_BIG_ENDIAN
+		uint64_t k = *data++;
+		char *p = (char *)&k;
+		char c;
+		c = p[0]; p[0] = p[7]; p[7] = c;
+		c = p[1]; p[1] = p[6]; p[6] = c;
+		c = p[2]; p[2] = p[5]; p[5] = c;
+		c = p[3]; p[3] = p[4]; p[4] = c;
+#else
+		uint64_t k = *data++;
+#endif
+
+		k *= m;
+		k ^= k >> r;
+		k *= m;
+
+		h ^= k;
+		h *= m;
+	}
+
+	const unsigned char * data2 = (const unsigned char*)data;
+
+	switch (len & 7)
+	{
+	case 7: h ^= ((uint64_t)data2[6]) << 48;
+	case 6: h ^= ((uint64_t)data2[5]) << 40;
+	case 5: h ^= ((uint64_t)data2[4]) << 32;
+	case 4: h ^= ((uint64_t)data2[3]) << 24;
+	case 3: h ^= ((uint64_t)data2[2]) << 16;
+	case 2: h ^= ((uint64_t)data2[1]) << 8;
+	case 1: h ^= ((uint64_t)data2[0]);
+		h *= m;
+	};
+
+	h ^= h >> r;
+	h *= m;
+	h ^= h >> r;
+
+	return h;
 }
 
 
@@ -87,6 +155,20 @@ __forceinline char current(const char** input)
 bool is_multiline_string_quotes(const char* str)
 {
 	return *str == '"' && *(str + 1) == '"' && *(str + 1) == '"';
+}
+
+int find_object_pair_insertion_index(JzonKeyValuePair** objects, unsigned size, uint64_t key_hash)
+{
+	if (size == 0)
+		return 0;
+
+	for (unsigned i = 0; i < size; ++i)
+	{
+		if (objects[i]->key_hash > key_hash)
+			return i;
+	}
+
+	return size;
 }
 
 void skip_whitespace(const char** input)
@@ -139,7 +221,7 @@ char* parse_multiline_string(const char** input, JzonAllocator* allocator)
 	return NULL;
 }
 
-char* parse_pure_string(const char** input, JzonAllocator* allocator)
+char* parse_string_internal(const char** input, JzonAllocator* allocator)
 {
 	if (current(input) != '"')
 		return NULL;
@@ -169,7 +251,7 @@ char* parse_pure_string(const char** input, JzonAllocator* allocator)
 char* parse_keyname(const char** input, JzonAllocator* allocator)
 {
 	if (current(input) == '"')
-		return parse_pure_string(input, allocator);
+		return parse_string_internal(input, allocator);
 
 	String name = { 0 };
 
@@ -179,10 +261,8 @@ char* parse_keyname(const char** input, JzonAllocator* allocator)
 
 		if (ch == ':')
 			return name.str;
-		else if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9')
-			str_add(&name, ch, allocator);
 		else
-			return NULL;
+			str_add(&name, ch, allocator);
 
 		next(input);
 	}
@@ -194,7 +274,7 @@ int parse_value(const char** input, JzonValue* output, JzonAllocator* allocator)
 
 int parse_string(const char** input, JzonValue* output, JzonAllocator* allocator)
 {
-	char* str = parse_pure_string(input, allocator);
+	char* str = parse_string_internal(input, allocator);
 
 	if (str == NULL)
 		return -1;
@@ -269,6 +349,7 @@ int parse_object(const char** input, JzonValue* output, bool root_object, JzonAl
 		JzonKeyValuePair* pair = (JzonKeyValuePair*)allocator->allocate(sizeof(JzonKeyValuePair));
 		skip_whitespace(input);
 		char* key = parse_keyname(input, allocator);
+		skip_whitespace(input);
 		
 		if (key == NULL || current(input) != ':')
 			return -1;
@@ -282,8 +363,9 @@ int parse_object(const char** input, JzonValue* output, bool root_object, JzonAl
 			return error;
 
 		pair->key = key;
+		pair->key_hash = hash_str(key);
 		pair->value = value;
-		arr_add(&object_values, pair, allocator);
+		arr_insert(&object_values, pair, find_object_pair_insertion_index((JzonKeyValuePair**)object_values.arr, object_values.size, pair->key_hash), allocator);
 		skip_whitespace(input);
 
 		if (current(input) == '}')
@@ -422,8 +504,6 @@ int parse_value(const char** input, JzonValue* output, JzonAllocator* allocator)
 		case '-': return parse_number(input, output, allocator);
 		default: return ch >= '0' && ch <= '9' ? parse_number(input, output, allocator) : parse_word_or_string(input, output, allocator);
 	}
-
-	return -1;
 }
 
 
@@ -483,13 +563,26 @@ JzonValue* jzon_get(JzonValue* object, const char* key)
 {
 	if (!object->is_object)
 		return NULL;
-		
-	for (unsigned i = 0; i < object->size; ++i)
-	{
-		JzonKeyValuePair* pair = object->object_values[i];
 
-		if (strcmp(pair->key, key) == 0)
-			return pair->value;
+	if (object->size == 0)
+		return NULL;
+	
+	uint64_t key_hash = hash_str(key);
+
+	unsigned first = 0;
+	unsigned last = object->size - 1;
+	unsigned middle = (first + last) / 2;
+
+	while (first <= last)
+	{
+		if (object->object_values[middle]->key_hash < key_hash)
+			first = middle + 1;
+		else if (object->object_values[middle]->key_hash == key_hash)
+			return object->object_values[middle]->value;
+		else
+			last = middle - 1;
+
+		middle = (first + last) / 2;
 	}
 
 	return NULL;

@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #endif
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -37,6 +39,7 @@ typedef struct JzonValue
 
 struct JzonKeyValuePair {
 	char* key;
+	uint64_t key_hash;
 	JzonValue* value;
 };
 
@@ -62,10 +65,10 @@ JzonParseResult jzon_parse_custom_allocator(const char* input, JzonAllocator* al
 // Free parse result data structure using default free deallocator.
 void jzon_free(JzonValue* value);
 
-// Free parse result data structure which wad parsed using custom allocator. Make sure to pass the same allocator as you did to jzon_parse_custom_allocator.
+// Free parse result data structure which was parsed using custom allocator. Make sure to pass the same allocator you did to jzon_parse_custom_allocator.
 void jzon_free_custom_allocator(JzonValue* value, JzonAllocator* allocator);
 
-// Get value from object using key. Returns NULL if object is not an actual jzon object or there exists no value with the specified key.
+// Find object value by key. Returns NULL if object is not an actual jzon object or there exists no value with the specified key. Uses a binary search algorithm.
 JzonValue* jzon_get(JzonValue* object, const char* key);
 
 #ifdef __cplusplus
