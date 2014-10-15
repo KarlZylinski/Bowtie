@@ -117,26 +117,25 @@ Material& ResourceManager::load_material(const char* filename)
 		return *(Material*)existing.object;
 
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator); 
-	assert(parse_result.success && "Failed to parse font");
-	auto jzon = parse_result.output;
+	auto jzon = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator); 
+	assert(jzon != NULL && "Failed to parse font");
 	_allocator.deallocate(file.data);
 
-	auto shader_filename = jzon_get(jzon, "shader")->string_value;
+	auto shader_filename = jzon_string(jzon_value(jzon, "shader"));
 	auto& shader = load_shader(shader_filename);
-	auto uniforms_jzon = jzon_get(jzon, "uniforms");
+	auto uniforms_jzon = jzon_value(jzon, "uniforms");
 
 	Array<UniformResourceData> uniforms(_allocator);
 
-	for(unsigned i = 0; i < uniforms_jzon->size; ++i)
+	for(unsigned i = 0; i < jzon_size(uniforms_jzon); ++i)
 	{
-		auto uniform_json = uniforms_jzon->array_values[i];
+		auto uniform_json = jzon_get(uniforms_jzon, i);
 
 		if (!uniform_json->is_string)
 			continue;
 		
 		TempAllocator4096 ta;
-		auto uniform_str = uniform_json->string_value;
+		auto uniform_str = jzon_string(uniform_json);
 		auto split_uniform = split(ta, uniform_str, ' ');
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
@@ -187,7 +186,7 @@ Material& ResourceManager::load_material(const char* filename)
 
 	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
 	add_resource(name, Resource(material));	
-	jzon_free_custom_allocator(jzon, &jzon_allocator);
+	_allocator.deallocate(jzon);
 	return *material;
 }
 
@@ -297,17 +296,16 @@ Font& ResourceManager::load_font(const char* filename)
 		return *existing;
 	
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
-	assert(parse_result.success && "Failed to parse font");
-	auto jzon = parse_result.output;
+	auto jzon = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
+	assert(jzon != NULL && "Failed to parse font");
 	_allocator.deallocate(file.data);
-	auto texture_filename = jzon_get(jzon, "texture")->string_value;
-	auto columns = jzon_get(jzon, "columns")->int_value;
-	auto rows = jzon_get(jzon, "rows")->int_value;
+	auto texture_filename = jzon_string(jzon_value(jzon, "texture"));
+	auto columns = jzon_int(jzon_value(jzon, "columns"));
+	auto rows = jzon_int(jzon_value(jzon, "rows"));
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, Resource(font));
-	jzon_free_custom_allocator(jzon, &jzon_allocator);
+	_allocator.deallocate(jzon);
 	return *font;
 }
 
@@ -320,17 +318,16 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 		return *existing;
 
 	LoadedFile file = file::load(filename, _allocator);
-	auto parse_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
-	assert(parse_result.success && "Failed to parse font");
-	auto jzon = parse_result.output;
-	auto texture_filename = jzon_get(jzon, "texture")->string_value;
-	auto material_filename = jzon_get(jzon, "material")->string_value;
+	auto jzon = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
+	assert(jzon != NULL && "Failed to parse font");
+	auto texture_filename = jzon_string(jzon_value(jzon, "texture"));
+	auto material_filename = jzon_string(jzon_value(jzon, "material"));
 
 	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(texture_filename));
 	auto& material = load_material(material_filename);
 	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
 	add_resource(name, Resource(drawable));
-	jzon_free_custom_allocator(jzon, &jzon_allocator);
+	_allocator.deallocate(jzon);
 	return *drawable;
 }
 
