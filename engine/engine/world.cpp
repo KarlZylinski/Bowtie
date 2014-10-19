@@ -34,6 +34,7 @@ Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
 	auto material = _resource_manager.load(resource_type::Material, "shared/default_resources/rect.material");
 	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)material.object, depth);
+	rectangle->set_position(rect.position);
 	array::push_back(_drawables, rectangle);
 	_render_interface.spawn(*this, *rectangle, _resource_manager);
 	return rectangle;
