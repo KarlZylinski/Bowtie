@@ -62,10 +62,10 @@ void combine_rendered_worlds(RenderResource fullscreen_rendering_quad, RenderRes
 	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
 	{
 		auto& rw = *rendered_worlds[i];
-		auto& rt = rw.render_target();
+		auto& rt = rw.render_target;
 
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, ((RenderTexture*)rt.texture.object)->render_handle.handle);
+		glBindTexture(GL_TEXTURE_2D, rt.texture.render_handle.handle);
 		glUniform1i(texture_sampler_id, i);
 	}
 
@@ -97,9 +97,9 @@ RenderResource create_geometry(void* data, unsigned data_size)
 	return RenderResource(geometry_buffer);
 }
 
-RenderResource create_render_target(RenderTexture* texture)
+RenderResource create_render_target(const RenderTexture& texture)
 {
-	auto texture_id = texture->render_handle.handle;
+	auto texture_id = texture.render_handle.handle;
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 
 	GLuint fb = 0;
@@ -203,7 +203,7 @@ void destroy_texture(RenderResource texture)
 void destroy_render_target(RenderResource render_target)
 {
 	auto rt = (RenderTarget*)render_target.object;
-	destroy_texture(rt->texture);
+	glDeleteTextures(1, &rt->texture.render_handle.handle);
 	glDeleteFramebuffers(1, &rt->handle.handle);
 }
 
@@ -315,7 +315,7 @@ void draw(const View& view, const RenderWorld& render_world, const Vector2u& res
 {
 	auto view_matrix = view.view();
 	auto view_projection_matrix = view_matrix * view.projection();
-	auto& drawables = render_world.drawables();
+	auto& drawables = render_world.drawables;
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)
 		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawables[i], resource_lut);
@@ -340,7 +340,7 @@ void initialize_thread()
 	glDisable(GL_DEPTH_TEST);
 }
 
-void resize(const Vector2u& resolution, Array<RenderTarget*>&)
+void resize(const Vector2u& resolution, Array<RenderTarget>&)
 {
 	glViewport(0, 0, resolution.x, resolution.y);
 }

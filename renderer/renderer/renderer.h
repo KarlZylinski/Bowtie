@@ -72,7 +72,7 @@ private:
 	RenderInterface _render_interface;
 	Vector2u _resoultion;
 	RenderResourceLookupTable& _resource_lut;
-	Array<RenderTarget*> _render_targets;
+	Array<RenderTarget> _render_targets;
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
 	Array<RendererResourceObject> _resource_objects;
 	RenderResource _fullscreen_rendering_quad;

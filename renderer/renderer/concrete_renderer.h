@@ -13,7 +13,7 @@ struct GeometryResourceData;
 struct RenderDrawable;
 struct RenderTarget;
 struct RenderTexture;
-class RenderWorld;
+struct RenderWorld;
 struct ShaderResourceData;
 struct TextureResourceData;
 class View;
@@ -26,7 +26,7 @@ struct ConcreteRenderer
 	void (*initialize_thread)();
 	
 	// Resource management
-	RenderResource (*create_render_target)(RenderTexture* texture);
+	RenderResource (*create_render_target)(const RenderTexture& texture);
 	void (*destroy_render_target)(RenderResource render_target);
 	unsigned (*get_uniform_location)(RenderResource shader, const char* name);
 	RenderResource (*create_geometry)(void* data, unsigned data_size);
@@ -39,7 +39,7 @@ struct ConcreteRenderer
 	RenderResource (*update_shader)(const RenderResource& shader, const char* vertex_source, const char* fragment_source);
 		
 	// State setters
-	void (*resize)(const Vector2u& size, Array<RenderTarget*>& render_targets);
+	void (*resize)(const Vector2u& size, Array<RenderTarget>& render_targets);
 	void (*set_render_target)(const Vector2u& resolution, RenderResource render_target);
 	void (*unset_render_target)(const Vector2u& resolution);
 

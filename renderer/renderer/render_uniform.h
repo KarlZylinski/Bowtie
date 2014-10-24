@@ -7,6 +7,7 @@
 namespace bowtie
 {
 
+class Allocator;
 struct RenderUniform
 {
 	RenderUniform(uniform::Type type, uint64_t name, unsigned location, uniform::AutomaticValue automatic_value);
@@ -18,5 +19,10 @@ struct RenderUniform
 	uniform::Type type;
 	void* value;
 };
+
+namespace render_uniform
+{
+	void set_value(RenderUniform& uniform, Allocator& allocator, const void* value, unsigned value_size);
+}
 
 }

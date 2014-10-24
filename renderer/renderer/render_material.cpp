@@ -63,17 +63,4 @@ void set_uniform_float_value(RenderMaterial& material, Allocator& allocator, uin
 
 } // namespace render_material
 
-namespace render_uniform
-{
-
-void set_value(RenderUniform& uniform, Allocator& allocator, const void* value, unsigned value_size)
-{
-	if (uniform.value == nullptr)
-		uniform.value = allocator.allocate(value_size);
-
-	memcpy(uniform.value, value, value_size);
-}
-
-} // namespace render_uniform
-
 } // namespace bowtie

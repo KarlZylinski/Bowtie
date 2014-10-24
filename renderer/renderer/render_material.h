@@ -24,9 +24,4 @@ namespace render_material
 	void set_uniform_float_value(RenderMaterial& material, Allocator& allocator, uint64_t name, float value);
 }
 
-namespace render_uniform
-{
-	void set_value(RenderUniform& uniform, Allocator& allocator, const void* value, unsigned value_size);
-}
-
 }
