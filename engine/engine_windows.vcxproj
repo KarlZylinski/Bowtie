@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\font.h" />
@@ -50,7 +49,6 @@
     <ClInclude Include="engine\world.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\font.cpp" />

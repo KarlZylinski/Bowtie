@@ -5,7 +5,6 @@
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
-    <ClCompile Include="engine\bmp.cpp" />
     <ClCompile Include="engine\world.cpp" />
     <ClCompile Include="engine\texture.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
@@ -23,7 +22,6 @@
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\resource_manager.h" />
-    <ClInclude Include="engine\bmp.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\world.h" />
