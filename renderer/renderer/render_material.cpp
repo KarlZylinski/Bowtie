@@ -1,41 +1,68 @@
 #include "render_material.h"
 #include <foundation/array.h>
-#include "render_uniform_utils.h"
+#include <cassert>
 
 namespace bowtie
 {
 
-RenderMaterial::RenderMaterial(Allocator& allocator, RenderResourceHandle shader) : _shader(shader), _uniforms(allocator)
+namespace
 {
-}
 
-void RenderMaterial::add_uniform(const RenderUniform& uniform)
+void set_uniform_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const void* value, unsigned value_size)
 {
-	array::push_back(_uniforms, uniform);
-}
-
-void RenderMaterial::set_uniform_value(Allocator& allocator, uint64_t name, void* value)
-{
-	for (unsigned i = 0; i < array::size(_uniforms); ++i)
+	for (unsigned i = 0; i < array::size(material.uniforms); ++i)
 	{
-		auto& uniform = _uniforms[i];
+		auto& uniform = material.uniforms[i];
 
 		if (uniform.name == name)
 		{
-			render_uniform::set_value(uniform, allocator, value);
+			if (uniform.value == nullptr)
+				uniform.value = allocator.allocate(value_size);
+
+			memcpy(uniform.value, value, value_size);
+
 			break;
 		}
 	}
 }
 
-RenderResourceHandle RenderMaterial::shader() const
-{
-	return _shader;
 }
 
-const Array<RenderUniform>& RenderMaterial::uniforms() const
+namespace render_material
 {
-	return _uniforms;
+
+void init(RenderMaterial& material, Allocator& allocator, RenderResourceHandle shader)
+{
+	material.shader = shader;
+	material.uniforms = Array<RenderUniform>(allocator);
 }
 
+void deinit(RenderMaterial& material, Allocator& allocator)
+{
+	for (unsigned i = 0; i < array::size(material.uniforms); ++i)
+		allocator.deallocate(material.uniforms[i].value);
 }
+
+void add_uniform(RenderMaterial& material, const RenderUniform& uniform)
+{
+	array::push_back(material.uniforms, uniform);
+}
+
+void set_uniform_vector4_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const Vector4& value)
+{
+	set_uniform_value(material, allocator, name, &value, sizeof(Vector4));
+}
+
+void set_uniform_unsigned_value(RenderMaterial& material, Allocator& allocator, uint64_t name, unsigned value)
+{
+	set_uniform_value(material, allocator, name, &value, sizeof(unsigned));
+}
+
+void set_uniform_float_value(RenderMaterial& material, Allocator& allocator, uint64_t name, float value)
+{
+	set_uniform_value(material, allocator, name, &value, sizeof(float));
+}
+
+} // namespace render_material
+
+} // namespace bowtie

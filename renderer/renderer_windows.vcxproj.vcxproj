@@ -30,7 +30,6 @@
     <ClInclude Include="renderer\render_world.h" />
     <ClInclude Include="renderer\render_resource.h" />
     <ClInclude Include="renderer\render_uniform.h" />
-    <ClInclude Include="renderer\render_uniform_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="renderer\render_material.cpp" />
@@ -38,7 +37,6 @@
     <ClCompile Include="renderer\render_resource_lookup_table.cpp" />
     <ClCompile Include="renderer\render_world.cpp" />
     <ClCompile Include="renderer\render_uniform.cpp" />
-    <ClCompile Include="renderer\render_uniform_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

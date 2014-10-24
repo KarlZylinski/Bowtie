@@ -6,7 +6,6 @@
 namespace bowtie
 {
 
-class RenderMaterial;
 struct RenderTexture;
 
 struct RenderDrawable

@@ -8,18 +8,20 @@
 namespace bowtie
 {
 
-class RenderMaterial
+struct RenderMaterial
 {
-public:
-	RenderMaterial(Allocator& allocator, RenderResourceHandle shader);
-	void add_uniform(const RenderUniform& uniform);
-	void set_uniform_value(Allocator& allocator, uint64_t name, void* value);
-	RenderResourceHandle shader() const;
-	const Array<RenderUniform>& uniforms() const;
-	
-private:
-	RenderResourceHandle _shader;
-	Array<RenderUniform> _uniforms;
+	RenderResourceHandle shader;
+	Array<RenderUniform> uniforms;
 };
+
+namespace render_material
+{
+	void init(RenderMaterial& material, Allocator& allocator, RenderResourceHandle shader);
+	void deinit(RenderMaterial& material, Allocator& allocator);
+	void add_uniform(RenderMaterial& material, const RenderUniform& uniform);
+	void set_uniform_vector4_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const Vector4& value);
+	void set_uniform_unsigned_value(RenderMaterial& material, Allocator& allocator, uint64_t name, unsigned value);
+	void set_uniform_float_value(RenderMaterial& material, Allocator& allocator, uint64_t name, float value);
+}
 
 }

@@ -15,7 +15,6 @@
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
-#include "render_uniform_utils.h"
 #include "render_texture.h"
 
 namespace bowtie
