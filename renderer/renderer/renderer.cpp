@@ -79,8 +79,6 @@ Renderer::~Renderer()
 			_allocator.deallocate(rm);
 		} break;
 			
-			
-			
 		default:
 			_allocator.deallocate(object);
 			break;

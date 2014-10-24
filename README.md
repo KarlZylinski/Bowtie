@@ -24,8 +24,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 [] Convert game
 [] Convert window
 [] Convert callstack capturer to struct of function ptrs
-[] Convert render_material
-    [] Have uniforms on main thread as well and keep them in a flat index-based list in renderer?
+[x] Convert render_material
+    [] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
 [] Convert resource_lut
 [] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 
