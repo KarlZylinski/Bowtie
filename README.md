@@ -9,9 +9,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 [x] Remove render target ctor and free texture in renderer.cpp
     [] During rw cleanup, look at rw dstr and the texture stuff there.
 
-[] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool to avoid fragmentation.
+[] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool in world to avoid fragmentation.
     [] Figure out how drawable and its "behaviors" can be split like so.
-[] Convert render_world. In here store the different drawable data and drawables as indices into these. Keep an array of free entries.
 
 [] Turn engine into namespace of functions which operates on engine struct.
 [] Turn font into namespace of functions which operates on font struct.
@@ -23,11 +22,13 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 [] Rewrite allocators?
 [] Convert game
 [] Convert window
+[x] Convert render_world
 [] Convert callstack capturer to struct of function ptrs
 [x] Convert render_material
     [] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
 [] Convert resource_lut
 [] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
+
 
 ## Style
 
@@ -38,7 +39,14 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - Skip references, use only pointers
 - Templates are only used for collection classes.
 
+
 ## Todo
+
+[] Deffered / heightmap lighting
+[] Replace PNG with homebrew DDS loader
+
+
+## Old todo
 
 * [x] Renderer on separate thread
 * [x] Resource manager for loading stuff
@@ -70,4 +78,4 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 * [x] Parenting with local transform and all that jazz
 * [x] Break engine and gameplay script and resources apart. Make exe load a settings file which specifies lua boot file, or just always load main.lua or something. Also provide a command line option for specifying where the exe is (so you can debug from vs when devving).
 * [x] Move game code to separate repository.
-* [ ] Deffered lighting
+
