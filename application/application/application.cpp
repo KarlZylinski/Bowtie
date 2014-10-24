@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <engine/engine.h>
 #include <engine/resource_manager.h>
 #include <foundation/array.h>
