@@ -3,8 +3,38 @@ Bowtie
 
 My 2D engine, built from the ground up using C++ and OpenGL.
 
-Todo
-======
+
+## The big C-style refactor
+
+[] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool to avoid fragmentation.
+    [] Figure out how drawable and its "behaviors" can be split like so.
+[] Turn engine into namespace of functions which operates on engine struct.
+[] Turn font into namespace of functions which operates on font struct.
+[] Turn render_interface into namespace of functions which operates on render_interface struct.
+[] Rename resource_manager to resource_store and have functions which operate on it in namespace
+    [] Optionally remove load functions and add auto-load enum
+[] Convert view
+[] Array -> Vector
+[] Rewrite allocators?
+[] Convert game
+[] Convert window
+[] Convert callstack capturer to struct of function ptrs
+[] Convert render_material
+[] Convert resource_lut
+[] Remove render target ctor and free texture in renderer.cpp
+[] Convert render_world. In here store the different drawable data and drawables as indices into these. Keep an array of free entries.
+[] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
+
+## Style
+
+- Only do dumb data assignment for structs in constructors
+- Prefer namespaces of functions which operate on structs
+- Prefer splitting things into separate arrays of similar data to monolithic things
+- Prefer enums to bools
+- Skip references, use only pointers
+- Templates are only used for collection classes.
+
+## Todo
 
 * [x] Renderer on separate thread
 * [x] Resource manager for loading stuff

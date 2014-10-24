@@ -6,9 +6,6 @@ namespace bowtie
 class Allocator;
 struct LoadedFile;
 
-namespace shader_utils
-{
-
 struct SplitShader
 {
 	char* vertex_source;
@@ -16,6 +13,9 @@ struct SplitShader
 	char* fragment_source;
 	unsigned fragment_source_len;
 };
+
+namespace shader_utils
+{
 
 SplitShader split_shader(const LoadedFile& shader_source, Allocator& allocator);
 

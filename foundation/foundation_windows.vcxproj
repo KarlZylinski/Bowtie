@@ -32,16 +32,6 @@
     <ClInclude Include="foundation\memory_types.h" />
     <ClInclude Include="foundation\murmur_hash.h" />
     <ClInclude Include="foundation\queue.h" />
-    <ClInclude Include="foundation\rapidjson\document.h" />
-    <ClInclude Include="foundation\rapidjson\filestream.h" />
-    <ClInclude Include="foundation\rapidjson\internal\pow10.h" />
-    <ClInclude Include="foundation\rapidjson\internal\stack.h" />
-    <ClInclude Include="foundation\rapidjson\internal\strfunc.h" />
-    <ClInclude Include="foundation\rapidjson\prettywriter.h" />
-    <ClInclude Include="foundation\rapidjson\rapidjson.h" />
-    <ClInclude Include="foundation\rapidjson\reader.h" />
-    <ClInclude Include="foundation\rapidjson\stringbuffer.h" />
-    <ClInclude Include="foundation\rapidjson\writer.h" />
     <ClInclude Include="foundation\string_stream.h" />
     <ClInclude Include="foundation\string_utils.h" />
     <ClInclude Include="foundation\temp_allocator.h" />
@@ -49,7 +39,6 @@
     <ClInclude Include="foundation\vector2.h" />
     <ClInclude Include="foundation\vector2i.h" />
     <ClInclude Include="foundation\vector4.h" />
-    <ClInclude Include="GL\wglew.h" />
     <ClInclude Include="resource_path.h" />
   </ItemGroup>
   <ItemGroup>
