@@ -3,17 +3,20 @@
 #include <cassert>
 #include <cstdlib>
 #include <engine/render_fence.h>
+#include <engine/shader_utils.h>
 #include <foundation/array.h>
+#include <foundation/file.h>
 #include <foundation/murmur_hash.h>
 #include <foundation/temp_allocator.h>
 #include <foundation/string_utils.h>
 #include <foundation/queue.h>
-#include "iconcrete_renderer.h"
+#include "concrete_renderer.h"
 #include "render_material.h"
 #include "render_drawable.h"
 #include "render_world.h"
 #include "render_target.h"
 #include "render_uniform_utils.h"
+#include "render_texture.h"
 
 namespace bowtie
 {
@@ -25,26 +28,26 @@ namespace
 {
 
 RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupTable& resource_lut, const DrawableResourceData& data);
-RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
-RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
-RenderResource create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets);
-RenderResource create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
-RenderResource create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data);
-RenderResource create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer);
+RenderResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
+RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data);
+RenderResource create_render_target(ConcreteRenderer& concrete_renderer, Allocator& allocator, RenderResource texture, Array<RenderTarget*>& render_targets);
+RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
+RenderResource create_texture(ConcreteRenderer& concrete_renderer, Allocator& allocator, image::PixelFormat pixel_format, const Vector2u& resolution, void* data);
+RenderResource create_world(Allocator& allocator, RenderResource texture, ConcreteRenderer& concrete_renderer);
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
 void flip(IRendererContext& context);
 void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
 void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
 void raise_fence(RenderFence& fence);
-void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view);
-RenderResource update_shader(IConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data);
+void render_world(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view);
+RenderResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data);
 
 }
 
 ////////////////////////////////
 // Public interface.
 
-Renderer::Renderer(IConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
+Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
 	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _resource_lut(render_resource_lookup_table), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
 	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _shut_down(false), _resource_objects(_allocator),
 	_render_targets(_allocator), _rendered_worlds(_allocator)
@@ -138,12 +141,13 @@ RenderInterface& Renderer::render_interface()
 
 const Vector2u& Renderer::resolution() const
 {
-	return _concrete_renderer.resolution();
+	return _resoultion;
 }
 
 void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 {
 	_context = context;
+	_resoultion = resolution;
 	_thread = std::thread(&Renderer::thread, this);
 
 	// Do stuff here which should happen before anything else.
@@ -191,10 +195,16 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 		case RenderResourceData::Drawable: return create_drawable(_allocator, _resource_lut, *(DrawableResourceData*)data.data);
 		case RenderResourceData::Geometry: return create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data);
 		case RenderResourceData::RenderMaterial: return create_material(_allocator, _concrete_renderer, dynamic_data, _resource_lut, *(MaterialResourceData*)data.data);
-		case RenderResourceData::RenderTarget: return create_render_target(_concrete_renderer, _render_targets);
+		case RenderResourceData::RenderTarget: return create_render_target(_concrete_renderer, _allocator, create_texture(_concrete_renderer, _allocator, image::RGBA, _resoultion, 0), _render_targets);
 		case RenderResourceData::Shader: return create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data);
-		case RenderResourceData::Texture: return create_texture(_concrete_renderer, dynamic_data, *(TextureResourceData*)data.data);
-		case RenderResourceData::World: return create_world(_allocator, _concrete_renderer);
+		case RenderResourceData::Texture: {
+			auto texture_resource_data = (TextureResourceData*)data.data;
+			auto texture_bits = memory::pointer_add(dynamic_data, texture_resource_data->texture_data_dynamic_data_offset);
+			return create_texture(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits);
+		}
+		case RenderResourceData::World: {
+			return create_world(_allocator, create_texture(_concrete_renderer, _allocator, image::RGBA, _resoultion, 0), _concrete_renderer);
+		}
 		default: assert(!"Unknown render resource type"); return RenderResource();
 	}
 }
@@ -210,7 +220,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			render_world(_concrete_renderer, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).object, rwd.view);
+			render_world(_concrete_renderer, _resoultion, _resource_lut, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).object, rwd.view);
 		}
 		break;
 
@@ -274,15 +284,17 @@ void Renderer::execute_command(const RendererCommand& command)
 
 	case RendererCommand::DrawableGeometryReflection:
 		{
-			_concrete_renderer.update_geometry(*(DrawableGeometryReflectionData*)command.data, command.dynamic_data);
+			auto drawable_geometry_update_data = (DrawableGeometryReflectionData*)command.data;
+			auto drawable = (RenderDrawable*)_resource_lut.lookup(drawable_geometry_update_data->drawable).object;
+			_concrete_renderer.update_geometry(*drawable, command.dynamic_data, drawable_geometry_update_data->size);
 		}
 		break;
 
 	case RendererCommand::CombineRenderedWorlds:
 		{
-			_concrete_renderer.unset_render_target();
+			_concrete_renderer.unset_render_target(_resoultion);
 			_concrete_renderer.clear();
-			_concrete_renderer.combine_rendered_worlds(_rendered_worlds);
+			_concrete_renderer.combine_rendered_worlds(_fullscreen_rendering_quad, _rendered_worlds_combining_shader, _rendered_worlds);
 			array::clear(_rendered_worlds);
 			flip(*_context);
 		}
@@ -294,7 +306,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			auto& render_world = *(RenderWorld*)_resource_lut.lookup(unspawn_data.world).object;
 			auto& render_drawable = *(RenderDrawable*)_resource_lut.lookup(unspawn_data.drawable).object;
 			render_world.remove_drawable(&render_drawable);
-			_concrete_renderer.unload_geometry(_resource_lut.lookup(render_drawable.geometry));
+			_concrete_renderer.destroy_geometry(_resource_lut.lookup(render_drawable.geometry));
 			array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return unspawn_data.drawable == rro.handle; });
 			_resource_lut.free(unspawn_data.drawable);
 			_allocator.deallocate(&render_drawable);
@@ -327,6 +339,28 @@ void Renderer::thread()
 	_context->make_current_for_calling_thread();
 	_concrete_renderer.initialize_thread();
 	_active = true;
+
+	{
+		static const float fullscreen_quad_data[] = {
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+		};
+
+		_fullscreen_rendering_quad = _concrete_renderer.create_geometry((void*)fullscreen_quad_data, sizeof(fullscreen_quad_data));
+	}
+
+	{
+		auto shader_source = file::load("rendered_world_combining.shader", _allocator);
+		auto split_shader = shader_utils::split_shader(shader_source, _allocator);
+		_rendered_worlds_combining_shader = _concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
+		_allocator.deallocate(shader_source.data);
+		_allocator.deallocate(split_shader.vertex_source);
+		_allocator.deallocate(split_shader.fragment_source);
+	}
 
 	while (_active)
 	{
@@ -368,12 +402,12 @@ RenderResource create_drawable(Allocator& allocator, const RenderResourceLookupT
 	return RenderResource(&drawable);
 }
 
-RenderResource create_geometry(IConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
+RenderResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
 {
-	return concrete_renderer.load_geometry(data, dynamic_data);
+	return concrete_renderer.create_geometry(dynamic_data, data.size);
 }
 
-RenderUniform create_uniform(IConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data)
+RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data)
 {
 	auto location = concrete_renderer.get_uniform_location(shader, uniform_data.name);
 	auto name_hash = hash_str(uniform_data.name);
@@ -384,7 +418,7 @@ RenderUniform create_uniform(IConcreteRenderer& concrete_renderer, RenderResourc
 		return RenderUniform(uniform_data.type, name_hash, location, uniform_data.automatic_value);
 }
 
-RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
+RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
 {
 	auto material = allocator.construct<RenderMaterial>(allocator, data.shader);
 	auto shader = lookup_table.lookup(data.shader);
@@ -404,26 +438,33 @@ RenderResource create_material(Allocator& allocator, IConcreteRenderer& concrete
 	return RenderResource(material);
 }
 
-RenderResource create_render_target(IConcreteRenderer& concrete_renderer, Array<RenderTarget*>& render_targets)
+RenderResource create_render_target(ConcreteRenderer& concrete_renderer, Allocator& allocator, RenderResource texture, Array<RenderTarget*>& render_targets)
 {
-	auto render_target = concrete_renderer.create_render_target();
+	auto render_target = concrete_renderer.create_render_target(allocator, (RenderTexture*)texture.object);
 	array::push_back(render_targets, render_target);
 	return RenderResource(render_target);
 }
 
-RenderResource create_shader(IConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
+RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
 {
-	return concrete_renderer.load_shader(data, dynamic_data);
+	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
+	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
+	return concrete_renderer.create_shader(vertex_source, fragment_source);
 }
 
-RenderResource create_texture(IConcreteRenderer& concrete_renderer, void* dynamic_data, const TextureResourceData& data)
+RenderResource create_texture(ConcreteRenderer& concrete_renderer, Allocator& allocator, image::PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
-	return RenderResource(concrete_renderer.load_texture(data, dynamic_data));
+	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
+	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
+	render_texture->pixel_format = pixel_format;
+	render_texture->render_handle = texture_resource;
+	render_texture->resolution = resolution;
+	return RenderResource(render_texture);
 }
 
-RenderResource create_world(Allocator& allocator, IConcreteRenderer& concrete_renderer)
+RenderResource create_world(Allocator& allocator, RenderResource texture, ConcreteRenderer& concrete_renderer)
 {
-	return RenderResource(allocator.construct<RenderWorld>(allocator, *concrete_renderer.create_render_target()));
+	return RenderResource(allocator.construct<RenderWorld>(allocator, *concrete_renderer.create_render_target(allocator, (RenderTexture*)texture.object)));
 }
 
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data)
@@ -471,18 +512,20 @@ void raise_fence(RenderFence& fence)
 	fence.fence_processed.notify_all();
 }
 
-void render_world(IConcreteRenderer& concrete_renderer, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
+void render_world(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
 {
 	render_world.sort();
-	concrete_renderer.set_render_target(render_world.render_target());
+	concrete_renderer.set_render_target(resolution, render_world.render_target().target_handle);
 	concrete_renderer.clear();
-	concrete_renderer.draw(view, render_world);
+	concrete_renderer.draw(view, render_world, resolution, resource_lut);
 	array::push_back(rendered_worlds, &render_world);
 }
 
-RenderResource update_shader(IConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data)
+RenderResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data)
 {
-	return concrete_renderer.update_shader(shader, data, dynamic_data);
+	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
+	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
+	return concrete_renderer.update_shader(shader, vertex_source, fragment_source);
 }
 
 } // implementation

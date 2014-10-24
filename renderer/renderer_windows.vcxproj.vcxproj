@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="renderer\iconcrete_renderer.h" />
+    <ClInclude Include="renderer\concrete_renderer.h" />
     <ClInclude Include="renderer\irenderer_context.h" />
     <ClInclude Include="renderer\render_material.h" />
     <ClInclude Include="renderer\renderer.h" />
