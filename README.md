@@ -36,7 +36,6 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - Prefer namespaces of functions which operate on structs
 - Prefer splitting things into separate arrays of similar data to monolithic things
 - Prefer enums to bools
-- Skip references, use only pointers
 - Templates are only used for collection classes.
 
 
