@@ -25,6 +25,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 [] Convert window
 [] Convert callstack capturer to struct of function ptrs
 [] Convert render_material
+    [] Have uniforms on main thread as well and keep them in a flat index-based list in renderer?
 [] Convert resource_lut
 [] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 

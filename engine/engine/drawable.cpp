@@ -10,7 +10,8 @@ namespace bowtie
 ////////////////////////////////
 // Public interface.
 
-Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material, int depth) : _allocator(allocator), _children(_allocator), _depth(depth), _geometry(geometry),
+Drawable::Drawable(Allocator& allocator, IDrawableGeometry& geometry, Material* material, int depth) : _allocator(allocator), _children(array::create<Drawable*>(allocator)
+), _depth(depth), _geometry(geometry),
 	 _pivot(0, 0), _parent(nullptr), _position(0, 0), _render_state_changed(false), _rotation(0.0f), _material(material)
 {
 }
@@ -23,6 +24,7 @@ Drawable::Drawable(const Drawable& other) : _allocator(other._allocator), _child
 Drawable::~Drawable()
 {
 	_allocator.destroy(&_geometry);
+	array::deinit(_children);
 }
 
 void Drawable::add_child(Drawable* child)

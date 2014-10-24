@@ -9,7 +9,6 @@
 #include <foundation/murmur_hash.h>
 #include <foundation/temp_allocator.h>
 #include <foundation/string_utils.h>
-#include <foundation/queue.h>
 #include "concrete_renderer.h"
 #include "render_material.h"
 #include "render_drawable.h"
@@ -47,9 +46,9 @@ RenderResource update_shader(ConcreteRenderer& concrete_renderer, const RenderRe
 // Public interface.
 
 Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table) :
-	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _resource_lut(render_resource_lookup_table), _command_queue(_allocator), _free_handles(_allocator),  _unprocessed_commands(_allocator),
-	_processed_memory(_allocator), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _shut_down(false), _resource_objects(_allocator),
-	_render_targets(_allocator), _rendered_worlds(_allocator)
+	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _resource_lut(render_resource_lookup_table), _command_queue(array::create<RendererCommand>(_allocator)), _free_handles(array::create<RenderResourceHandle>(_allocator)),
+	_unprocessed_commands(array::create<RendererCommand>(_allocator)), _processed_memory(array::create<void*>(_allocator)), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _shut_down(false),
+	_resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget*>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
 {
 	auto num_handles = RenderResourceLookupTable::num_handles;
 	array::set_capacity(_free_handles, num_handles);
@@ -74,14 +73,27 @@ Renderer::~Renderer()
 				_allocator.deallocate(rt->texture.object);
 				_allocator.deallocate(rt);
 			} break;
-		case RenderResourceData::RenderMaterial:
-			_allocator.destroy((RenderMaterial*)object);
-			break;
+		case RenderResourceData::RenderMaterial: {
+			auto rm = (RenderMaterial*)object;
+			render_material::deinit(*rm, _allocator);
+			_allocator.deallocate(rm);
+		} break;
+			
+			
+			
 		default:
 			_allocator.deallocate(object);
 			break;
 		}
 	}
+	
+	array::deinit(_free_handles);
+	array::deinit(_command_queue);
+	array::deinit(_unprocessed_commands);
+	array::deinit(_processed_memory);
+	array::deinit(_resource_objects);
+	array::deinit(_render_targets);
+	array::deinit(_rendered_worlds);
 }
 
 void Renderer::add_renderer_command(const RendererCommand& command)
@@ -318,7 +330,15 @@ void Renderer::execute_command(const RendererCommand& command)
 		{
 			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
 			auto& material = *(RenderMaterial*)_resource_lut.lookup(set_uniform_value_data.material).object;
-			material.set_uniform_value(_allocator, set_uniform_value_data.uniform_name, command.dynamic_data);
+			switch (set_uniform_value_data.type)
+			{
+			case uniform::Float:
+				render_material::set_uniform_float_value(material, _allocator, set_uniform_value_data.uniform_name, *(float*)command.dynamic_data);
+				break;
+			default:
+				assert(!"Unknown uniform type");
+				break;
+			}
 		}
 		break;
 
@@ -421,7 +441,8 @@ RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource
 
 RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResourceLookupTable& lookup_table, const MaterialResourceData& data)
 {
-	auto material = allocator.construct<RenderMaterial>(allocator, data.shader);
+	auto material = (RenderMaterial*)allocator.allocate(sizeof(RenderMaterial));
+	render_material::init(*material, allocator, data.shader);
 	auto shader = lookup_table.lookup(data.shader);
 	auto uniforms_data = (UniformResourceData*)dynamic_data;
 	
@@ -431,9 +452,27 @@ RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_
 		auto uniform = create_uniform(concrete_renderer, shader, uniform_data);
 
 		if (uniform_data.value != nullptr)
-			render_uniform::set_value(uniform, allocator, uniform_data.value);
+		{
+			switch (uniform_data.type)
+			{
+			case uniform::Float:
+				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(float));
+				break;
+			case uniform::Texture1:
+			case uniform::Texture2:
+			case uniform::Texture3:
+				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(unsigned));
+				break;
+			case uniform::Vec4:
+				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(Vector4));
+				break;
+			default:
+				assert(!"Unkonwn uniform type.");
+				break;
+			}
+		}
 
-		material->add_uniform(uniform);
+		render_material::add_uniform(*material, uniform);
 	}
 
 	return RenderResource(material);

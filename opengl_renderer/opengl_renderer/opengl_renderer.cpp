@@ -212,14 +212,14 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
 	auto model_view_matrix = drawable.model * view_matrix;
 	auto& material = *(RenderMaterial*)lookup_table.lookup(drawable.material).object;
-	auto shader = lookup_table.lookup(material.shader()).handle;
+	auto shader = lookup_table.lookup(material.shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
 	auto view_resolution_ratio = view.rect().size.y / resolution.y;
 	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
 
-	auto uniforms = material.uniforms();
+	auto uniforms = material.uniforms;
 	for (unsigned i = 0; i < array::size(uniforms); ++i)
 	{
 		const auto& uniform = uniforms[i];

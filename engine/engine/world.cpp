@@ -14,7 +14,7 @@ namespace bowtie
 {
 
 World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
-	_allocator(allocator), _drawables(allocator), _render_interface(render_interface), _resource_manager(resource_manager)
+	_allocator(allocator), _drawables(array::create<Drawable*>(allocator)), _render_interface(render_interface), _resource_manager(resource_manager)
 {
 }
 
@@ -22,6 +22,8 @@ World::~World()
 {
 	for (unsigned i = 0; i < array::size(_drawables); ++i)
 		_allocator.destroy(_drawables[i]);
+
+	array::deinit(_drawables);
 }
 
 void World::set_render_handle(RenderResourceHandle render_handle)

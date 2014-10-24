@@ -15,31 +15,13 @@ namespace bowtie
 	/// Dynamically resizable array of POD objects.
 	template<typename T> struct Array
 	{
-		Array(Allocator &a);
-		~Array();
-		Array(const Array &other);
-		Array &operator=(const Array &other);
-		
 		T &operator[](uint32_t i);
 		const T &operator[](uint32_t i) const;
 
-		Allocator *_allocator;
+		Allocator* _allocator;
 		uint32_t _size;
 		uint32_t _capacity;
-		T *_data;
-	};
-
-	/// A double-ended queue/ring buffer.
-	template <typename T> struct Queue
-	{
-		Queue(Allocator &a);
-
-		T &operator[](uint32_t i);
-		const T &operator[](uint32_t i) const;
-
-		Array<T> _data;
-		uint32_t _size;
-		uint32_t _offset;
+		T* _data;
 	};
 
 	/// Hash from an uint64_t to POD objects. If you want to use a generic key
@@ -48,6 +30,7 @@ namespace bowtie
 	{
 	public:
 		Hash(Allocator &a);
+		~Hash();
 		
 		struct Entry {
 			uint64_t key;

@@ -27,7 +27,7 @@ inline unsigned strlen32(const char* str)
 
 inline Array<char*> split(Allocator& allocator, const char* str, char delimiter)
 {
-	Array<char*> words(allocator);
+	auto words = array::create<char*>(allocator);
 	auto len_str = strlen(str);
 
 	if (len_str == 0)

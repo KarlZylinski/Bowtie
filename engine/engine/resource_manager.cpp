@@ -126,7 +126,7 @@ Material& ResourceManager::load_material(const char* filename)
 	auto& shader = load_shader(shader_filename);
 	auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
-	Array<UniformResourceData> uniforms(_allocator);
+	auto uniforms = array::create<UniformResourceData>(_allocator);
 
 	for(unsigned i = 0; i < uniforms_jzon->size; ++i)
 	{
@@ -170,6 +170,7 @@ Material& ResourceManager::load_material(const char* filename)
 			}
 		}
 
+		array::deinit(split_uniform);
 		array::push_back(uniforms, uniform);
 	}
 	
@@ -177,6 +178,7 @@ Material& ResourceManager::load_material(const char* filename)
 	auto uniform_data_size = unsigned(num_uniforms * sizeof(UniformResourceData));
 	auto uniforms_data = _allocator.allocate(uniform_data_size);
 	memcpy(uniforms_data, &uniforms[0], uniform_data_size);
+	array::deinit(uniforms);
 	
 	MaterialResourceData mrd;
 	mrd.num_uniforms = num_uniforms;

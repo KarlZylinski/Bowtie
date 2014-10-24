@@ -25,6 +25,7 @@ int set_uniform_value(lua_State* lua)
 	auto command = s_render_interface->create_command(RendererCommand::SetUniformValue);
 	SetUniformValueData& suvd = *(SetUniformValueData*)command.data;
 	suvd.material = material->render_handle;
+	suvd.type = uniform::Float;
 	suvd.uniform_name = name;
 	command.data = &suvd;
 	s_render_interface->dispatch(command, &value, sizeof(float));

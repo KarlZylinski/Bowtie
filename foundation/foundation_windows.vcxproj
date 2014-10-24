@@ -31,7 +31,6 @@
     <ClInclude Include="foundation\memory.h" />
     <ClInclude Include="foundation\memory_types.h" />
     <ClInclude Include="foundation\murmur_hash.h" />
-    <ClInclude Include="foundation\queue.h" />
     <ClInclude Include="foundation\string_stream.h" />
     <ClInclude Include="foundation\string_utils.h" />
     <ClInclude Include="foundation\temp_allocator.h" />

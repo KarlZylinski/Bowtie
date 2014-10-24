@@ -9,6 +9,11 @@
 namespace bowtie {
 	namespace array
 	{
+		template<typename T> void init(Array<T>& a, Allocator& allocator);
+		template<typename T> Array<T> create(Allocator& allocator);
+		template<typename T> void copy(Array<T>& from, Array<T>& to);
+		template<typename T> void deinit(Array<T>& a);
+
 		/// The number of elements in the array.
 		template<typename T> uint32_t size(const Array<T> &a) ;
 		/// Returns true if there are any elements in the array.
@@ -53,6 +58,32 @@ namespace bowtie {
 
 	namespace array
 	{
+		template<typename T> inline void init(Array<T>& a, Allocator& allocator)
+		{
+			memset(&a, 0, sizeof(Array<T>));
+			a._allocator = &allocator;
+		}
+		
+		template<typename T> inline Array<T> create(Allocator& allocator)
+		{
+			Array<T> a = {0};
+			a._allocator = &allocator;
+			return a;
+		}
+
+		template<typename T> inline void copy(Array<T>& from, Array<T>& to)
+		{
+			const uint32_t n = from._size;
+			array::set_capacity(to, n);
+			memcpy(from._data, to._data, sizeof(T) * n);
+			to._size = n;
+		}
+
+		template<typename T> inline void deinit(Array<T>& a)
+		{
+			a._allocator->deallocate(a._data);
+		}
+
 		template<typename T> inline uint32_t size(const Array<T> &a) 		{return a._size;}
 		template<typename T> inline bool any(const Array<T> &a) 			{return a._size != 0;}
 		template<typename T> inline bool empty(const Array<T> &a) 			{return a._size == 0;}
@@ -159,33 +190,6 @@ namespace bowtie {
 		{
 			a._size--;
 		}
-	}
-
-	template <typename T>
-	inline Array<T>::Array(Allocator &allocator) : _allocator(&allocator), _size(0), _capacity(0), _data(0) {}
-
-	template <typename T>
-	inline Array<T>::~Array()
-	{
-		_allocator->deallocate(_data);
-	}
-
-	template <typename T>
-	Array<T>::Array(const Array<T> &other) : _allocator(other._allocator), _size(0), _capacity(0), _data(0)
-	{
-		const uint32_t n = other._size;
-		array::set_capacity(*this, n);
-		memcpy(_data, other._data, sizeof(T) * n);
-		_size = n;
-	}
-
-	template <typename T>
-	Array<T> &Array<T>::operator=(const Array<T> &other)
-	{
-		const uint32_t n = other._size;
-		array::resize(*this, n);
-		memcpy(_data, other._data, sizeof(T)*n);
-		return *this;
 	}
 
 	template <typename T>

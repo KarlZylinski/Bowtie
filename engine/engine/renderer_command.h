@@ -2,6 +2,7 @@
 
 #include "view.h"
 #include "render_resource_handle.h"
+#include "uniform.h"
 #include <foundation/vector2u.h>
 #include <foundation/vector4.h>
 #include <stdint.h>
@@ -58,6 +59,7 @@ struct UnspawnData
 struct SetUniformValueData
 {
 	RenderResourceHandle material;
+	uniform::Type type;
 	uint64_t uniform_name;
 };
 

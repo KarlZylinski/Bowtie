@@ -342,6 +342,11 @@ namespace bowtie {
 
 
 	template <typename T> Hash<T>::Hash(Allocator &a) :
-		_hash(a), _data(a)
+		_hash(array::create<uint32_t>(a)), _data(array::create<Entry>(a))
 	{}
+
+	template <typename T> Hash<T>::~Hash()
+	{
+		array::deinit(_data);
+	}
 }
