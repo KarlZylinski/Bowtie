@@ -7,27 +7,27 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 ## The big C-style refactor
 
 - [x] Remove render target ctor and free texture in renderer.cpp
-    - [] During rw cleanup, look at rw dstr and the texture stuff there.
+    - [ ] During rw cleanup, look at rw dstr and the texture stuff there.
 
-- [] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool in world to avoid fragmentation.
-    - [] Figure out how drawable and its "behaviors" can be split like so.
+- [ ] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool in world to avoid fragmentation.
+    - [ ] Figure out how drawable and its "behaviors" can be split like so.
 
-- [] Turn engine into namespace of functions which operates on engine struct.
-- [] Turn font into namespace of functions which operates on font struct.
-- [] Turn render_interface into namespace of functions which operates on render_interface struct.
-- [] Rename resource_manager to resource_store and have functions which operate on it in namespace
-    - [] Optionally remove load functions and add auto-load enum
-- [] Convert view
-- [] Array -> Vector
-- [] Rewrite allocators?
-- [] Convert game
-- [] Convert window
+- [ ] Turn engine into namespace of functions which operates on engine struct.
+- [ ] Turn font into namespace of functions which operates on font struct.
+- [ ] Turn render_interface into namespace of functions which operates on render_interface struct.
+- [ ] Rename resource_manager to resource_store and have functions which operate on it in namespace
+    - [ ] Optionally remove load functions and add auto-load enum
+- [ ] Convert view
+- [ ] Array -> Vector
+- [ ] Rewrite allocators?
+- [ ] Convert game
+- [ ] Convert window
 - [x] Convert render_world
-- [] Convert callstack capturer to struct of function ptrs
+- [ ] Convert callstack capturer to struct of function ptrs
 - [x] Convert render_material
-    - [] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
-- [] Convert resource_lut
-- [] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
+    - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
+- [ ] Convert resource_lut
+- [ ] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 
 
 ## Style
@@ -42,8 +42,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 
 ## Todo
 
-- [] Deffered / heightmap lighting
-- [] Replace PNG with homebrew DDS loader
+- [ ] Deffered / heightmap lighting
+- [ ] Replace PNG with homebrew DDS loader
 
 
 ## Old todo
