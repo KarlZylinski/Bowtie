@@ -7,7 +7,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 ## The big C-style refactor
 
 - [x] Remove render target ctor and free texture in renderer.cpp
-    - [ ] During rw cleanup, look at rw dstr and the texture stuff there.
+    - [x] During rw cleanup, look at rw dstr and the texture stuff there.
 
 - [ ] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool in world to avoid fragmentation.
     - [ ] Figure out how drawable and its "behaviors" can be split like so.
@@ -43,6 +43,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 
 - [ ] Deffered / heightmap lighting
 - [ ] Replace PNG with homebrew DDS loader
+- [ ] Instead of sending geometry for drawables, generate per frame. Do some batching if possible.
 
 
 ## Old todo
