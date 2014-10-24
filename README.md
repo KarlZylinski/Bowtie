@@ -6,8 +6,13 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 
 ## The big C-style refactor
 
+[x] Remove render target ctor and free texture in renderer.cpp
+    [] During rw cleanup, look at rw dstr and the texture stuff there.
+
 [] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool to avoid fragmentation.
     [] Figure out how drawable and its "behaviors" can be split like so.
+[] Convert render_world. In here store the different drawable data and drawables as indices into these. Keep an array of free entries.
+
 [] Turn engine into namespace of functions which operates on engine struct.
 [] Turn font into namespace of functions which operates on font struct.
 [] Turn render_interface into namespace of functions which operates on render_interface struct.
@@ -21,8 +26,6 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 [] Convert callstack capturer to struct of function ptrs
 [] Convert render_material
 [] Convert resource_lut
-[] Remove render target ctor and free texture in renderer.cpp
-[] Convert render_world. In here store the different drawable data and drawables as indices into these. Keep an array of free entries.
 [] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 
 ## Style

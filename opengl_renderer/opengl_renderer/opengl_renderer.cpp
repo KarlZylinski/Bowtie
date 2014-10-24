@@ -50,7 +50,7 @@ void clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void combine_rendered_worlds(RenderResource& fullscreen_rendering_quad, RenderResource& rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds)
+void combine_rendered_worlds(RenderResource fullscreen_rendering_quad, RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds)
 {
 	auto shader = rendered_worlds_combining_shader.handle;
 	auto quad = fullscreen_rendering_quad.handle;
@@ -65,7 +65,7 @@ void combine_rendered_worlds(RenderResource& fullscreen_rendering_quad, RenderRe
 		auto& rt = rw.render_target();
 
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, rt.render_texture->render_handle.handle);
+		glBindTexture(GL_TEXTURE_2D, ((RenderTexture*)rt.texture.object)->render_handle.handle);
 		glUniform1i(texture_sampler_id, i);
 	}
 
@@ -194,15 +194,17 @@ void destroy_geometry(RenderResource handle)
 	glDeleteBuffers(1, &handle.handle);
 }
 
-void destroy_texture(const RenderTexture& texture)
+void destroy_texture(RenderResource texture)
 {
-	glDeleteTextures(1, &texture.render_handle.handle);
+	auto rt = (RenderTexture*)texture.object;
+	glDeleteTextures(1, &rt->render_handle.handle);
 }
 
-void destroy_render_target(const RenderTarget& target)
+void destroy_render_target(RenderResource render_target)
 {
-	destroy_texture(*target.render_texture);
-	glDeleteFramebuffers(1, &target.target_handle.handle);
+	auto rt = (RenderTarget*)render_target.object;
+	destroy_texture(rt->texture);
+	glDeleteFramebuffers(1, &rt->handle.handle);
 }
 
 void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)

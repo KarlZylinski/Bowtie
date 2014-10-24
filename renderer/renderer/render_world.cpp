@@ -14,7 +14,8 @@ RenderWorld::RenderWorld(Allocator& allocator, RenderTarget& render_target) : _a
 
 RenderWorld::~RenderWorld()
 {
-	_allocator.destroy(&_render_target);
+	_allocator.deallocate(_render_target.texture.object);
+	_allocator.deallocate(&_render_target);
 }
 
 void RenderWorld::add_drawable(RenderDrawable* drawable)

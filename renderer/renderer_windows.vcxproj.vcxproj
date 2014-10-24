@@ -36,7 +36,6 @@
     <ClCompile Include="renderer\render_material.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\render_resource_lookup_table.cpp" />
-    <ClCompile Include="renderer\render_target.cpp" />
     <ClCompile Include="renderer\render_world.cpp" />
     <ClCompile Include="renderer\render_uniform.cpp" />
     <ClCompile Include="renderer\render_uniform_utils.cpp" />

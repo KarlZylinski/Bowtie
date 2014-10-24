@@ -70,9 +70,11 @@ Renderer::~Renderer()
 		case RenderResourceData::World:
 			_allocator.destroy((RenderWorld*)object);
 			break;
-		case RenderResourceData::RenderTarget:
-			_allocator.destroy((RenderTarget*)object);
-			break;
+		case RenderResourceData::RenderTarget: {
+				auto rt = (RenderTarget*)object;
+				_allocator.deallocate(rt->texture.object);
+				_allocator.deallocate(rt);
+			} break;
 		case RenderResourceData::RenderMaterial:
 			_allocator.destroy((RenderMaterial*)object);
 			break;
@@ -441,7 +443,9 @@ RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_
 RenderResource create_render_target(ConcreteRenderer& concrete_renderer, Allocator& allocator, RenderResource texture, Array<RenderTarget*>& render_targets)
 {
 	auto render_target_resource = concrete_renderer.create_render_target((RenderTexture*)texture.object);
-	auto render_target = allocator.construct<RenderTarget>(allocator, (RenderTexture*)texture.object, render_target_resource);
+	auto render_target = (RenderTarget*)allocator.allocate(sizeof(RenderTarget));
+	render_target->handle = render_target_resource;
+	render_target->texture = texture;
 	array::push_back(render_targets, render_target);
 	return RenderResource(render_target);
 }
@@ -516,7 +520,7 @@ void raise_fence(RenderFence& fence)
 void render_world(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const View& view)
 {
 	render_world.sort();
-	concrete_renderer.set_render_target(resolution, render_world.render_target().target_handle);
+	concrete_renderer.set_render_target(resolution, render_world.render_target().handle);
 	concrete_renderer.clear();
 	concrete_renderer.draw(view, render_world, resolution, resource_lut);
 	array::push_back(rendered_worlds, &render_world);

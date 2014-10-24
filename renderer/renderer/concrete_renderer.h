@@ -27,13 +27,13 @@ struct ConcreteRenderer
 	
 	// Resource management
 	RenderResource (*create_render_target)(RenderTexture* texture);
-	void (*destroy_render_target)(const RenderTarget& target);
+	void (*destroy_render_target)(RenderResource render_target);
 	unsigned (*get_uniform_location)(RenderResource shader, const char* name);
 	RenderResource (*create_geometry)(void* data, unsigned data_size);
 	void (*destroy_geometry)(RenderResource handle);
 	void (*update_geometry)(RenderDrawable& drawable, void* data, unsigned data_size);
 	RenderResource (*create_texture)(image::PixelFormat pf, const Vector2u& resolution, void* data);
-	void (*destroy_texture)(const RenderTexture& texture);
+	void (*destroy_texture)(RenderResource texture);
 	RenderResource (*create_shader)(const char* vertex_source, const char* fragment_source);
 	void (*destroy_shader)(RenderResource handle);
 	RenderResource (*update_shader)(const RenderResource& shader, const char* vertex_source, const char* fragment_source);
@@ -46,7 +46,7 @@ struct ConcreteRenderer
 	// Drawing
 	void (*clear)();
 	void (*draw)(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut);
-	void (*combine_rendered_worlds)(RenderResource& fullscreen_rendering_quad, RenderResource& rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds);
+	void (*combine_rendered_worlds)(RenderResource fullscreen_rendering_quad, RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds);
 };
 
 }
