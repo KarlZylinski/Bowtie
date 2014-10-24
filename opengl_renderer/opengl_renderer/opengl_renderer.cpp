@@ -97,7 +97,7 @@ RenderResource create_geometry(void* data, unsigned data_size)
 	return RenderResource(geometry_buffer);
 }
 
-RenderTarget* create_render_target(Allocator& allocator, RenderTexture* texture)
+RenderResource create_render_target(RenderTexture* texture)
 {
 	auto texture_id = texture->render_handle.handle;
 	glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -109,7 +109,7 @@ RenderTarget* create_render_target(Allocator& allocator, RenderTexture* texture)
 	GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, draw_buffers);
 
-	return allocator.construct<RenderTarget>(allocator, texture, RenderResource(fb));
+	return RenderResource(fb);
 }
 
 GLuint compile_glsl(const char* shader_source, GLenum shader_type)

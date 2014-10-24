@@ -26,7 +26,7 @@ struct ConcreteRenderer
 	void (*initialize_thread)();
 	
 	// Resource management
-	RenderTarget* (*create_render_target)(Allocator& allocator, RenderTexture* texture);
+	RenderResource (*create_render_target)(RenderTexture* texture);
 	void (*destroy_render_target)(const RenderTarget& target);
 	unsigned (*get_uniform_location)(RenderResource shader, const char* name);
 	RenderResource (*create_geometry)(void* data, unsigned data_size);
