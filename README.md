@@ -18,8 +18,6 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Rename resource_manager to resource_store and have functions which operate on it in namespace
     - [ ] Optionally remove load functions and add auto-load enum
 - [ ] Convert view
-- [ ] Array -> Vector
-- [ ] Rewrite allocators?
 - [ ] Convert game
 - [ ] Convert window
 - [x] Convert render_world
@@ -28,6 +26,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
 - [ ] Convert resource_lut
 - [ ] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
+- [ ] Rewrite allocators, throw out construct / destroy
+- [ ] Array -> Vector, also shape up Vector to match new allocator shizmajings
 
 
 ## Style
