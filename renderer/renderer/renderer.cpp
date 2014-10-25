@@ -31,8 +31,8 @@ RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_
 RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets);
 RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const RenderTexture& texture, Array<RenderTarget>& render_targets);
 RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
-RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, image::PixelFormat pixel_format, const Vector2u& resolution, void* data);
-RenderTexture create_texture(ConcreteRenderer& concrete_renderer, image::PixelFormat pixel_format, const Vector2u& resolution, void* data);
+RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data);
+RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data);
 RenderResource create_world(Allocator& allocator, const RenderTarget& render_target);
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
 void flip(IRendererContext& context);
@@ -203,7 +203,7 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 		case RenderResourceData::Drawable: return create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data.data);
 		case RenderResourceData::Geometry: return create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data);
 		case RenderResourceData::RenderMaterial: return create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data.data);
-		case RenderResourceData::RenderTarget: return create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, image::RGBA, _resolution, 0), _render_targets);
+		case RenderResourceData::RenderTarget: return create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets);
 		case RenderResourceData::Shader: return create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data);
 		case RenderResourceData::Texture: {
 			auto texture_resource_data = (TextureResourceData*)data.data;
@@ -211,7 +211,7 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 			return create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits);
 		}
 		case RenderResourceData::World: {
-			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, image::RGBA, _resolution, 0), _render_targets));
+			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets));
 		}
 		default: assert(!"Unknown render resource type"); return RenderResource();
 	}
@@ -499,7 +499,7 @@ RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_
 	return concrete_renderer.create_shader(vertex_source, fragment_source);
 }
 
-RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, image::PixelFormat pixel_format, const Vector2u& resolution, void* data)
+RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
 	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
 	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
@@ -507,7 +507,7 @@ RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allo
 	return RenderResource(render_texture);
 }
 
-RenderTexture create_texture(ConcreteRenderer& concrete_renderer, image::PixelFormat pixel_format, const Vector2u& resolution, void* data)
+RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
 	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
 	RenderTexture render_texture;

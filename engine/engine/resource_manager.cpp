@@ -273,7 +273,7 @@ Image& ResourceManager::load_image(const char* filename)
 	image->resolution = Vector2u(tex.width, tex.height);
 	image->data = tex.data;
 	image->data_size = tex.data_size;
-	image->pixel_format = image::RGBA;
+	image->pixel_format = PixelFormat::RGBA;
 	
 	add_resource(name, Resource(image));
 
@@ -313,7 +313,10 @@ Font& ResourceManager::load_font(const char* filename)
 	auto columns = jzon_get(jzon, "columns")->int_value;
 	auto rows = jzon_get(jzon, "rows")->int_value;
 
-	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
+	auto font = (Font*)_allocator.allocate(sizeof(Font));
+	font->columns = columns;
+	font->rows = rows;
+	font->texture = &load_texture(texture_filename);
 	add_resource(name, Resource(font));
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *font;

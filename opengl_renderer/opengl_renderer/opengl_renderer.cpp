@@ -24,18 +24,18 @@ struct GLPixelFormat
 	GLenum internal_format;
 };
 
-GLPixelFormat gl_pixel_format(image::PixelFormat pixel_format)
+GLPixelFormat gl_pixel_format(PixelFormat pixel_format)
 {
 	GLPixelFormat gl_pixel_format;
 	memset(&gl_pixel_format, 0, sizeof(GLPixelFormat));
 
 	switch (pixel_format)
 	{
-	case image::RGB:
+	case PixelFormat::RGB:
 		gl_pixel_format.format = GL_RGB;
 		gl_pixel_format.internal_format = GL_RGB;
 		break;
-	case image::RGBA:
+	case PixelFormat::RGBA:
 		gl_pixel_format.format = GL_RGBA;
 		gl_pixel_format.internal_format = GL_RGBA;
 		break;
@@ -179,7 +179,7 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 	return RenderResource(program);
 }
 
-GLuint create_texture_internal(image::PixelFormat pf, const Vector2u& resolution, void* data)
+GLuint create_texture_internal(PixelFormat pf, const Vector2u& resolution, void* data)
 {
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -191,7 +191,7 @@ GLuint create_texture_internal(image::PixelFormat pf, const Vector2u& resolution
 	return texture_id;
 }
 
-RenderResource create_texture(image::PixelFormat pf, const Vector2u& resolution, void* data)
+RenderResource create_texture(PixelFormat pf, const Vector2u& resolution, void* data)
 {
 	return RenderResource(create_texture_internal(pf, resolution, data));
 }

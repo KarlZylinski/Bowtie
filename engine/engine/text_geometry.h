@@ -6,7 +6,7 @@
 namespace bowtie
 {
 
-class Font;
+struct Font;
 class Allocator;
 class TextGeometry : public IDrawableGeometry
 {

@@ -8,7 +8,7 @@ namespace bowtie
 
 struct Vector4;
 class Drawable;
-class Font;
+struct Font;
 struct Rect;
 class RenderInterface;
 class ResourceManager;

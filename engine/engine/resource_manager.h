@@ -20,7 +20,7 @@ struct Texture;
 struct Image;
 struct Shader;
 class Sprite;
-class Font;
+struct Font;
 class ResourceManager
 {
 public:

@@ -80,7 +80,7 @@ void TextGeometry::set_text(const char* text)
 
 const Texture* TextGeometry::texture() const
 {
-	return &_font.texture();
+	return _font.texture;
 }
 
 
@@ -100,12 +100,12 @@ float* update_geometry(Allocator& allocator, const Color& color, const Font& fon
 
 	auto data = (float*)allocator.allocate((unsigned)size_of_char_geometry * text_len);
 	
-	auto size = font.char_size();
+	auto size = font::char_size(font);
 	auto pos = Vector2u();
 	for (unsigned i = 0; i < text_len; ++i)
 	{
 		char c = text[i];
-		auto uv = font.char_uv(c);
+		auto uv = font::char_uv(font, c);
 
 		auto x = (float)pos.x;
 		auto y = (float)pos.y;

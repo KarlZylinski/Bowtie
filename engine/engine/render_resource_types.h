@@ -35,7 +35,7 @@ struct ShaderResourceData
 
 struct TextureResourceData
 {
-	image::PixelFormat pixel_format;
+	PixelFormat pixel_format;
 	unsigned texture_data_size;
 	unsigned texture_data_dynamic_data_offset;
 	Vector2u resolution;

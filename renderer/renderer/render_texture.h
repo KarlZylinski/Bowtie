@@ -9,7 +9,7 @@ namespace bowtie
 
 struct RenderTexture
 {
-	image::PixelFormat pixel_format;
+	PixelFormat pixel_format;
 	RenderResource render_handle;
 	Vector2u resolution;
 };

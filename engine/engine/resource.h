@@ -6,7 +6,7 @@ namespace bowtie
 {
 
 class Drawable;
-class Font;
+struct Font;
 struct Image;
 struct Material;
 struct Shader;

@@ -14,7 +14,7 @@ struct Texture
 	
 	Image* image;
 
-	image::PixelFormat pixel_format;
+	PixelFormat pixel_format;
 	RenderResourceHandle render_handle;
 	Vector2u resolution;
 };

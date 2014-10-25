@@ -31,7 +31,7 @@ struct ConcreteRenderer
 	RenderResource (*create_geometry)(void* data, unsigned data_size);
 	void (*destroy_geometry)(RenderResource handle);
 	void (*update_geometry)(RenderDrawable& drawable, void* data, unsigned data_size);
-	RenderResource (*create_texture)(image::PixelFormat pf, const Vector2u& resolution, void* data);
+	RenderResource (*create_texture)(PixelFormat pf, const Vector2u& resolution, void* data);
 	void (*destroy_texture)(RenderResource texture);
 	RenderResource (*create_shader)(const char* vertex_source, const char* fragment_source);
 	void (*destroy_shader)(RenderResource handle);
