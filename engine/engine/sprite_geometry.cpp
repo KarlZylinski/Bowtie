@@ -16,7 +16,7 @@ void update_geometry(const Color& color, void* data, const Rect& rect, const Tex
 
 SpriteGeometry::SpriteGeometry(const Texture& texture) : _color(1, 1, 1, 1), _texture(&texture)
 {
-	_rect = Rect(Vector2(), Vector2((float)_texture->resolution.x, (float)_texture->resolution.y));
+	_rect = Rect(Vector2(), Vector2((float)_texture->image->resolution.x, (float)_texture->image->resolution.y));
 	update_geometry(_color, _data, _rect, *_texture);
 }
 
@@ -94,8 +94,8 @@ void update_geometry(const Color& color, void* data, const Rect& rect, const Tex
 	auto w = (float)rect.size.x;
 	auto h = (float)rect.size.y;
 
-	auto tex_w = (float)texture.resolution.x;
-	auto tex_h = (float)texture.resolution.y;
+	auto tex_w = (float)texture.image->resolution.x;
+	auto tex_h = (float)texture.image->resolution.y;
 
 	auto u_min = rect.position.x / tex_w;
 	auto v_min = rect.position.y / tex_h;

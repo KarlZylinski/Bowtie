@@ -45,7 +45,7 @@ public:
 			return nullptr;
 		
 		Resource resource = hash::get(_resources, name_with_type);
-		assert(resource.type != resource_type::NotInitialized && resource.object != 0 && "Tried to get uninitialized resource");
+		assert(resource.type != ResourceType::NotInitialized && resource.object != 0 && "Tried to get uninitialized resource");
 		return (T*)resource.object;
 	}
 	
@@ -75,7 +75,7 @@ private:
 	RenderInterface& _render_interface;
 
 	Hash<Resource> _resources;
-	Resource _default_resources[resource_type::NumResourceTypes];
+	Resource _default_resources[ResourceType::NumResourceTypes];
 
 	ResourceManager(const ResourceManager&);
 	ResourceManager& operator=(const ResourceManager&);

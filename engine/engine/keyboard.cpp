@@ -7,19 +7,8 @@
 namespace bowtie
 {
 
-Keyboard::Keyboard()
+namespace
 {
-	memset(_keys_held, 0, sizeof(_keys_held));
-	memset(_keys_pressed, 0, sizeof(_keys_pressed));
-	memset(_keys_released, 0, sizeof(_keys_released));
-}
-
-Keyboard Keyboard::from_previous_frame(const Keyboard& previous)
-{
-	auto keyboard = Keyboard();
-	memcpy(keyboard._keys_held, previous._keys_held, sizeof(keyboard._keys_held));
-	return keyboard;
-}
 
 struct NamedKey
 {
@@ -42,7 +31,12 @@ static const NamedKey named_keys[] =
 	{ "Tilde", keyboard::Tilde }
 };
 
-keyboard::Key Keyboard::key_from_string(const char* key_str)
+}
+
+namespace keyboard
+{
+
+keyboard::Key key_from_string(const char* key_str)
 {
 	for (unsigned i = 0; i < sizeof(named_keys) / sizeof(NamedKey); ++i)
 	{
@@ -54,34 +48,42 @@ keyboard::Key Keyboard::key_from_string(const char* key_str)
 	return keyboard::Up;
 }
 
-bool Keyboard::key_held(keyboard::Key key) const
+void reset_pressed_released(Keyboard& keyboard)
 {
-	return _keys_held[key];
+	memset(keyboard.keys_pressed, 0, sizeof(bool) * Keyboard::num_keys);
+	memset(keyboard.keys_released, 0, sizeof(bool) * Keyboard::num_keys);
 }
 
-bool Keyboard::key_pressed(keyboard::Key key) const
+bool key_held(const Keyboard& keyboard, keyboard::Key key)
 {
-	return _keys_pressed[key];
+	return keyboard.keys_held[key];
 }
 
-bool Keyboard::key_released(keyboard::Key key) const
+bool key_pressed(const Keyboard& keyboard, keyboard::Key key)
 {
-	return _keys_released[key];
+	return keyboard.keys_pressed[key];
 }
 
-void Keyboard::set_key_pressed(keyboard::Key key)
+bool key_released(const Keyboard& keyboard, keyboard::Key key)
 {
-	if (_keys_held[key] == true)
+	return keyboard.keys_released[key];
+}
+
+void set_key_pressed(Keyboard& keyboard, keyboard::Key key)
+{
+	if (keyboard.keys_held[key])
         return;
 
-    _keys_pressed[key] = true;
-    _keys_held[key] = true;
+    keyboard.keys_pressed[key] = true;
+    keyboard.keys_held[key] = true;
 }
 
-void Keyboard::set_key_released(keyboard::Key key)
+void set_key_released(Keyboard& keyboard, keyboard::Key key)
 {
-	_keys_released[key] = true;
-    _keys_held[key] = false;
+	keyboard.keys_released[key] = true;
+    keyboard.keys_held[key] = false;
 }
+
+} // namespace keyboard
 
 } // namespace bowtie

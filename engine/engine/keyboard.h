@@ -6,24 +6,23 @@
 namespace bowtie
 {
 
-class Keyboard
+struct Keyboard
 {
-public:
 	static const unsigned num_keys = 120;
-
-	Keyboard();
-	static Keyboard from_previous_frame(const Keyboard& previous);
-	static keyboard::Key key_from_string(const char* key_str);
-	bool key_held(keyboard::Key key) const;
-	bool key_pressed(keyboard::Key key) const;
-	bool key_released(keyboard::Key key) const;
-	void set_key_pressed(keyboard::Key key);
-	void set_key_released(keyboard::Key key);
-
-private:
-	bool _keys_held[num_keys];
-	bool _keys_pressed[num_keys];
-	bool _keys_released[num_keys];
+	bool keys_held[num_keys];
+	bool keys_pressed[num_keys];
+	bool keys_released[num_keys];
 };
+
+namespace keyboard
+{
+	keyboard::Key key_from_string(const char* key_str);
+	void reset_pressed_released(Keyboard& keyboard);
+	bool key_held(const Keyboard& keyboard, keyboard::Key key);
+	bool key_pressed(const Keyboard& keyboard, keyboard::Key key);
+	bool key_released(const Keyboard& keyboard, keyboard::Key key);
+	void set_key_pressed(Keyboard& keyboard, keyboard::Key key);
+	void set_key_released(Keyboard& keyboard, keyboard::Key key);
+}
 
 }

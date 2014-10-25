@@ -20,6 +20,7 @@ namespace bowtie
 Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this, render_interface), _render_interface(render_interface),
 	_resource_manager(allocator, render_interface), _time_elapsed_previous_frame(0.0f)
 {
+	memset(&_keyboard, 0, sizeof(Keyboard));
 	timer::start();
 }
 
@@ -48,12 +49,12 @@ const Keyboard& Engine::keyboard() const
 
 void Engine::key_pressed(keyboard::Key key)
 {
-	_keyboard.set_key_pressed(key);
+	keyboard::set_key_pressed(_keyboard, key);
 }
 
 void Engine::key_released(keyboard::Key key)
 {
-	_keyboard.set_key_released(key);
+	keyboard::set_key_released(_keyboard, key);
 }
 
 RenderInterface& Engine::render_interface()
@@ -93,10 +94,10 @@ void Engine::update()
 	
 	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
 
-	if (_keyboard.key_pressed(keyboard::F5))
+	if (keyboard::key_pressed(_keyboard, keyboard::F5))
 		_resource_manager.reload_all();
 
-	_keyboard = Keyboard::from_previous_frame(_keyboard);
+	keyboard::reset_pressed_released(_keyboard);
 }
 
 }

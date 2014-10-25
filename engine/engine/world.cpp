@@ -34,7 +34,7 @@ void World::set_render_handle(RenderResourceHandle render_handle)
 Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth)
 {
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
-	auto material = _resource_manager.load(resource_type::Material, "shared/default_resources/rect.material");
+	auto material = _resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material");
 	auto rectangle = _allocator.construct<Drawable>(_allocator, *geometry, (Material*)material.object, depth);
 	rectangle->set_position(rect.position);
 	array::push_back(_drawables, rectangle);
@@ -44,7 +44,7 @@ Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth
 
 Drawable* World::spawn_sprite(const char* sprite_name, int depth)
 {
-	auto sprite_prototype = _resource_manager.get<Drawable>(resource_type::Drawable, sprite_name);
+	auto sprite_prototype = _resource_manager.get<Drawable>(ResourceType::Drawable, sprite_name);
 	auto sprite = _allocator.construct<Drawable>(*sprite_prototype);
 	sprite->set_depth(depth);
 	array::push_back(_drawables, sprite);
@@ -134,7 +134,7 @@ Drawable* World::spawn_text(const Font& font, const char* text_str, int depth)
 {
 	auto text_geometry = _allocator.construct<TextGeometry>(font, _allocator);
 	text_geometry->set_text(text_str);
-	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry, (Material*)_resource_manager.get_default(resource_type::Material).object, depth);
+	auto text = _allocator.construct<Drawable>(_allocator, *text_geometry, (Material*)_resource_manager.get_default(ResourceType::Material).object, depth);
 	array::push_back(_drawables, text);
 	_render_interface.spawn(*this, *text, _resource_manager);
 	return text;

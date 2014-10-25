@@ -21,23 +21,17 @@ struct RendererCommand
 
 struct RenderWorldData
 {
-	RenderWorldData(const View& view, RenderResourceHandle& render_world) : view(view), render_world(render_world) {}
-
 	View view;
 	RenderResourceHandle render_world;
 };
 
 struct ResizeData
 {
-	ResizeData(const Vector2u& resolution) : resolution(resolution) {}
-
 	Vector2u resolution;
 };
 
 struct DrawableStateReflectionData
 {
-	DrawableStateReflectionData(const Matrix4& model) : model(model) {}
-
 	RenderResourceHandle drawble;
 	RenderResourceHandle material;
 	Matrix4 model;

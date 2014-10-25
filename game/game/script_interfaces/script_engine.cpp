@@ -51,19 +51,19 @@ int set_default_resource(lua_State* lua)
 
 int keyboard_pressed(lua_State* lua)
 {
-	lua_pushboolean(lua, s_engine->keyboard().key_pressed(Keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_pressed(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
 int keyboard_released(lua_State* lua)
 {
-	lua_pushboolean(lua, s_engine->keyboard().key_released(Keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_released(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
 int keyboard_held(lua_State* lua)
 {
-	lua_pushboolean(lua, s_engine->keyboard().key_held(Keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_held(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 

@@ -3,16 +3,9 @@
 namespace bowtie
 {
 
-namespace resource_type
-{
-
-enum ResourceType
+enum class ResourceType
 {
 	Shader, Image, Sprite, Texture, Font, Drawable, Material, NotInitialized, NumResourceTypes
 };
-
-}
-
-typedef resource_type::ResourceType ResourceType;
 
 }

@@ -51,7 +51,7 @@ RenderResourceHandle get_material_or_default(ResourceManager& resource_manager, 
 	if (material->render_handle != RenderResourceHandle::NotInitialized)
 		return material->render_handle;
 
-	return ((Material*)resource_manager.get_default(resource_type::Material).object)->render_handle;
+	return ((Material*)resource_manager.get_default(ResourceType::Material).object)->render_handle;
 }
 
 void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)

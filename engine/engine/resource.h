@@ -14,13 +14,13 @@ struct Texture;
 
 struct Resource
 {
-	Resource() : object(0), type(resource_type::NotInitialized) {}
-	explicit Resource(Shader* t) : object(t), type(resource_type::Shader) {}
-	explicit Resource(Material* i) : object(i), type(resource_type::Material) {}
-	explicit Resource(Texture* t) : object(t), type(resource_type::Texture) {}
-	explicit Resource(Image* i) : object(i), type(resource_type::Image) {}
-	explicit Resource(Drawable* d) : object(d), type(resource_type::Drawable) {}
-	explicit Resource(Font* f) : object(f),  type(resource_type::Font) {}
+	Resource() : object(0), type(ResourceType::NotInitialized) {}
+	explicit Resource(Shader* t) : object(t), type(ResourceType::Shader) {}
+	explicit Resource(Material* i) : object(i), type(ResourceType::Material) {}
+	explicit Resource(Texture* t) : object(t), type(ResourceType::Texture) {}
+	explicit Resource(Image* i) : object(i), type(ResourceType::Image) {}
+	explicit Resource(Drawable* d) : object(d), type(ResourceType::Drawable) {}
+	explicit Resource(Font* f) : object(f),  type(ResourceType::Font) {}
 
 	ResourceType type;
 	void* object;
