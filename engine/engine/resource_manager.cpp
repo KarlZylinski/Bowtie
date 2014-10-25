@@ -116,7 +116,9 @@ Material& ResourceManager::load_material(const char* filename)
 	if (existing.object != nullptr)
 		return *(Material*)existing.object;
 
-	LoadedFile file = file::load(filename, _allocator);
+	auto material_file_option = file::load(filename, _allocator);
+	assert(material_file_option.is_some && "Failed loading material.");
+	auto& file = material_file_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator); 
 	assert(jzon_result.success && "Failed to parse font");
 	_allocator.deallocate(file.data);
@@ -219,7 +221,9 @@ template<typename T> struct RenderResourcePackage
 
 RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& allocator, const char* filename)
 {
-	auto shader_source = file::load(filename, allocator);
+	auto shader_source_option = file::load(filename, allocator);
+	assert(shader_source_option.is_some && "Failed loading shader source");
+	auto& shader_source = shader_source_option.value;
 	auto split_shader = shader_utils::split_shader(shader_source, allocator);
 	allocator.deallocate(shader_source.data);
 	
@@ -298,7 +302,9 @@ Font& ResourceManager::load_font(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 	
-	LoadedFile file = file::load(filename, _allocator);
+	auto font_option = file::load(filename, _allocator);
+	assert(font_option.is_some && "Failed loading font");
+	auto& file = font_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
 	_allocator.deallocate(file.data);
@@ -321,7 +327,9 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 	if (existing != nullptr)
 		return *existing;
 
-	LoadedFile file = file::load(filename, _allocator);
+	auto sprite_option = file::load(filename, _allocator);
+	assert(sprite_option.is_some && "Failed loading sprite.");
+	auto file = sprite_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
 	auto jzon = jzon_result.output;

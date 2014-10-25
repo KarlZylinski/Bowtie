@@ -10,7 +10,7 @@ namespace bowtie
 namespace file
 {
 
-LoadedFile load(const char* filename, Allocator& allocator)
+Option<LoadedFile> load(const char* filename, Allocator& allocator)
 {
 	FILE* fp;
 	size_t filesize;
@@ -22,14 +22,17 @@ LoadedFile load(const char* filename, Allocator& allocator)
 
 	fp = fopen(full_filename, "rb");
 
-	assert(fp);
+	if (!fp)
+		return option::none<LoadedFile>();
 
 	fseek(fp, 0, SEEK_END);
 	filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
 	data = (unsigned char*)allocator.allocate(unsigned(filesize) + 1);
-	assert(data);
+
+	if (!data)
+		return option::none<LoadedFile>();
 
 	fread(data, 1, filesize, fp);
 	data[filesize] = 0;
@@ -40,7 +43,7 @@ LoadedFile load(const char* filename, Allocator& allocator)
 	lf.data = data;
 	lf.size = (unsigned)filesize + 1;
 
-	return lf;
+	return option::some(lf);
 }
 
 }

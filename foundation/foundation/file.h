@@ -1,5 +1,7 @@
 #pragma once
 
+#include "option.h"
+
 namespace bowtie
 {
 
@@ -14,7 +16,7 @@ struct LoadedFile
 namespace file
 {
 
-LoadedFile load(const char* filename, Allocator& allocator);
+Option<LoadedFile> load(const char* filename, Allocator& allocator);
 
 }
 }

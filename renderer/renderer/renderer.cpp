@@ -370,7 +370,9 @@ void Renderer::thread()
 	}
 
 	{
-		auto shader_source = file::load("rendered_world_combining.shader", _allocator);
+		auto shader_source_option = file::load("rendered_world_combining.shader", _allocator);
+		assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
+		auto& shader_source = shader_source_option.value;
 		auto split_shader = shader_utils::split_shader(shader_source, _allocator);
 		_rendered_worlds_combining_shader = _concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
 		_allocator.deallocate(shader_source.data);

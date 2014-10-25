@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <cassert>
 
 #include <foundation/file.h>
 #include <foundation/memory.h>
@@ -501,7 +502,9 @@ int decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width,
 
 UncompressedTexture load(const char* filename, Allocator& allocator)
 {
-	auto png_file = file::load(filename, allocator);
+	auto png_file_option = file::load(filename, allocator);
+	assert(png_file_option.is_some && "Failed loading texture");
+	auto& png_file = png_file_option.value;
 	std::vector<unsigned char> decoded_png;
 	unsigned long width, height;
 	decodePNG(decoded_png, width, height, png_file.data, png_file.size);
