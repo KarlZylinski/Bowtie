@@ -9,7 +9,7 @@
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
 #include <renderer/render_world.h>
-#include <renderer/render_resource_lookup_table.h>
+#include <renderer/render_resource_table.h>
 #include "gl3w.h"
 
 namespace bowtie
@@ -218,12 +218,12 @@ void destroy_render_target(RenderResource render_target)
 	destroy_render_target_internal(*(RenderTarget*)render_target.object);
 }
 
-void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
+void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
 	auto model_view_matrix = drawable.model * view_matrix;
-	auto& material = *(RenderMaterial*)lookup_table.lookup(drawable.material).object;
-	auto shader = lookup_table.lookup(material.shader).handle;
+	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, drawable.material).object;
+	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
@@ -276,7 +276,7 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 		{
 			glActiveTexture(GL_TEXTURE0);
 			auto texture_handle = *(RenderResourceHandle*)value;
-			auto texture = *(RenderTexture*)lookup_table.lookup(texture_handle).object;
+			auto texture = *(RenderTexture*)render_resource_table::lookup(resource_table, texture_handle).object;
 			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : texture.render_handle.handle);
 			glUniform1i(uniform.location, 0);
 		} break;
@@ -322,14 +322,14 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 	glDisableVertexAttribArray(0);
 }
 
-void draw(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut)
+void draw(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
 {
 	auto view_matrix = view.view();
 	auto view_projection_matrix = view_matrix * view.projection();
 	auto& drawables = render_world.drawables;
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)
-		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawables[i], resource_lut);
+		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawables[i], resource_table);
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)

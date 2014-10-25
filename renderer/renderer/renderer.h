@@ -10,7 +10,7 @@
 #include <engine/render_resource_types.h>
 #include <foundation/collection_types.h>
 
-#include "render_resource_lookup_table.h"
+#include "render_resource_table.h"
 #include "render_resource.h"
 #include "irenderer_context.h"
 #include "render_world.h"
@@ -34,7 +34,7 @@ struct RendererResourceObject
 class Renderer : public IRenderer
 {
 public:
-	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator, RenderResourceLookupTable& render_resource_lookup_table);
+	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
 	~Renderer();
 
 	typedef std::function<RenderResource(RenderResourceHandle)> LookupResourceFunction;
@@ -71,7 +71,7 @@ private:
 	std::mutex _processed_memory_mutex;
 	RenderInterface _render_interface;
 	Vector2u _resolution;
-	RenderResourceLookupTable& _resource_lut;
+	RenderResource _resource_table[render_resource_table::size];
 	Array<RenderTarget> _render_targets;
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
 	Array<RendererResourceObject> _resource_objects;

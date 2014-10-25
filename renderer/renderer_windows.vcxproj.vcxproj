@@ -24,7 +24,7 @@
     <ClInclude Include="renderer\render_material.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="renderer\render_drawable.h" />
-    <ClInclude Include="renderer\render_resource_lookup_table.h" />
+    <ClInclude Include="renderer\render_resource_table.h" />
     <ClInclude Include="renderer\render_target.h" />
     <ClInclude Include="renderer\render_texture.h" />
     <ClInclude Include="renderer\render_world.h" />
@@ -34,7 +34,7 @@
   <ItemGroup>
     <ClCompile Include="renderer\render_material.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
-    <ClCompile Include="renderer\render_resource_lookup_table.cpp" />
+    <ClCompile Include="renderer\render_resource_table.cpp" />
     <ClCompile Include="renderer\render_world.cpp" />
     <ClCompile Include="renderer\render_uniform.cpp" />
   </ItemGroup>
@@ -55,7 +55,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -113,6 +113,7 @@
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -48,9 +48,8 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	Allocator* renderer_allocator = memory_globals::new_allocator(*callstack_capturer, "renderer allocator");
 
 	{
-		RenderResourceLookupTable render_resource_lookup_table;
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
-		Renderer renderer(opengl_renderer, *renderer_allocator, allocator, render_resource_lookup_table);
+		Renderer renderer(opengl_renderer, *renderer_allocator, allocator);
 		s_renderer = &renderer;
 		OpenGLContextWindows context;
 		s_context = &context;

@@ -18,7 +18,6 @@ struct ShaderResourceData;
 struct TextureResourceData;
 class View;
 struct Vector2u;
-class RenderResourceLookupTable;
 
 struct ConcreteRenderer
 {
@@ -45,7 +44,7 @@ struct ConcreteRenderer
 
 	// Drawing
 	void (*clear)();
-	void (*draw)(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResourceLookupTable& resource_lut);
+	void (*draw)(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table);
 	void (*combine_rendered_worlds)(RenderResource fullscreen_rendering_quad, RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds);
 };
 
