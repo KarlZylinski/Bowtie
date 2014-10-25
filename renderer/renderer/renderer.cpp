@@ -149,13 +149,13 @@ RenderInterface& Renderer::render_interface()
 
 const Vector2u& Renderer::resolution() const
 {
-	return _resoultion;
+	return _resolution;
 }
 
 void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 {
 	_context = context;
-	_resoultion = resolution;
+	_resolution = resolution;
 	_thread = std::thread(&Renderer::thread, this);
 
 	// Do stuff here which should happen before anything else.
@@ -203,7 +203,7 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 		case RenderResourceData::Drawable: return create_drawable(_allocator, _resource_lut, *(DrawableResourceData*)data.data);
 		case RenderResourceData::Geometry: return create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data);
 		case RenderResourceData::RenderMaterial: return create_material(_allocator, _concrete_renderer, dynamic_data, _resource_lut, *(MaterialResourceData*)data.data);
-		case RenderResourceData::RenderTarget: return create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, image::RGBA, _resoultion, 0), _render_targets);
+		case RenderResourceData::RenderTarget: return create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, image::RGBA, _resolution, 0), _render_targets);
 		case RenderResourceData::Shader: return create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data);
 		case RenderResourceData::Texture: {
 			auto texture_resource_data = (TextureResourceData*)data.data;
@@ -211,7 +211,7 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 			return create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits);
 		}
 		case RenderResourceData::World: {
-			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, image::RGBA, _resoultion, 0), _render_targets));
+			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, image::RGBA, _resolution, 0), _render_targets));
 		}
 		default: assert(!"Unknown render resource type"); return RenderResource();
 	}
@@ -228,7 +228,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			draw(_concrete_renderer, _resoultion, _resource_lut, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).object, rwd.view);
+			draw(_concrete_renderer, _resolution, _resource_lut, _rendered_worlds, *(RenderWorld*)_resource_lut.lookup(rwd.render_world).object, rwd.view);
 		}
 		break;
 
@@ -279,6 +279,7 @@ void Renderer::execute_command(const RendererCommand& command)
 	case RendererCommand::Resize:
 		{
 			ResizeData& data = *(ResizeData*)command.data;
+			_resolution = data.resolution;
 			_concrete_renderer.resize(data.resolution, _render_targets);
 		}
 		break;
@@ -300,7 +301,7 @@ void Renderer::execute_command(const RendererCommand& command)
 
 	case RendererCommand::CombineRenderedWorlds:
 		{
-			_concrete_renderer.unset_render_target(_resoultion);
+			_concrete_renderer.unset_render_target(_resolution);
 			_concrete_renderer.clear();
 			_concrete_renderer.combine_rendered_worlds(_fullscreen_rendering_quad, _rendered_worlds_combining_shader, _rendered_worlds);
 			array::clear(_rendered_worlds);

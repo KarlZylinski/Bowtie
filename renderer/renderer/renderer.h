@@ -70,7 +70,7 @@ private:
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
 	RenderInterface _render_interface;
-	Vector2u _resoultion;
+	Vector2u _resolution;
 	RenderResourceLookupTable& _resource_lut;
 	Array<RenderTarget> _render_targets;
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order

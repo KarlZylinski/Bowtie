@@ -8,7 +8,7 @@ namespace bowtie
 namespace opengl_renderer
 {
 
-ConcreteRenderer get_renderer_object();
+ConcreteRenderer create();
 
 }
 

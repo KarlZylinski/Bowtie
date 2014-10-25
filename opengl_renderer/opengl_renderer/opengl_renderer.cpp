@@ -97,19 +97,21 @@ RenderResource create_geometry(void* data, unsigned data_size)
 	return RenderResource(geometry_buffer);
 }
 
-RenderResource create_render_target(const RenderTexture& texture)
+GLuint create_render_target_internal(GLuint texture_id)
 {
-	auto texture_id = texture.render_handle.handle;
 	glBindTexture(GL_TEXTURE_2D, texture_id);
-
 	GLuint fb = 0;
 	glGenFramebuffers(1, &fb);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_id, 0);
 	GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, draw_buffers);
+	return fb;
+}
 
-	return RenderResource(fb);
+RenderResource create_render_target(const RenderTexture& texture)
+{
+	return RenderResource(create_render_target_internal(texture.render_handle.handle));
 }
 
 GLuint compile_glsl(const char* shader_source, GLenum shader_type)
@@ -177,7 +179,7 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 	return RenderResource(program);
 }
 
-RenderResource create_texture(image::PixelFormat pf, const Vector2u& resolution, void* data)
+GLuint create_texture_internal(image::PixelFormat pf, const Vector2u& resolution, void* data)
 {
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -186,7 +188,12 @@ RenderResource create_texture(image::PixelFormat pf, const Vector2u& resolution,
 	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format.internal_format, resolution.x, resolution.y, 0, pixel_format.format, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	return RenderResource(texture_id);
+	return texture_id;
+}
+
+RenderResource create_texture(image::PixelFormat pf, const Vector2u& resolution, void* data)
+{
+	return RenderResource(create_texture_internal(pf, resolution, data));
 }
 
 void destroy_geometry(RenderResource handle)
@@ -200,11 +207,15 @@ void destroy_texture(RenderResource texture)
 	glDeleteTextures(1, &rt->render_handle.handle);
 }
 
+void destroy_render_target_internal(const RenderTarget& render_target)
+{
+	glDeleteTextures(1, &render_target.texture.render_handle.handle);
+	glDeleteFramebuffers(1, &render_target.handle.handle);
+}
+
 void destroy_render_target(RenderResource render_target)
 {
-	auto rt = (RenderTarget*)render_target.object;
-	glDeleteTextures(1, &rt->texture.render_handle.handle);
-	glDeleteFramebuffers(1, &rt->handle.handle);
+	destroy_render_target_internal(*(RenderTarget*)render_target.object);
 }
 
 void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResourceLookupTable& lookup_table)
@@ -340,9 +351,19 @@ void initialize_thread()
 	glDisable(GL_DEPTH_TEST);
 }
 
-void resize(const Vector2u& resolution, Array<RenderTarget>&)
+void resize(const Vector2u& resolution, Array<RenderTarget>& render_targets)
 {
 	glViewport(0, 0, resolution.x, resolution.y);
+
+	for (unsigned i = 0; i < array::size(render_targets); ++i)
+	{
+		auto& rt = render_targets[i];
+		destroy_render_target_internal(rt);
+		auto texture = create_texture_internal(rt.texture.pixel_format, resolution, 0);
+		auto new_rt = create_render_target_internal(texture);
+		rt.handle = RenderResource(new_rt);
+		rt.texture.render_handle = RenderResource(texture);
+	}
 }
 
 void set_render_target(const Vector2u& resolution, RenderResource render_target)
@@ -379,7 +400,7 @@ RenderResource update_shader(const RenderResource& shader, const char* vertex_so
 namespace opengl_renderer
 {
 
-ConcreteRenderer get_renderer_object()
+ConcreteRenderer create()
 {
 	ConcreteRenderer renderer;
 	renderer.clear = &clear;

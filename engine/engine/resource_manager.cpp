@@ -191,7 +191,7 @@ Material& ResourceManager::load_material(const char* filename)
 
 	auto material = _allocator.construct<Material>(material_resource_data.handle, &shader);
 	add_resource(name, Resource(material));	
-	_allocator.deallocate(jzon);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *material;
 }
 
@@ -315,7 +315,7 @@ Font& ResourceManager::load_font(const char* filename)
 
 	auto font = _allocator.construct<Font>(columns, rows, const_cast<const Texture&>(load_texture(texture_filename)));
 	add_resource(name, Resource(font));
-	_allocator.deallocate(jzon);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *font;
 }
 
@@ -340,7 +340,7 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 	auto& material = load_material(material_filename);
 	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
 	add_resource(name, Resource(drawable));
-	_allocator.deallocate(jzon);
+	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return *drawable;
 }
 

@@ -49,7 +49,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 	{
 		RenderResourceLookupTable render_resource_lookup_table;
-		ConcreteRenderer opengl_renderer = opengl_renderer::get_renderer_object();
+		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer(opengl_renderer, *renderer_allocator, allocator, render_resource_lookup_table);
 		s_renderer = &renderer;
 		OpenGLContextWindows context;
