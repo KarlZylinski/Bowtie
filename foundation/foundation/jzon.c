@@ -514,7 +514,9 @@ void jzon_free_custom_allocator(JzonValue* value, JzonAllocator* allocator)
 		{
 			allocator->deallocate(value->object_values[i]->key);
 			jzon_free_custom_allocator(value->object_values[i]->value, allocator);
+			allocator->deallocate(value->object_values[i]);
 		}
+
 
 		allocator->deallocate(value->object_values);
 	}
