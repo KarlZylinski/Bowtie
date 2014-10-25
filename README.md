@@ -45,6 +45,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Replace PNG with homebrew DDS loader
 - [ ] Instead of sending geometry for drawables, generate per frame. Do some batching if possible.
 - [ ] Proper assert() and error()
+- [ ] Data compiler? : D
 
 
 ## Old todo
