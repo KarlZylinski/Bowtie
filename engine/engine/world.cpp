@@ -118,7 +118,7 @@ void World::update()
 	}
 }
 
-void World::draw(const View& view)
+void World::draw(const Rect& view)
 {
 	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
 

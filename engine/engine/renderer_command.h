@@ -1,10 +1,11 @@
 #pragma once
 
-#include "view.h"
+#include "rect.h"
 #include "render_resource_handle.h"
 #include "uniform.h"
 #include <foundation/vector2u.h>
 #include <foundation/vector4.h>
+#include <foundation/matrix4.h>
 #include <stdint.h>
 
 namespace bowtie
@@ -21,7 +22,7 @@ struct RendererCommand
 
 struct RenderWorldData
 {
-	View view;
+	Rect view;
 	RenderResourceHandle render_world;
 };
 

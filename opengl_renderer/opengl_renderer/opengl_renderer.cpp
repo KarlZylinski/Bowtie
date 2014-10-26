@@ -3,6 +3,7 @@
 #include <foundation/array.h>
 #include <foundation/matrix4.h>
 #include <engine/view.h>
+#include <engine/rect.h>
 #include <engine/timer.h>
 #include <renderer/render_material.h>
 #include <renderer/render_drawable.h>
@@ -218,7 +219,7 @@ void destroy_render_target(RenderResource render_target)
 	destroy_render_target_internal(*(RenderTarget*)render_target.object);
 }
 
-void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResource* resource_table)
+void draw_drawable(const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
 	auto model_view_matrix = drawable.model * view_matrix;
@@ -227,7 +228,7 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
-	auto view_resolution_ratio = view.rect().size.y / resolution.y;
+	auto view_resolution_ratio = view.size.y / resolution.y;
 	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
 
 	auto uniforms = material.uniforms;
@@ -254,7 +255,7 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 			value = (void*)&drawable.texture;
 			break;
 		case uniform::ViewResolution:
-			value = (void*)&view.rect().size;
+			value = (void*)&view.size;
 			break;
 		case uniform::ViewResolutionRatio:
 			value = (void*)&view_resolution_ratio;
@@ -322,10 +323,10 @@ void draw_drawable(const Vector2u& resolution, const View& view, const Matrix4& 
 	glDisableVertexAttribArray(0);
 }
 
-void draw(const View& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
+void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
 {
-	auto view_matrix = view.view();
-	auto view_projection_matrix = view_matrix * view.projection();
+	auto view_matrix = view::view_matrix(view);
+	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
 	auto& drawables = render_world.drawables;
 
 	for (unsigned i = 0; i < array::size(drawables); ++i)

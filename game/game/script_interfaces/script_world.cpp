@@ -5,6 +5,7 @@
 #include <engine/engine.h>
 #include <engine/view.h>
 #include <engine/world.h>
+#include <engine/rect.h>
 
 #include "script_interface_helpers.h"
 
@@ -42,7 +43,7 @@ int draw(lua_State* lua)
 	auto& world = *(World*)lua_touserdata(lua, 1);
 	auto view_pos = script_interface::to_vector2(lua, 2);
 	auto view_size = script_interface::to_vector2(lua, 3);
-	world.draw(View(Rect(view_pos, view_size)));
+	world.draw(Rect(view_pos, view_size));
 
 	return 0;
 }

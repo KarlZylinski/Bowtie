@@ -14,7 +14,6 @@ class RenderInterface;
 class ResourceManager;
 class Sprite;
 class Text;
-class View;
 class World
 {
 public:
@@ -27,7 +26,7 @@ public:
 	void unspawn(Drawable& sprite);
 	Drawable* spawn_text(const Font& font, const char* text, int depth);
 	void update();
-	void draw(const View& view);
+	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
 
 	const Array<Drawable*>& drawables() const;
