@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Windows.h>
-#include <foundation/keyboard.h>
+#include "keyboard.h"
 #include <foundation/vector2u.h>
 
 namespace bowtie

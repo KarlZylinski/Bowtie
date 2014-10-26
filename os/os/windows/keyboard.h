@@ -1,11 +1,11 @@
 #pragma once
-
 #ifdef _WIN32
-	#include <Windows.h>
-#endif
+
+#include <Windows.h>
 
 namespace bowtie
 {
+
 namespace keyboard
 {
 
@@ -28,4 +28,7 @@ namespace keyboard
 #endif
 
 }
+
 }
+
+#endif

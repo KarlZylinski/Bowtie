@@ -3,8 +3,6 @@
 #include <cassert>
 #include <stdio.h>
 
-#include <foundation/keyboard.h>
-
 namespace bowtie
 {
 

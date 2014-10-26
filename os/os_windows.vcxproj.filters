@@ -20,5 +20,8 @@
     <ClInclude Include="os\windows\callstack_capturer.h">
       <Filter>windows</Filter>
     </ClInclude>
+    <ClInclude Include="os\windows\keyboard.h">
+      <Filter>windows</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

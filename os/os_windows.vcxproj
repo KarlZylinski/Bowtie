@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os\windows\callstack_capturer.h" />
+    <ClInclude Include="os\windows\keyboard.h" />
     <ClInclude Include="os\windows\window.h" />
   </ItemGroup>
   <ItemGroup>

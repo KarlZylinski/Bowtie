@@ -1,6 +1,5 @@
 #pragma once
 
-#include <foundation/keyboard.h>
 #include <foundation/vector2u.h>
 #include <game/game.h>
 

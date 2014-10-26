@@ -1,6 +1,9 @@
 #pragma once
 
-#include <foundation/keyboard.h>
+#ifdef _WIN32
+	#include <os/windows/keyboard.h>
+#endif
+
 #include "render_resource_handle.h"
 
 namespace bowtie
