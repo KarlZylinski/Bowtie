@@ -30,24 +30,24 @@ const Vector2& View::position() const
 
 void View::set_position(const Vector2& position)
 {
-	_rect.position = -position;
+	_rect.position = position;
 }
 
 void View::set_position(float x, float y)
 {
-	_rect.position.x = -x;
-	_rect.position.y = -y;
+	_rect.position.x = x;
+	_rect.position.y = y;
 }
 
 void View::move(const Vector2& distance)
 {
-	_rect.position -= distance;
+	_rect.position += distance;
 }
 
 void View::move(float x, float y)
 {
-	_rect.position.x -= x;
-	_rect.position.y -= y;
+	_rect.position.x = x;
+	_rect.position.y = y;
 }
 
 Matrix4 View::projection() const
