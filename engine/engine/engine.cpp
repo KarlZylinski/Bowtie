@@ -20,6 +20,7 @@ namespace bowtie
 Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this, render_interface), _render_interface(render_interface),
 	_resource_manager(allocator, render_interface), _time_elapsed_previous_frame(0.0f)
 {
+	entity_manager::init(_entity_manager, _allocator);
 	memset(&_keyboard, 0, sizeof(Keyboard));
 	timer::start();
 }

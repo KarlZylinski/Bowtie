@@ -5,6 +5,7 @@
 
 #include "keyboard.h"
 #include "resource_manager.h"
+#include "entity/entity_manager.h"
 
 namespace bowtie
 {
@@ -31,6 +32,7 @@ public:
 
 private:
 	Allocator& _allocator;
+	EntityManager _entity_manager;
 	Keyboard _keyboard;
 	Game _game;
 	ResourceManager _resource_manager;

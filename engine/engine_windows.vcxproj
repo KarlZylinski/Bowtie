@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
+    <ClInclude Include="engine\entity\entity.h" />
+    <ClInclude Include="engine\entity\entity_manager.h" />
     <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\idrawable_geometry.h" />
     <ClInclude Include="engine\image.h" />
@@ -51,6 +53,7 @@
   <ItemGroup>
     <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
+    <ClCompile Include="engine\entity\entity_manager.cpp" />
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />

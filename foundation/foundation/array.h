@@ -114,7 +114,7 @@ namespace bowtie {
 				set_capacity(a, new_capacity);
 		}
 
-		template <typename T> void remove(Array<T> &a, unsigned index)
+		template <typename T> void remove_at(Array<T> &a, unsigned index)
 		{
 			if (a._size == 0)
 				return;
@@ -134,7 +134,7 @@ namespace bowtie {
 				if (!predicate(element))
 					continue;
 
-				remove(a, i);
+				remove_at(a, i);
 				return;
 			}
 		}
@@ -148,7 +148,7 @@ namespace bowtie {
 				if (element != element_from_list)
 					continue;
 
-				remove(a, i);
+				remove_at(a, i);
 				return;
 			}
 		}
