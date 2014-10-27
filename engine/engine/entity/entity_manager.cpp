@@ -55,8 +55,16 @@ void init(EntityManager& manager, Allocator& allocator)
 Entity create(EntityManager& manager)
 {
 	unsigned index = get_next_index(manager);
-	unsigned generation = ++manager.generation[index];
-	return (index << entity_generation_bits) & generation;
+
+	if (index >= manager.last_entity_index)
+	{
+		array::resize(manager.generation, manager.last_entity_index);
+		manager.generation[index] = 1;
+	}
+	else
+		++manager.generation[index];
+
+	return (manager.generation[index] << entity_index_bits) | index;
 }
 
 void destroy(EntityManager& manager, Entity entity)
