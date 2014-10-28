@@ -19,6 +19,7 @@ struct RectangleRendererComponent
 	Hash<unsigned> map;
 	unsigned num;
 	unsigned capacity;
+	unsigned last_dirty_index;
 	void* buffer;
 	Color* color;
 	Rect* rect;
