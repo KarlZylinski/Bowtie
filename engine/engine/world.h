@@ -2,9 +2,12 @@
 
 #include <foundation/collection_types.h>
 #include "render_resource_handle.h"
+#include "entity/components/rectangle_renderer_component.h"
 
 namespace bowtie
 {
+
+typedef unsigned Entity;
 
 struct Vector4;
 class Drawable;
@@ -21,6 +24,7 @@ public:
 	~World();
 
 	void set_render_handle(RenderResourceHandle render_handle);
+	void add_rectangle_component(Entity e);
 	Drawable* spawn_rectangle(const Rect& rect, const Vector4& color, int depth);
 	Drawable* spawn_sprite(const char* name, int depth);
 	void unspawn(Drawable& sprite);
@@ -36,6 +40,7 @@ private:
 	RenderResourceHandle _render_handle;
 	RenderInterface& _render_interface;
 	ResourceManager& _resource_manager;
+	RectangleRendererComponent _rectangle_renderer_component;
 
 	World(const World&);
 	World& operator=(const World&);

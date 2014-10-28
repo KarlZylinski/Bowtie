@@ -39,7 +39,7 @@ namespace bowtie
 
 const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font", "drawable", "material" };
 
-ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(allocator)
+ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(hash::create<Resource>(allocator))
 {
 	static_allocator = &allocator;
 	jzon_allocator.allocate = jzon_static_allocate;

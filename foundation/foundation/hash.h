@@ -13,6 +13,11 @@ namespace bowtie {
 
 	namespace hash
 	{
+		template<typename T> void init(Hash<T>& a, Allocator& allocator);
+		template<typename T> Hash<T> create(Allocator& allocator);
+		template<typename T> void copy(Hash<T>& from, Hash<T>& to);
+		template<typename T> void deinit(Hash<T>& a);
+
 		/// Returns true if the specified key exists in the hash.
 		template<typename T> bool has(const Hash<T> &h, uint64_t key);
 
@@ -190,7 +195,7 @@ namespace bowtie {
 
 		template<typename T> void rehash(Hash<T> &h, uint32_t new_size)
 		{
-			Hash<T> nh(*h._hash._allocator);
+			Hash<T> nh = hash::create<T>(*h._hash._allocator);
 			array::resize(nh._hash, new_size);
 			array::reserve(nh._data, array::size(h._data));
 			for (uint32_t i=0; i<new_size; ++i)
@@ -200,7 +205,7 @@ namespace bowtie {
 				multi_hash::insert(nh, e.key, e.value);
 			}
 
-			Hash<T> empty(*h._hash._allocator);
+			Hash<T> empty = hash::create<T>(*h._hash._allocator);
 			h.~Hash<T>();
 			memcpy(&h, &nh, sizeof(Hash<T>));
 			memcpy(&nh, &empty, sizeof(Hash<T>));
@@ -221,6 +226,33 @@ namespace bowtie {
 
 	namespace hash
 	{
+		template<typename T> inline void init(Hash<T>& a, Allocator& allocator)
+		{
+			memset(&a, 0, sizeof(Hash<T>));
+			a._hash = array::create<uint32_t>(allocator);
+			a._data = array::create<Hash<T>::Entry>(allocator);
+		}
+
+		template<typename T> inline Hash<T> create(Allocator& allocator)
+		{
+			Hash<T> a = { 0 };
+			init(a, allocator);
+			return a;
+		}
+
+		template<typename T> inline void copy(Hash<T>& from, Hash<T>& to)
+		{
+			const uint32_t n = from._size;
+			array::copy(from._hash, to._hash);
+			array::copy(from._data, to._data);
+		}
+
+		template<typename T> inline void deinit(Hash<T>& a)
+		{
+			array::deinit(a._hash);
+			array::deinit(a._data);
+		}
+
 		template<typename T> bool has(const Hash<T> &h, uint64_t key)
 		{
 			return hash_internal::find_or_fail(h, key) != hash_internal::END_OF_LIST;
@@ -338,15 +370,5 @@ namespace bowtie {
 			while (hash::has(h, key))
 				hash::remove(h, key);
 		}
-	}
-
-
-	template <typename T> Hash<T>::Hash(Allocator &a) :
-		_hash(array::create<uint32_t>(a)), _data(array::create<Entry>(a))
-	{}
-
-	template <typename T> Hash<T>::~Hash()
-	{
-		array::deinit(_data);
 	}
 }

@@ -29,9 +29,6 @@ namespace bowtie
 	template<typename T> struct Hash
 	{
 	public:
-		Hash(Allocator &a);
-		~Hash();
-		
 		struct Entry {
 			uint64_t key;
 			uint32_t next;

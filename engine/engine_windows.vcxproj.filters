@@ -18,6 +18,9 @@
     <ClCompile Include="engine\entity\entity_manager.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="engine\entity\components\rectangle_renderer_component.cpp">
+      <Filter>entity\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />
@@ -54,10 +57,16 @@
     <ClInclude Include="engine\entity\entity_manager.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="engine\entity\components\rectangle_renderer_component.h">
+      <Filter>entity\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="entity">
       <UniqueIdentifier>{ab64e92a-00b4-4ece-a211-e1c8966e4ed7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\components">
+      <UniqueIdentifier>{752efeed-de0b-4e0f-b436-efee5bc26cd9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

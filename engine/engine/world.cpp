@@ -16,6 +16,7 @@ namespace bowtie
 World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
 	_allocator(allocator), _drawables(array::create<Drawable*>(allocator)), _render_interface(render_interface), _resource_manager(resource_manager)
 {
+	rectangle_renderer_component::init(_rectangle_renderer_component, allocator);
 }
 
 World::~World()
@@ -29,6 +30,13 @@ World::~World()
 void World::set_render_handle(RenderResourceHandle render_handle)
 {
 	_render_handle = render_handle;
+}
+
+void World::add_rectangle_component(Entity e)
+{
+	rectangle_renderer_component::create(_rectangle_renderer_component, e, _allocator);
+	rectangle_renderer_component::set_rect(_rectangle_renderer_component, e, Rect(Vector2(0.5, 0.5), Vector2(0.5, 0.5)));
+	auto r = rectangle_renderer_component::rect(_rectangle_renderer_component, e);
 }
 
 Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth)
