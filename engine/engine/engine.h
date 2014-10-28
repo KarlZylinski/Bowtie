@@ -25,6 +25,7 @@ public:
 	const Keyboard& keyboard() const;
 	void key_pressed(keyboard::Key key);
 	void key_released(keyboard::Key key);
+	EntityManager& entity_manager();
 	RenderInterface& render_interface();
 	ResourceManager& resource_manager();
 	void resize(const Vector2u& resolution);

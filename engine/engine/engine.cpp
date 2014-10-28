@@ -101,4 +101,9 @@ void Engine::update()
 	keyboard::reset_pressed_released(_keyboard);
 }
 
+EntityManager& Engine::entity_manager()
+{
+	return _entity_manager;
+}
+
 }

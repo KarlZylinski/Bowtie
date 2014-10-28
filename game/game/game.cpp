@@ -2,18 +2,18 @@
 
 #include <cassert>
 #include <lua.hpp>
-
 #include "script_interfaces/script_console.h"
 #include "script_interfaces/script_interface_helpers.h"
 #include "script_interfaces/script_drawable.h"
 #include "script_interfaces/script_sprite.h"
+#include "script_interfaces/script_entity.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
 #include "script_interfaces/script_rectangle.h"
 #include "script_interfaces/script_time.h"
 #include "script_interfaces/script_text.h"
 #include "script_interfaces/script_material.h"
-
+#include <engine/engine.h>
 #include <random>
 
 namespace bowtie
@@ -67,6 +67,7 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	luaL_openlibs(_lua);
 	engine_script_interface::load(_lua, engine);
 	world_script_interface::load(_lua);
+	entity_script_interface::load(_lua, engine.entity_manager());
 	time_script_interface::load(_lua);
 	drawable_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
@@ -86,9 +87,9 @@ void Game::init()
 {
 	assert(!_initialized && "init() has already been called once");
 
+	console::init(_lua);
 	init_game(_lua);
 	_initialized = true;
-	console::init(_lua);
 }
 
 void Game::update(float dt)
