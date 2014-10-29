@@ -6,12 +6,11 @@ namespace bowtie
 {
 
 struct EntityManager;
-class Allocator;
 
 namespace entity_script_interface
 {
 
-void load(lua_State* lua, EntityManager& manager, Allocator& allocator);
+void load(lua_State* lua, EntityManager& manager);
 
 }
 

@@ -32,6 +32,7 @@
     <ClInclude Include="game\script_interfaces\script_interface_helpers.h" />
     <ClInclude Include="game\script_interfaces\script_material.h" />
     <ClInclude Include="game\script_interfaces\script_rectangle.h" />
+    <ClInclude Include="game\script_interfaces\script_rectangle_renderer_component.h" />
     <ClInclude Include="game\script_interfaces\script_sprite.h" />
     <ClInclude Include="game\script_interfaces\script_text.h" />
     <ClInclude Include="game\script_interfaces\script_time.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="game\script_interfaces\script_interface_helpers.cpp" />
     <ClCompile Include="game\script_interfaces\script_material.cpp" />
     <ClCompile Include="game\script_interfaces\script_rectangle.cpp" />
+    <ClCompile Include="game\script_interfaces\script_rectangle_renderer_component.cpp" />
     <ClCompile Include="game\script_interfaces\script_sprite.cpp" />
     <ClCompile Include="game\script_interfaces\script_text.cpp" />
     <ClCompile Include="game\script_interfaces\script_time.cpp" />

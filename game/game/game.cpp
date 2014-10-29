@@ -13,6 +13,7 @@
 #include "script_interfaces/script_time.h"
 #include "script_interfaces/script_text.h"
 #include "script_interfaces/script_material.h"
+#include "script_interfaces/script_rectangle_renderer_component.h"
 #include <engine/engine.h>
 #include <random>
 
@@ -67,13 +68,17 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	luaL_openlibs(_lua);
 	engine_script_interface::load(_lua, engine);
 	world_script_interface::load(_lua);
-	entity_script_interface::load(_lua, engine.entity_manager(), allocator);
+	entity_script_interface::load(_lua, engine.entity_manager());
 	time_script_interface::load(_lua);
 	drawable_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);
 	text_script_interface::load(_lua);
 	rectangle_script_interface::load(_lua);
 	material_script_interface::load(_lua, render_interface);
+	
+	// Components
+	rectangle_renderer_component_script_interface::load(_lua, allocator);
+
 	load_shared_libs(_lua);
 	load_main(_lua);
 }

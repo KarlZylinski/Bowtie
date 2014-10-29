@@ -17,7 +17,6 @@ namespace entity_script_interface
 namespace
 {
 	EntityManager* s_manager = nullptr;
-	Allocator* s_component_allocator = nullptr;
 }
 
 int create(lua_State* lua)
@@ -33,32 +32,16 @@ int destroy(lua_State* lua)
 	return 0;
 }
 
-int add_component(lua_State* lua)
-{
-	Entity entity = (unsigned)lua_tonumber(lua, 1);
-	uint64_t component_name = script_interface::to_hash(lua, 2);
-		
-	if (component_name == rectangle_renderer_component::name)
-	{
-		World& world = *(World*)lua_touserdata(lua, 3);
-		rectangle_renderer_component::create(world.rectangle_renderer_component(), entity, *s_component_allocator);
-	}
-
-	return 0;
-}
-
-void load(lua_State* lua, EntityManager& manager, Allocator& allocator)
+void load(lua_State* lua, EntityManager& manager)
 {
 	s_manager = &manager;
-	s_component_allocator = &allocator;
 
 	const interface_function functions[] = {
 		{ "create", create },
-		{ "destroy", destroy },
-		{ "add_component", add_component }
+		{ "destroy", destroy }
 	};
 
-	script_interface::register_interface(lua, "Entity", functions, 3);
+	script_interface::register_interface(lua, "Entity", functions, 2);
 }
 
 } // namespace drawable_script_interface
