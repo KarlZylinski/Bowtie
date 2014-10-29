@@ -74,6 +74,9 @@ namespace bowtie
 
 		char* copy_string(const char* str)
 		{
+			if (str == nullptr)
+				return nullptr;
+
 			auto len = (unsigned)strlen(str) + 1;
 			auto new_str = (char*)allocate(len);
 			memcpy(new_str, str, len);

@@ -79,6 +79,15 @@ void push_vector4(lua_State* lua, const Vector4& v)
 	script_interface::check_errors(lua, error);
 }
 
+void push_component(lua_State* lua, void* component, Entity entity)
+{
+	lua_newtable(lua);
+	lua_pushlightuserdata(lua, component);
+	lua_rawseti(lua, -2, 1);
+	lua_pushnumber(lua, entity);
+	lua_rawseti(lua, -2, 2);
+}
+
 void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions)
 {
 	lua_newtable(lua);
@@ -146,6 +155,20 @@ uint64_t to_hash(lua_State* lua, int index)
 	assert(lua_isstring(lua, index));
 
 	return hash_str(lua_tostring(lua, index));
+}
+
+ScriptComponentData to_component(lua_State* lua, int index)
+{
+	ScriptComponentData c;
+	lua_pushnumber(lua, 1);
+	lua_gettable(lua, index);
+	c.component = lua_touserdata(lua, -1);
+	lua_pop(lua, 1);
+	lua_pushnumber(lua, 2);
+	lua_gettable(lua, index);
+	c.entity = (Entity)lua_tonumber(lua, -1);
+	lua_pop(lua, 1);
+	return c;
 }
 
 } // namespace script_interface

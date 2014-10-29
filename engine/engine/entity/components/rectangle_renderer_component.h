@@ -32,6 +32,7 @@ namespace rectangle_renderer_component
 	void init(RectangleRendererComponent& c, Allocator& allocator);
 	void deinit(RectangleRendererComponent& c, Allocator& allocator);
 	void create(RectangleRendererComponent& c, Entity e, Allocator& allocator);
+	void destroy(RectangleRendererComponent& c, Entity e);
 	void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect);
 	const Rect& rect(RectangleRendererComponent& c, Entity e);
 }

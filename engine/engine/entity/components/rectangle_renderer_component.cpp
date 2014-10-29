@@ -54,25 +54,35 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator)
 	if (c.num >= c.capacity)
 		grow(c, allocator);
 
-	unsigned i = ++c.num;
+	unsigned i = c.num++;
 	hash::set(c.map, e, i);
 	c.color[i] = Color(1, 1, 1, 1);
 	c.rect[i] = Rect();
 	c.render_handle[i] = RenderResourceHandle::NotInitialized;
 }
 
-void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
+void destroy(RectangleRendererComponent& c, Entity e)
 {
 	unsigned i = hash::get(c.map, e, 0u);
-	assert(i != 0);
-	c.rect[i] = rect;
+	hash::remove(c.map, e);
+	--c.num;
+
+	if (i == c.num)
+		return;
+		
+	c.color[i] = c.color[c.num];
+	c.rect[i] = c.rect[c.num];
+	c.render_handle[i] = c.render_handle[c.num];
+}
+
+void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
+{	
+	c.rect[hash::get(c.map, e)] = rect;
 }
 
 const Rect& rect(RectangleRendererComponent& c, Entity e)
 {
-	unsigned i = hash::get(c.map, e, 0u);
-	assert(i != 0);
-	return c.rect[i];
+	return c.rect[hash::get(c.map, e)];
 }
 
 } // rectangle_renderer_component
