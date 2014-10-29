@@ -27,7 +27,12 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Convert resource_lut
 - [ ] MAYBE convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 - [ ] Rewrite allocators, throw out construct / destroy
+    - [ ] Add page allocator?
 - [ ] Array -> Vector, also shape up Vector to match new allocator shizmajings
+- [ ] Make reflection message data for 1 array into soa
+- [ ] Write a data compiler by moving all the loading code from resource_manager to a compiler file. Have reasource manager open compiled resources and
+        throw the data into memory.
+- [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest.
 
 
 ## Style
