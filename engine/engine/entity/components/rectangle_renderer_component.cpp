@@ -75,7 +75,6 @@ const Rect& rect(RectangleRendererComponent& c, Entity e)
 	return c.rect[i];
 }
 
-
 } // rectangle_renderer_component
 
 } // namespace bowtie

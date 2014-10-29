@@ -32,13 +32,6 @@ void World::set_render_handle(RenderResourceHandle render_handle)
 	_render_handle = render_handle;
 }
 
-void World::add_rectangle_component(Entity e)
-{
-	rectangle_renderer_component::create(_rectangle_renderer_component, e, _allocator);
-	rectangle_renderer_component::set_rect(_rectangle_renderer_component, e, Rect(Vector2(0.5, 0.5), Vector2(0.5, 0.5)));
-	auto r = rectangle_renderer_component::rect(_rectangle_renderer_component, e);
-}
-
 Drawable* World::spawn_rectangle(const Rect& rect, const Color& color, int depth)
 {
 	auto geometry = _allocator.construct<RectangleGeometry>(color, rect);
@@ -71,6 +64,11 @@ void World::unspawn(Drawable& drawable)
 RenderResourceHandle World::render_handle()
 {
 	return _render_handle;
+}
+
+RectangleRendererComponent& World::rectangle_renderer_component()
+{
+	return _rectangle_renderer_component;
 }
 
 const Array<Drawable*>& World::drawables() const

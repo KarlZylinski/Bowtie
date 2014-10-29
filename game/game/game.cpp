@@ -67,7 +67,7 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	luaL_openlibs(_lua);
 	engine_script_interface::load(_lua, engine);
 	world_script_interface::load(_lua);
-	entity_script_interface::load(_lua, engine.entity_manager());
+	entity_script_interface::load(_lua, engine.entity_manager(), allocator);
 	time_script_interface::load(_lua);
 	drawable_script_interface::load(_lua);
 	sprite_script_interface::load(_lua);

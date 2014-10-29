@@ -2,6 +2,7 @@
 #include <cassert>
 #include <lua.hpp>
 #include "script_console.h"
+#include <foundation/murmur_hash.h>
 
 namespace bowtie
 {
@@ -138,6 +139,13 @@ Vector4 to_vector4(lua_State* lua, int index)
 	auto w_value = (float)get_field(lua, index, "w");
 
 	return Vector4(x_value, y_value, z_value, w_value);
+}
+
+uint64_t to_hash(lua_State* lua, int index)
+{
+	assert(lua_isstring(lua, index));
+
+	return hash_str(lua_tostring(lua, index));
 }
 
 } // namespace script_interface

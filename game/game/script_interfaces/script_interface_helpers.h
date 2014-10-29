@@ -4,6 +4,7 @@
 #include <foundation/vector2i.h>
 #include <foundation/vector2u.h>
 #include <foundation/vector4.h>
+#include <stdint.h>
 
 struct lua_State;
 typedef int (*lua_CFunction) (lua_State *L);
@@ -31,6 +32,7 @@ Vector2 to_vector2(lua_State* lua, int index);
 Vector2i to_vector2i(lua_State* lua, int index);
 Vector2u to_vector2u(lua_State* lua, int index);
 Vector4 to_vector4(lua_State* lua, int index);
+uint64_t to_hash(lua_State* lua, int index);
 
 }
 

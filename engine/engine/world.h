@@ -24,7 +24,6 @@ public:
 	~World();
 
 	void set_render_handle(RenderResourceHandle render_handle);
-	void add_rectangle_component(Entity e);
 	Drawable* spawn_rectangle(const Rect& rect, const Vector4& color, int depth);
 	Drawable* spawn_sprite(const char* name, int depth);
 	void unspawn(Drawable& sprite);
@@ -32,6 +31,7 @@ public:
 	void update();
 	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
+	RectangleRendererComponent& rectangle_renderer_component();
 
 	const Array<Drawable*>& drawables() const;
 private:
