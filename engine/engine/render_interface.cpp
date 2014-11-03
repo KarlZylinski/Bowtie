@@ -190,6 +190,10 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 			copied_resource->data = allocator.allocate(sizeof(GeometryResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(GeometryResourceData));
 			break;
+		case RenderResourceData::RectangleRenderer:
+			copied_resource->data = allocator.allocate(sizeof(CreateRectangleRendererData));
+			memcpy(copied_resource->data, resource.data, sizeof(CreateRectangleRendererData));
+			break;
 		case RenderResourceData::World:
 			// No data
 			break;

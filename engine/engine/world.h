@@ -32,6 +32,7 @@ public:
 	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
 	RectangleRendererComponent& rectangle_renderer_component();
+	void handle_rectangle_renderer_created(Entity entity);
 
 	const Array<Drawable*>& drawables() const;
 private:

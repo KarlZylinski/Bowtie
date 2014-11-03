@@ -61,6 +61,17 @@ void World::unspawn(Drawable& drawable)
 	_allocator.destroy(&drawable);
 }
 
+void World::handle_rectangle_renderer_created(Entity entity)
+{
+	auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
+	rectangle_renderer_component::set_render_handle(_rectangle_renderer_component, entity, rrd.handle);
+	CreateRectangleRendererData data;
+	data.num = 1;
+	data.world = _render_handle;
+	rrd.data = &data;
+	_render_interface.create_resource(rrd, rectangle_renderer_component::copy_component_data(_rectangle_renderer_component, entity, _allocator), rectangle_renderer_component::component_size);
+}
+
 RenderResourceHandle World::render_handle()
 {
 	return _render_handle;

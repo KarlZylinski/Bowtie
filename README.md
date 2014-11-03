@@ -33,6 +33,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Write a data compiler by moving all the loading code from resource_manager to a compiler file. Have reasource manager open compiled resources and
         throw the data into memory.
 - [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest.
+- [ ] Move all struct defs into _type.h files?
+- [ ] Rename foundation to base
 
 
 ## Style

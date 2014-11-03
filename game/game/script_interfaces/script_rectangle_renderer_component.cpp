@@ -24,6 +24,7 @@ int create(lua_State* lua)
 	World& world = *(World*)lua_touserdata(lua, 2);
 	auto& component = world.rectangle_renderer_component();
 	rectangle_renderer_component::create(component, entity, *s_allocator);
+	world.handle_rectangle_renderer_created(entity);
 	script_interface::push_component(lua, &component, entity);
 	return 1;
 }

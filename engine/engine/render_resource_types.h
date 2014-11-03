@@ -13,7 +13,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Drawable, Geometry, RenderTarget, Shader, Texture, World, RenderMaterial
+		Drawable, Geometry, RenderTarget, Shader, Texture, World, RenderMaterial, RectangleRenderer
 	};
 
 	Type type;
@@ -63,6 +63,12 @@ struct UniformResourceData
 struct GeometryResourceData
 {
 	unsigned size;
+};
+
+struct CreateRectangleRendererData
+{
+	RenderResourceHandle world;
+	unsigned num;
 };
 
 } // namespace bowtie

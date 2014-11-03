@@ -88,14 +88,18 @@ void combine_rendered_worlds(RenderResource fullscreen_rendering_quad, RenderRes
 	glDisableVertexAttribArray(0);
 }
 
-RenderResource create_geometry(void* data, unsigned data_size)
+GLuint create_geometry_internal(void* data, unsigned data_size)
 {
 	GLuint geometry_buffer;
 	glGenBuffers(1, &geometry_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
 	glBufferData(GL_ARRAY_BUFFER, data_size, data, GL_STATIC_DRAW);
+	return geometry_buffer;
+}
 
-	return RenderResource(geometry_buffer);
+RenderResource create_geometry(void* data, unsigned data_size)
+{
+	return RenderResource(create_geometry_internal(data, data_size));
 }
 
 GLuint create_render_target_internal(GLuint texture_id)
@@ -327,10 +331,144 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 {
 	auto view_matrix = view::view_matrix(view);
 	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
-	auto& drawables = render_world.drawables;
 
-	for (unsigned i = 0; i < array::size(drawables); ++i)
-		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawables[i], resource_table);
+	auto model_view_projection_matrix = view_projection_matrix;
+	auto model_view_matrix = view_matrix;
+	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, 4).object;
+	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
+	assert(glIsProgram(shader) && "Invalid shader program");
+	glUseProgram(shader);
+	auto time = timer::counter();
+	auto view_resolution_ratio = view.size.y / resolution.y;
+	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
+
+	Matrix4 ident;
+
+	auto uniforms = material.uniforms;
+	for (unsigned i = 0; i < array::size(uniforms); ++i)
+	{
+		const auto& uniform = uniforms[i];
+		auto value = uniform.value;
+
+		switch (uniform.automatic_value)
+		{
+		case uniform::ModelViewProjectionMatrix:
+			value = (void*)&model_view_projection_matrix[0][0];
+			break;
+		case uniform::ModelViewMatrix:
+			value = (void*)&model_view_matrix[0][0];
+			break;
+		case uniform::ModelMatrix:
+			value = (void*)&ident[0][0];
+			break;
+		case uniform::Time:
+			value = &time;
+			break;
+		case uniform::DrawableTexture:
+			value = nullptr;
+			break;
+		case uniform::ViewResolution:
+			value = (void*)&view.size;
+			break;
+		case uniform::ViewResolutionRatio:
+			value = (void*)&view_resolution_ratio;
+			break;
+		case uniform::Resolution:
+			value = (void*)&resoultion_float;
+			break;
+		}
+
+		switch (uniform.type)
+		{
+		case uniform::Float: glUniform1fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec2: glUniform2fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec3: glUniform3fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Vec4: glUniform4fv(uniform.location, 1, (GLfloat*)value); break;
+		case uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
+		case uniform::Texture1:
+		{
+			glActiveTexture(GL_TEXTURE0);
+			auto texture_handle = *(RenderResourceHandle*)value;
+			auto texture = *(RenderTexture*)render_resource_table::lookup(resource_table, texture_handle).object;
+			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : texture.render_handle.handle);
+			glUniform1i(uniform.location, 0);
+		} break;
+		default:
+			assert(!"Unknown uniform type");
+		}
+	}
+
+
+	auto& drawable_rects = render_world.drawable_rects;
+
+	auto x = (float)drawable_rects[0].position.x;
+	auto y = (float)drawable_rects[0].position.y;
+	auto w = (float)drawable_rects[0].size.x;
+	auto h = (float)drawable_rects[0].size.y;
+
+	// Todo: Do for all rects!
+	float buffer[54] = {
+		x, y, 0.0f,
+		0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		x + w, y, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		x, y + h, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+
+		x + w, y, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		x + w, y + h, 0.0f,
+		1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		x, y + h, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f
+	};
+
+	// Todo: clean this up!
+	auto geometry = create_geometry_internal(buffer, 54 * sizeof(float));
+
+	glBindBuffer(GL_ARRAY_BUFFER, geometry);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)0
+		);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(
+		1,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)(3 * sizeof(float))
+		);
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(
+		2,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		9 * sizeof(float),
+		(void*)(5 * sizeof(float))
+		);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisableVertexAttribArray(0);
+
+	/*for (unsigned i = 0; i < array::size(drawable_rects); ++i)
+		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawable_rects[i], resource_table);*/
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)

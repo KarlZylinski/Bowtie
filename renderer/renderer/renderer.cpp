@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <engine/render_fence.h>
 #include <engine/shader_utils.h>
+#include <engine/entity/components/rectangle_renderer_component.h>
 #include <foundation/array.h>
 #include <foundation/file.h>
 #include <foundation/murmur_hash.h>
@@ -213,6 +214,14 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 		case RenderResourceData::World: {
 			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets));
 		}
+		case RenderResourceData::RectangleRenderer: {
+			auto rectangle_data = (CreateRectangleRendererData*)data.data;
+			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
+
+			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
+			render_world::add_drawable_rect(rw, rectangle->rect[0]);
+			return RenderResource(rw.drawable_rects._size - 1);
+		} break;
 		default: assert(!"Unknown render resource type"); return RenderResource();
 	}
 }
