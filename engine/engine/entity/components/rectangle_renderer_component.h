@@ -47,7 +47,8 @@ namespace rectangle_renderer_component
 	const Color& color(RectangleRendererComponent& c, Entity e);
 	void set_render_handle(RectangleRendererComponent& c, Entity e, RenderResourceHandle render_handle);
 	RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e);
-	RectangleRendererComponentData* copy_component_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
+	RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
+	RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
 }
 
 }

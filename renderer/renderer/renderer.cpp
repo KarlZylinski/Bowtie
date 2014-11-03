@@ -197,22 +197,33 @@ void Renderer::consume_command_queue()
 	array::clear(_command_queue);
 }
 
-RenderResource Renderer::create_resource(const RenderResourceData& data, void* dynamic_data)
+CreatedResources single_resource(RenderResourceHandle handle, RenderResource resource, Allocator& allocator)
+{
+	CreatedResources cr;
+	cr.num = 1;
+	cr.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
+	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
+	cr.handles[0] = handle;
+	cr.resources[0] = resource;
+	return cr;
+}
+
+CreatedResources Renderer::create_resource(const RenderResourceData& data, void* dynamic_data)
 {
 	switch(data.type)
 	{
-		case RenderResourceData::Drawable: return create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data.data);
-		case RenderResourceData::Geometry: return create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data);
-		case RenderResourceData::RenderMaterial: return create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data.data);
-		case RenderResourceData::RenderTarget: return create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets);
-		case RenderResourceData::Shader: return create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data);
+		case RenderResourceData::Drawable: return single_resource(data.handle, create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data.data), _allocator);
+		case RenderResourceData::Geometry: return single_resource(data.handle, create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data), _allocator);
+		case RenderResourceData::RenderMaterial: return single_resource(data.handle, create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data.data), _allocator);
+		case RenderResourceData::RenderTarget: return single_resource(data.handle, create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets), _allocator);
+		case RenderResourceData::Shader: return single_resource(data.handle, create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data), _allocator);
 		case RenderResourceData::Texture: {
 			auto texture_resource_data = (TextureResourceData*)data.data;
 			auto texture_bits = memory::pointer_add(dynamic_data, texture_resource_data->texture_data_dynamic_data_offset);
-			return create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits);
+			return single_resource(data.handle, create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits), _allocator);
 		}
 		case RenderResourceData::World: {
-			return create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets));
+			return single_resource(data.handle, create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets)), _allocator);
 		}
 		case RenderResourceData::RectangleRenderer: {
 			auto rectangle_data = (CreateRectangleRendererData*)data.data;
@@ -220,9 +231,9 @@ RenderResource Renderer::create_resource(const RenderResourceData& data, void* d
 
 			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
 			render_world::add_drawable_rect(rw, rectangle->rect[0]);
-			return RenderResource(rw.drawable_rects._size - 1);
+			return single_resource(data.handle, RenderResource(rw.drawable_rects._size - 1), _allocator);
 		} break;
-		default: assert(!"Unknown render resource type"); return RenderResource();
+		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
 }
 
@@ -246,15 +257,22 @@ void Renderer::execute_command(const RendererCommand& command)
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
 
-			auto handle = create_resource(data, dynamic_data);
-			assert(handle.type != RenderResource::NotInitialized && "Failed to load resource!");
+			auto created_resources = create_resource(data, dynamic_data);
 
-			// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-			render_resource_table::set(_resource_table, data.handle, handle);
+			for (unsigned i = 0; i < created_resources.num; ++i)
+			{
+				auto handle = created_resources.handles[i];
+				auto resource = created_resources.resources[i];
 
-			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-			if (handle.type == RenderResource::Object)
-				array::push_back(_resource_objects, RendererResourceObject(data.type, data.handle));
+				assert(resource.type != RenderResource::NotInitialized && "Failed to load resource!");
+
+				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
+				render_resource_table::set(_resource_table, handle, resource);
+
+				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+				if (resource.type == RenderResource::Object)
+					array::push_back(_resource_objects, RendererResourceObject(data.type, data.handle));
+			}			
 	
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 			array::push_back(_processed_memory, data.data);
@@ -265,20 +283,27 @@ void Renderer::execute_command(const RendererCommand& command)
 		{
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
-			const auto& resource = render_resource_table::lookup(_resource_table, data.handle);
-			
-			if (resource.type == RenderResource::Object)
-				array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return data.handle == rro.handle; });
+			const auto& resource = render_resource_table::lookup(_resource_table, data.handle);			
+			auto updated_resources = update_resource(data, dynamic_data, resource);
 
-			auto handle = update_resource(data, dynamic_data, resource);
-			assert(handle.type != RenderResource::NotInitialized && "Failed to load resource!");
+			for (unsigned i = 0; i < updated_resources.num; ++i)
+			{
+				auto handle = updated_resources.handles[i];
+				auto old_resource = updated_resources.old_resources[i];
+				auto new_resource = updated_resources.new_resources[i];
 
-			// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-			render_resource_table::set(_resource_table, data.handle, handle);
+				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
 
-			// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-			if (handle.type == RenderResource::Object)
-				array::push_back(_resource_objects, RendererResourceObject(data.type, data.handle));
+				if (old_resource.type == RenderResource::Object)
+					array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return handle == rro.handle; });
+
+				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
+				render_resource_table::set(_resource_table, handle, new_resource);
+
+				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+				if (new_resource.type == RenderResource::Object)
+					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
+			}			
 	
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 			array::push_back(_processed_memory, data.data);
@@ -397,12 +422,27 @@ void Renderer::thread()
 	}
 }
 
-RenderResource Renderer::update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource)
+UpdatedResources single_update(RenderResourceHandle handle, RenderResource old_resource, RenderResource new_resource, Allocator& allocator)
+{
+	UpdatedResources ur;
+	ur.num = 1;
+	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
+	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
+	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
+	ur.handles[0] = handle;
+	ur.old_resources[0] = old_resource;
+	ur.new_resources[0] = new_resource;
+	return ur;
+}
+
+UpdatedResources Renderer::update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource)
 {
 	switch(data.type)
 	{
-		case RenderResourceData::Shader: return update_shader(_concrete_renderer, resource, dynamic_data, *(ShaderResourceData*)data.data);
-		default: assert(!"Unknown render resource type"); return RenderResource();
+		case RenderResourceData::Shader: {
+			return single_update(data.handle, resource, update_shader(_concrete_renderer, resource, dynamic_data, *(ShaderResourceData*)data.data), _allocator);
+		}
+		default: assert(!"Unknown render resource type"); return UpdatedResources();
 	}
 }
 

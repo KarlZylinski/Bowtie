@@ -31,6 +31,19 @@ struct RendererResourceObject
 	RenderResourceHandle handle;
 };
 
+struct CreatedResources {
+	unsigned num;
+	RenderResourceHandle* handles;
+	RenderResource* resources;
+};
+
+struct UpdatedResources {
+	unsigned num;
+	RenderResourceHandle* handles;
+	RenderResource* old_resources;
+	RenderResource* new_resources;
+};
+
 class Renderer : public IRenderer
 {
 public:
@@ -52,11 +65,11 @@ public:
 	
 private:
 	void consume_command_queue();
-	RenderResource create_resource(const RenderResourceData& data, void* dynamic_data);
+	CreatedResources create_resource(const RenderResourceData& data, void* dynamic_data);
 	void execute_command(const RendererCommand& command);
 	void notify_unprocessed_commands_exists();
 	void thread();
-	RenderResource update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource);
+	UpdatedResources update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource);
 	void wait_for_unprocessed_commands_to_exist();
 	
 	bool _active;
