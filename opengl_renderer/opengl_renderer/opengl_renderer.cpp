@@ -201,9 +201,14 @@ RenderResource create_texture(PixelFormat pf, const Vector2u& resolution, void* 
 	return RenderResource(create_texture_internal(pf, resolution, data));
 }
 
+void destroy_geometry_internal(GLuint handle)
+{
+	glDeleteBuffers(1, &handle);
+}
+
 void destroy_geometry(RenderResource handle)
 {
-	glDeleteBuffers(1, &handle.handle);
+	destroy_geometry_internal(handle.handle);
 }
 
 void destroy_texture(RenderResource texture)
@@ -430,7 +435,6 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
 
-	// Todo: clean this up!
 	auto geometry = create_geometry_internal(buffer, 54 * sizeof(float));
 
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
@@ -467,8 +471,10 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
 
-	/*for (unsigned i = 0; i < array::size(drawable_rects); ++i)
-		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *drawable_rects[i], resource_table);*/
+	destroy_geometry_internal(geometry);
+
+	/*for (unsigned i = 0; i < array::size(render_world.drawables); ++i)
+		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *render_world.drawables[i], resource_table);*/
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)
