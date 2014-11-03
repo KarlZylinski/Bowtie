@@ -252,6 +252,7 @@ void Renderer::execute_command(const RendererCommand& command)
 		}
 		break;
 
+		// Rename to CreateResource
 	case RendererCommand::LoadResource:
 		{
 			RenderResourceData& data = *(RenderResourceData*)command.data;

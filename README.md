@@ -9,8 +9,14 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Remove render target ctor and free texture in renderer.cpp
     - [x] During rw cleanup, look at rw dstr and the texture stuff there.
 
-- [ ] Split drawable into separate data arrays where drawable is index into those. Use a drawable pool in world to avoid fragmentation.
-    - [ ] Figure out how drawable and its "behaviors" can be split like so.
+- [ ] Create an entity component system
+    - [ ] Rectangle rendering component
+        - [ ] Updating / creating needs support for updating / creating many resources at once
+        - [ ] Make on-demand creation of geometry support multiple rects
+        - [ ] Material
+    - [ ] Transform component
+        - [ ] Link up with rectangle renderer. How to do update by copying in transform positions when indicies aren't matching?
+    - [ ] Sprite rendering component
 
 - [ ] Turn engine into namespace of functions which operates on engine struct.
 - [ ] Turn font into namespace of functions which operates on font struct.
@@ -32,7 +38,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Make reflection message data for 1 array into soa
 - [ ] Write a data compiler by moving all the loading code from resource_manager to a compiler file. Have reasource manager open compiled resources and
         throw the data into memory.
-- [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest.
+- [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest. Or maybe specify default package from main.lua?
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base
 
