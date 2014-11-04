@@ -334,21 +334,17 @@ void draw_drawable(const Vector2u& resolution, const Rect& view, const Matrix4& 
 	glDisableVertexAttribArray(0);
 }
 
-void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
+void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
 {
-	auto view_matrix = view::view_matrix(view);
-	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
-
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
-	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, render_world.components[0]->material).object;
+	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, components[start]->material).object;
 	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto time = timer::counter();
 	auto view_resolution_ratio = view.size.y / resolution.y;
 	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
-
 	Matrix4 ident;
 
 	auto uniforms = material.uniforms;
@@ -405,15 +401,14 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 			assert(!"Unknown uniform type");
 		}
 	}
-	
-	auto& components = render_world.components;
+
 	const unsigned rect_buffer_num_elements = 54;
 	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
-	const unsigned total_buffer_size = rect_buffer_size * array::size(components);
+	const unsigned total_buffer_size = rect_buffer_size * size;
 	TempAllocator<864000> ta;
 	float* buffer = (float*)ta.allocate(total_buffer_size);
 
-	for (unsigned i = 0; i < array::size(components); ++i)
+	for (unsigned i = start; i < start + size; ++i)
 	{
 		float* current_buffer = buffer + rect_buffer_num_elements * i;
 		auto x = (float)components[i]->rect.position.x;
@@ -449,7 +444,7 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		};
 
 		memcpy(current_buffer, &current_buffer_data, rect_buffer_size);
-	}	
+	}
 
 	auto geometry = create_geometry_internal(buffer, total_buffer_size);
 
@@ -484,10 +479,37 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		(void*)(5 * sizeof(float))
 		);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6 * array::size(components));
+	glDrawArrays(GL_TRIANGLES, 0, 6 * size);
 	glDisableVertexAttribArray(0);
 
 	destroy_geometry_internal(geometry);
+}
+
+void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
+{
+	if (render_world.components._size == 0)
+		return;
+
+	auto view_matrix = view::view_matrix(view);
+	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
+	unsigned num_components = array::size(render_world.components);
+	auto batch_material = render_world.components[0]->material;
+	unsigned batch_start = 0;	
+
+	for (unsigned i = 0; i < num_components; ++i)
+	{
+		auto material = render_world.components[i]->material;
+
+		if (batch_material == material)
+			continue;
+
+		draw_batch(batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
+		batch_start = i;
+		batch_material = material;
+	}
+
+	// Draw last batch.
+	draw_batch(batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
 
 	/*for (unsigned i = 0; i < array::size(render_world.drawables); ++i)
 		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *render_world.drawables[i], resource_table);*/

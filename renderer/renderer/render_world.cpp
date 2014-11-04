@@ -43,6 +43,7 @@ void add_component(RenderWorld& rw, RenderComponent* component)
 void sort(RenderWorld& rw)
 {
 	std::sort(&rw.drawables[0], &rw.drawables[array::size(rw.drawables)], [](RenderDrawable* x, RenderDrawable* y){ return x->depth < y->depth; });
+	std::sort(&rw.components[0], &rw.components[array::size(rw.components)], [](RenderComponent* x, RenderComponent* y){ return x->material < y->material; });
 }
 
 } // namespace render_world

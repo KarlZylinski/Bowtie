@@ -42,6 +42,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base
 - [ ] Redo console as external application
+- [ ] Move geometry generation to renderer
 
 
 ## Style

@@ -28,8 +28,6 @@ struct RectangleRendererComponent
 	Hash<unsigned> map;
 	unsigned num;
 	unsigned capacity;
-	// Maybe skip dirtyness and do statereflection right away? But if I can get away with doing deferred reflection
-	// checks on only the touched ones, then maybe it's alright.
 	unsigned last_dirty_index;
 	void* buffer;
 	RectangleRendererComponentData data;
