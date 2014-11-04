@@ -11,8 +11,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 
 - [ ] Create an entity component system
     - [ ] Rectangle rendering component
-        - [ ] Updating / creating needs support for updating / creating many resources at once
-        - [ ] Make on-demand creation of geometry support multiple rects
+        - [x] Updating / creating needs support for updating / creating many resources at once
+        - [x] Make on-demand creation of geometry support multiple rects
         - [ ] Material
     - [ ] Transform component
         - [ ] Link up with rectangle renderer. How to do update by copying in transform positions when indicies aren't matching?

@@ -18,6 +18,25 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 	return new_data;
 }
 
+void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
+{
+	c.data.color[to] = c.data.color[from];
+	c.data.rect[to] = c.data.rect[from];
+	c.data.render_handle[to] = c.data.render_handle[from];
+}
+
+void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num)
+{
+	memcpy(dest.color, c.data.color, num * sizeof(Color));
+	memcpy(dest.rect, c.data.rect, num * sizeof(Rect));
+	memcpy(dest.render_handle, c.data.render_handle, num * sizeof(RenderResourceHandle));
+}
+
+void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
+{
+	copy(c, dest, c.num);
+}
+
 void grow(RectangleRendererComponent& c, Allocator& allocator)
 {
 	const unsigned new_capacity = c.capacity == 0 ? 8 : c.capacity * 2;
@@ -25,9 +44,7 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 	void* buffer = allocator.allocate(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
-	memcpy(new_data.color, c.data.color, c.num * sizeof(Color));
-	memcpy(new_data.rect, c.data.rect, c.num * sizeof(Rect));
-	memcpy(new_data.render_handle, c.data.render_handle, c.num * sizeof(RenderResourceHandle));
+	copy(c, new_data);
 	c.data = new_data;
 
 	allocator.deallocate(c.buffer);
@@ -50,9 +67,7 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 	auto color_at_index = c.data.color[current_dirty_index];
 	auto rect_at_index = c.data.rect[current_dirty_index];
 	auto render_handle_at_index = c.data.render_handle[current_dirty_index];
-	c.data.color[current_dirty_index] = c.data.color[entity_index];
-	c.data.rect[current_dirty_index] = c.data.rect[entity_index];
-	c.data.render_handle[current_dirty_index] = c.data.render_handle[entity_index];
+	move_one(c, entity_index, current_dirty_index);
 	c.data.color[entity_index] = color_at_index;
 	c.data.rect[entity_index] = rect_at_index;
 	c.data.render_handle[entity_index] = render_handle_at_index;
@@ -97,9 +112,7 @@ void destroy(RectangleRendererComponent& c, Entity e)
 	if (i == c.num)
 		return;
 		
-	c.data.color[i] = c.data.color[c.num];
-	c.data.rect[i] = c.data.rect[c.num];
-	c.data.render_handle[i] = c.data.render_handle[c.num];
+	move_one(c, c.num, i);
 }
 
 void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
@@ -149,9 +162,7 @@ RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, A
 	RectangleRendererComponentData* data = (RectangleRendererComponentData*)allocator.allocate(sizeof(RectangleRendererComponentData));
 	auto num_dirty = c.last_dirty_index + 1;
 	*data = initialize_data(allocator.allocate(component_size), num_dirty);
-	memcpy(data->color, c.data.color, sizeof(Color) * num_dirty);
-	memcpy(data->rect, c.data.rect, sizeof(Rect) * num_dirty);
-	memcpy(data->render_handle, c.data.render_handle, sizeof(RenderResourceHandle) * num_dirty);
+	copy(c, *data, num_dirty);
 	return data;
 }
 
