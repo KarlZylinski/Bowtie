@@ -14,7 +14,7 @@ struct Rect;
 struct RenderWorld
 {
 	Array<RenderDrawable*> drawables;
-	Array<Rect> drawable_rects;
+	Array<Rect*> drawable_rects;
 	RenderTarget render_target;
 };
 
@@ -24,7 +24,7 @@ namespace render_world
 	void deinit(RenderWorld& rw);
 	void add_drawable(RenderWorld& rw, RenderDrawable* drawable);
 	void remove_drawable(RenderWorld& rw, RenderDrawable* drawable);
-	void add_drawable_rect(RenderWorld& rw, const Rect& rect);
+	void add_drawable_rect(RenderWorld& rw, Rect* rect);
 	void sort(RenderWorld& rw);
 }
 

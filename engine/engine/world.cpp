@@ -136,9 +136,8 @@ void World::update()
 		if (_rectangle_renderer_component.last_dirty_index != (unsigned)-1)
 		{
 			auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-			CreateRectangleRendererData data;
+			UpdateRectangleRendererData data;
 			data.num = _rectangle_renderer_component.last_dirty_index + 1;
-			data.world = _render_handle;
 			rrd.data = &data;
 			_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size);
 			_rectangle_renderer_component.last_dirty_index = (unsigned)-1;

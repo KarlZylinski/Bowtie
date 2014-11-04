@@ -75,6 +75,11 @@ struct CreateRectangleRendererData
 	unsigned num;
 };
 
+struct UpdateRectangleRendererData
+{
+	unsigned num;
+};
+
 struct RenderWorldResourceData
 {
 	RenderResourceHandle handle;

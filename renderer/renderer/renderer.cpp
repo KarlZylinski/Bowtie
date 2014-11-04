@@ -233,8 +233,8 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 {
 	switch(type)
 	{
-	case RenderResourceData::Drawable: return copy_single_resource(create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data), _allocator);
-	case RenderResourceData::Geometry: return copy_single_resource(create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data), _allocator);
+		case RenderResourceData::Drawable: return copy_single_resource(create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data), _allocator);
+		case RenderResourceData::Geometry: return copy_single_resource(create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data), _allocator);
 		case RenderResourceData::RenderMaterial: return copy_single_resource(create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data), _allocator);
 		case RenderResourceData::Shader: return copy_single_resource(create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data), _allocator);
 		case RenderResourceData::Texture: {
@@ -250,8 +250,10 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
 
 			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
-			render_world::add_drawable_rect(rw, rectangle->rect[0]);
-			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(rw.drawable_rects._size - 1)), _allocator);
+			Rect* rect = (Rect*)_allocator.allocate(sizeof(Rect));
+			*rect = rectangle->rect[0];
+			render_world::add_drawable_rect(rw, rect);
+			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(rect)), _allocator);
 		} break;
 		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
@@ -449,13 +451,19 @@ void Renderer::thread()
 	}
 }
 
-UpdatedResources single_update(SingleUpdatedResource resource, Allocator& allocator)
+UpdatedResources create_updated_resources(unsigned num, Allocator& allocator)
 {
 	UpdatedResources ur;
-	ur.num = 1;
-	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
-	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
-	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
+	ur.num = num;
+	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
+	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	return ur;
+}
+
+UpdatedResources single_update(SingleUpdatedResource resource, Allocator& allocator)
+{
+	UpdatedResources ur = create_updated_resources(1, allocator);
 	ur.handles[0] = resource.handle;
 	ur.old_resources[0] = resource.old_resource;
 	ur.new_resources[0] = resource.new_resource;
@@ -468,18 +476,21 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 	{
 		case RenderResourceData::Shader: return single_update(update_shader(_concrete_renderer, _resource_table, dynamic_data, *(ShaderResourceData*)data), _allocator);
 		case RenderResourceData::RectangleRenderer: {
-			auto rectangle_data = (CreateRectangleRendererData*)data;
-			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
+			auto rectangle_data = (UpdateRectangleRendererData*)data;
+			UpdatedResources ur = create_updated_resources(rectangle_data->num, _allocator);
 
-			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
-			unsigned index = render_resource_table::lookup(_resource_table, rectangle->render_handle[0]).handle;
-			rw.drawable_rects[index] = rectangle->rect[0];
+			for (unsigned i = 0; i < rectangle_data->num; ++i)
+			{
+				RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
+				auto rect = (Rect*)render_resource_table::lookup(_resource_table, rectangle->render_handle[i]).object;
+				*rect = rectangle->rect[i];
 
-			SingleUpdatedResource sur;
-			sur.handle = rectangle->render_handle[0];
-			sur.new_resource = RenderResource(index);
-			sur.old_resource = RenderResource(index);
-			return single_update(sur, _allocator);
+				ur.handles[i] = rectangle->render_handle[i];
+				ur.new_resources[i] = RenderResource(rect);
+				ur.old_resources[i] = RenderResource(rect);
+			}
+
+			return ur;
 		}
 		default: assert(!"Unknown render resource type"); return UpdatedResources();
 	}

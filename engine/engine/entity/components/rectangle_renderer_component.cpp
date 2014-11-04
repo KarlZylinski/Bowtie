@@ -82,7 +82,7 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator)
 	unsigned i = c.num++;
 	hash::set(c.map, e, i);
 	c.data.color[i] = Color(1, 1, 1, 1);
-	c.data.rect[i] = Rect(Vector2(0,0), Vector2(600,600));
+	c.data.rect[i] = Rect();
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
 }
 

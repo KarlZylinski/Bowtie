@@ -12,6 +12,7 @@
 #include <renderer/render_world.h>
 #include <renderer/render_resource_table.h>
 #include "gl3w.h"
+#include <foundation/temp_allocator.h>
 
 namespace bowtie
 {
@@ -406,36 +407,46 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 
 
 	auto& drawable_rects = render_world.drawable_rects;
+	const unsigned rect_buffer_num_elements = 54;
+	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
+	const unsigned total_buffer_size = rect_buffer_size * array::size(drawable_rects);
+	TempAllocator<864000> ta;
+	float* buffer = (float*)ta.allocate(total_buffer_size);
 
-	auto x = (float)drawable_rects[0].position.x;
-	auto y = (float)drawable_rects[0].position.y;
-	auto w = (float)drawable_rects[0].size.x;
-	auto h = (float)drawable_rects[0].size.y;
+	for (unsigned i = 0; i < array::size(drawable_rects); ++i)
+	{
+		float* current_buffer = buffer + rect_buffer_num_elements * i;
+		auto x = (float)drawable_rects[i]->position.x;
+		auto y = (float)drawable_rects[i]->position.y;
+		auto w = (float)drawable_rects[i]->size.x;
+		auto h = (float)drawable_rects[i]->size.y;
 
-	// Todo: Do for all rects!
-	float buffer[54] = {
-		x, y, 0.0f,
-		0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		x + w, y, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		x, y + h, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
+		float buffer[rect_buffer_num_elements] = {
+			x, y, 0.0f,
+			0.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			x + w, y, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			x, y + h, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
 
-		x + w, y, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		x + w, y + h, 0.0f,
-		1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		x, y + h, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f
-	};
+			x + w, y, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			x + w, y + h, 0.0f,
+			1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			x, y + h, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f
+		};
 
-	auto geometry = create_geometry_internal(buffer, 54 * sizeof(float));
+		memcpy(current_buffer, &buffer, rect_buffer_size);
+	}	
+
+	auto geometry = create_geometry_internal(buffer, total_buffer_size);
 
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
 	glEnableVertexAttribArray(0);
@@ -468,7 +479,7 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		(void*)(5 * sizeof(float))
 		);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, 6 * array::size(drawable_rects));
 	glDisableVertexAttribArray(0);
 
 	destroy_geometry_internal(geometry);

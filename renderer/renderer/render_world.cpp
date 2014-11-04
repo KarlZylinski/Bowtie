@@ -14,7 +14,7 @@ namespace render_world
 void init(RenderWorld& rw, const RenderTarget& render_target, Allocator& allocator)
 {
 	rw.drawables = array::create<RenderDrawable*>(allocator);
-	rw.drawable_rects = array::create<Rect>(allocator);
+	rw.drawable_rects = array::create<Rect*>(allocator);
 	rw.render_target = render_target;
 }
 
@@ -34,7 +34,7 @@ void remove_drawable(RenderWorld& rw, RenderDrawable* drawable)
 	array::remove(rw.drawables, drawable);
 }
 
-void add_drawable_rect(RenderWorld& rw, const Rect& rect)
+void add_drawable_rect(RenderWorld& rw, Rect* rect)
 {
 	array::push_back(rw.drawable_rects, rect);	
 }
