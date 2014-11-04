@@ -65,11 +65,11 @@ public:
 	
 private:
 	void consume_command_queue();
-	CreatedResources create_resource(const RenderResourceData& data, void* dynamic_data);
+	CreatedResources create_resources(RenderResourceData::Type type, void* data, void* dynamic_data);
 	void execute_command(const RendererCommand& command);
 	void notify_unprocessed_commands_exists();
 	void thread();
-	UpdatedResources update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource);
+	UpdatedResources update_resources(RenderResourceData::Type type, void* data, void* dynamic_data);
 	void wait_for_unprocessed_commands_to_exist();
 	
 	bool _active;

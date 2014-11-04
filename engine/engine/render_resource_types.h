@@ -17,24 +17,26 @@ struct RenderResourceData
 	};
 
 	Type type;
-	RenderResourceHandle handle;
 	void* data;
 };
 
 struct MaterialResourceData
 {
+	RenderResourceHandle handle;
 	RenderResourceHandle shader;
 	unsigned num_uniforms;
 };
 	
 struct ShaderResourceData
 {
+	RenderResourceHandle handle;
 	unsigned vertex_shader_source_offset;
 	unsigned fragment_shader_source_offset;
 };
 
 struct TextureResourceData
 {
+	RenderResourceHandle handle;
 	PixelFormat pixel_format;
 	unsigned texture_data_size;
 	unsigned texture_data_dynamic_data_offset;
@@ -43,6 +45,7 @@ struct TextureResourceData
 
 struct DrawableResourceData
 {
+	RenderResourceHandle handle;
 	RenderResourceHandle render_world;
 	RenderResourceHandle texture;
 	RenderResourceHandle material;
@@ -62,6 +65,7 @@ struct UniformResourceData
 
 struct GeometryResourceData
 {
+	RenderResourceHandle handle;
 	unsigned size;
 };
 
@@ -69,6 +73,11 @@ struct CreateRectangleRendererData
 {
 	RenderResourceHandle world;
 	unsigned num;
+};
+
+struct RenderWorldResourceData
+{
+	RenderResourceHandle handle;
 };
 
 } // namespace bowtie

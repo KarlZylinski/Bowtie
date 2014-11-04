@@ -32,16 +32,15 @@ void RenderInterface::create_texture(Texture& texture)
 	auto texture_resource = create_render_resource_data(RenderResourceData::Texture);
 
 	auto trd = TextureResourceData();
+	trd.handle = create_handle();
 	trd.resolution = image.resolution;
 	trd.texture_data_dynamic_data_offset = 0;
 	trd.texture_data_size = image.data_size;
 	trd.pixel_format = image.pixel_format;
 
 	texture_resource.data = &trd;
-
 	create_resource(texture_resource, image.data, image.data_size);
-
-	texture.render_handle = texture_resource.handle;
+	texture.render_handle = trd.handle;
 }
 
 RenderResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawable& drawable)
@@ -62,6 +61,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	DrawableResourceData drawable_resource_data;
 
 	auto texture = drawable.geometry().texture();
+	drawable_resource_data.handle = create_handle();
 	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : RenderResourceHandle();
 	drawable_resource_data.render_world = world.render_handle();
 	drawable_resource_data.model = drawable.model_matrix();
@@ -73,13 +73,14 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	{
 		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
 		GeometryResourceData geometry_data;
+		geometry_data.handle = create_handle();
 		geometry_data.size = drawable.geometry().data_size();
 		geometry_rrd.data = &geometry_data;
 		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
 		memcpy(geometry_dynamic_data, drawable.geometry().data(), geometry_data.size);
 		create_resource(geometry_rrd, (void*)geometry_dynamic_data, geometry_data.size);
-		drawable_resource_data.geometry = geometry_rrd.handle;
-		drawable.set_geometry_handle(geometry_rrd.handle);
+		drawable_resource_data.geometry = geometry_data.handle;
+		drawable.set_geometry_handle(geometry_data.handle);
 	}
 	else
 		drawable_resource_data.geometry = geometry_handle;
@@ -87,7 +88,7 @@ void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& r
 	drawable_resource_data.num_vertices = drawable.geometry().data_size() / (sizeof(float) * 5);
 	drawable_rrd.data = &drawable_resource_data;
 	create_resource(drawable_rrd);
-	drawable.set_render_handle(drawable_rrd.handle);
+	drawable.set_render_handle(drawable_resource_data.handle);
 }
 
 void RenderInterface::unspawn(World& world, Drawable& drawable)
@@ -107,13 +108,17 @@ void RenderInterface::create_render_world(World& world)
 	assert(world.render_handle() == RenderResourceHandle::NotInitialized);
 
 	auto render_world_data = create_render_resource_data(RenderResourceData::World);
-	world.set_render_handle(render_world_data.handle);
+
+	RenderWorldResourceData rwrd;
+	rwrd.handle = create_handle();
+	render_world_data.data = &rwrd;
+	world.set_render_handle(rwrd.handle);
 	create_resource(render_world_data);
 }
 
 RenderResourceData RenderInterface::create_render_resource_data(RenderResourceData::Type type)
 {
-	RenderResourceData rr = { type, _renderer.create_handle(), 0 };
+	RenderResourceData rr = { type, 0 };
 	return rr;
 }
 
@@ -131,6 +136,11 @@ RendererCommand RenderInterface::create_command(RendererCommand::Type type)
 	}
 
 	return command;
+}
+
+RenderResourceHandle RenderInterface::create_handle()
+{
+	return _renderer.create_handle();
 }
 
 bool RenderInterface::is_setup() const
@@ -159,8 +169,6 @@ void RenderInterface::dispatch(const RendererCommand& command, void* dynamic_dat
 
 RendererCommand create_or_update_resource_renderer_command(Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
 {
-	assert(resource.handle != RenderResourceHandle::NotInitialized && "Trying to load an uninitialized resource");
-
 	RendererCommand rc;
 
 	auto copied_resource = (RenderResourceData*)allocator.allocate(sizeof(RenderResourceData));
@@ -195,7 +203,8 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 			memcpy(copied_resource->data, resource.data, sizeof(CreateRectangleRendererData));
 			break;
 		case RenderResourceData::World:
-			// No data
+			copied_resource->data = allocator.allocate(sizeof(RenderWorldResourceData));
+			memcpy(copied_resource->data, resource.data, sizeof(RenderWorldResourceData));
 			break;
 		default:
 			assert(!"Unknown resource data type.");

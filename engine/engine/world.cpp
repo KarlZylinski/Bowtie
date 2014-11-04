@@ -64,7 +64,7 @@ void World::unspawn(Drawable& drawable)
 void World::handle_rectangle_renderer_created(Entity entity)
 {
 	auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-	rectangle_renderer_component::set_render_handle(_rectangle_renderer_component, entity, rrd.handle);
+	rectangle_renderer_component::set_render_handle(_rectangle_renderer_component, entity, _render_interface.create_handle());
 	CreateRectangleRendererData data;
 	data.num = 1;
 	data.world = _render_handle;

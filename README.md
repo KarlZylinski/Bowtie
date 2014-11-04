@@ -41,6 +41,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest. Or maybe specify default package from main.lua?
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base
+- [ ] Redo console as external application
 
 
 ## Style

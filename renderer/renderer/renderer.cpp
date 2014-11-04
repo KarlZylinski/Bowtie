@@ -26,15 +26,21 @@ namespace bowtie
 namespace
 {
 
-RenderResource create_drawable(Allocator& allocator, const RenderResource* resource_table, const DrawableResourceData& data);
-RenderResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
-RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data);
+struct SingleCreatedResource
+{
+	RenderResourceHandle handle;
+	RenderResource resource;
+};
+
+SingleCreatedResource create_drawable(Allocator& allocator, const RenderResource* resource_table, const DrawableResourceData& data);
+SingleCreatedResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
+SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data);
 RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets);
 RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const RenderTexture& texture, Array<RenderTarget>& render_targets);
-RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
+SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
 RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data);
 RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data);
-RenderResource create_world(Allocator& allocator, const RenderTarget& render_target);
+SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target);
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data);
 void flip(IRendererContext& context);
 void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
@@ -197,41 +203,48 @@ void Renderer::consume_command_queue()
 	array::clear(_command_queue);
 }
 
-CreatedResources single_resource(RenderResourceHandle handle, RenderResource resource, Allocator& allocator)
+SingleCreatedResource single_resource(RenderResourceHandle handle, RenderResource resource)
+{
+	SingleCreatedResource scr;
+	scr.handle = handle;
+	scr.resource = resource;
+	return scr;
+}
+
+CreatedResources copy_single_resource(SingleCreatedResource resource, Allocator& allocator)
 {
 	CreatedResources cr;
 	cr.num = 1;
 	cr.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
 	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
-	cr.handles[0] = handle;
-	cr.resources[0] = resource;
+	cr.handles[0] = resource.handle;
+	cr.resources[0] = resource.resource;
 	return cr;
 }
 
-CreatedResources Renderer::create_resource(const RenderResourceData& data, void* dynamic_data)
+CreatedResources Renderer::create_resources(RenderResourceData::Type type, void* data, void* dynamic_data)
 {
-	switch(data.type)
+	switch(type)
 	{
-		case RenderResourceData::Drawable: return single_resource(data.handle, create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data.data), _allocator);
-		case RenderResourceData::Geometry: return single_resource(data.handle, create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data.data), _allocator);
-		case RenderResourceData::RenderMaterial: return single_resource(data.handle, create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data.data), _allocator);
-		case RenderResourceData::RenderTarget: return single_resource(data.handle, create_render_target_resource(_concrete_renderer, _allocator, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets), _allocator);
-		case RenderResourceData::Shader: return single_resource(data.handle, create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data.data), _allocator);
+	case RenderResourceData::Drawable: return copy_single_resource(create_drawable(_allocator, _resource_table, *(DrawableResourceData*)data), _allocator);
+	case RenderResourceData::Geometry: return copy_single_resource(create_geometry(_concrete_renderer, dynamic_data, *(GeometryResourceData*)data), _allocator);
+		case RenderResourceData::RenderMaterial: return copy_single_resource(create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data), _allocator);
+		case RenderResourceData::Shader: return copy_single_resource(create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data), _allocator);
 		case RenderResourceData::Texture: {
-			auto texture_resource_data = (TextureResourceData*)data.data;
+			auto texture_resource_data = (TextureResourceData*)data;
 			auto texture_bits = memory::pointer_add(dynamic_data, texture_resource_data->texture_data_dynamic_data_offset);
-			return single_resource(data.handle, create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits), _allocator);
+			return copy_single_resource(single_resource(texture_resource_data->handle, create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits)), _allocator);
 		}
 		case RenderResourceData::World: {
-			return single_resource(data.handle, create_world(_allocator, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets)), _allocator);
+			return copy_single_resource(create_world(_allocator, *(RenderWorldResourceData*)data, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets)), _allocator);
 		}
 		case RenderResourceData::RectangleRenderer: {
-			auto rectangle_data = (CreateRectangleRendererData*)data.data;
+			auto rectangle_data = (CreateRectangleRendererData*)data;
 			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
 
 			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
 			render_world::add_drawable_rect(rw, rectangle->rect[0]);
-			return single_resource(data.handle, RenderResource(rw.drawable_rects._size - 1), _allocator);
+			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(rw.drawable_rects._size - 1)), _allocator);
 		} break;
 		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
@@ -258,7 +271,7 @@ void Renderer::execute_command(const RendererCommand& command)
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
 
-			auto created_resources = create_resource(data, dynamic_data);
+			auto created_resources = create_resources(data.type, data.data, dynamic_data);
 
 			for (unsigned i = 0; i < created_resources.num; ++i)
 			{
@@ -272,7 +285,7 @@ void Renderer::execute_command(const RendererCommand& command)
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (resource.type == RenderResource::Object)
-					array::push_back(_resource_objects, RendererResourceObject(data.type, data.handle));
+					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
 			}			
 	
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
@@ -284,8 +297,7 @@ void Renderer::execute_command(const RendererCommand& command)
 		{
 			RenderResourceData& data = *(RenderResourceData*)command.data;
 			void* dynamic_data = command.dynamic_data;
-			const auto& resource = render_resource_table::lookup(_resource_table, data.handle);			
-			auto updated_resources = update_resource(data, dynamic_data, resource);
+			auto updated_resources = update_resources(data.type, data.data, dynamic_data);
 
 			for (unsigned i = 0; i < updated_resources.num; ++i)
 			{
@@ -436,12 +448,13 @@ UpdatedResources single_update(RenderResourceHandle handle, RenderResource old_r
 	return ur;
 }
 
-UpdatedResources Renderer::update_resource(const RenderResourceData& data, void* dynamic_data, const RenderResource& resource)
+UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void* , void* )
 {
-	switch(data.type)
+	switch(type)
 	{
 		case RenderResourceData::Shader: {
-			return single_update(data.handle, resource, update_shader(_concrete_renderer, resource, dynamic_data, *(ShaderResourceData*)data.data), _allocator);
+			//return single_update((*(ShaderResourceData*)data).handle, update_shader(_concrete_renderer, resource, dynamic_data, *(ShaderResourceData*)data), _allocator);
+			return UpdatedResources();
 		}
 		default: assert(!"Unknown render resource type"); return UpdatedResources();
 	}
@@ -456,7 +469,7 @@ void Renderer::wait_for_unprocessed_commands_to_exist()
 namespace
 {
 
-RenderResource create_drawable(Allocator& allocator, const RenderResource* resource_lut, const DrawableResourceData& data)
+SingleCreatedResource create_drawable(Allocator& allocator, const RenderResource* resource_lut, const DrawableResourceData& data)
 {
 	RenderDrawable& drawable = *(RenderDrawable*)allocator.allocate(sizeof(RenderDrawable));
 	drawable.texture = data.texture;
@@ -467,12 +480,12 @@ RenderResource create_drawable(Allocator& allocator, const RenderResource* resou
 	drawable.depth = data.depth;
 	auto& rw = *(RenderWorld*)render_resource_table::lookup(resource_lut, data.render_world).object;
 	render_world::add_drawable(rw, &drawable);
-	return RenderResource(&drawable);
+	return single_resource(data.handle, RenderResource(&drawable));
 }
 
-RenderResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
+SingleCreatedResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data)
 {
-	return concrete_renderer.create_geometry(dynamic_data, data.size);
+	return single_resource(data.handle, concrete_renderer.create_geometry(dynamic_data, data.size));
 }
 
 RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data)
@@ -486,7 +499,7 @@ RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource
 		return RenderUniform(uniform_data.type, name_hash, location, uniform_data.automatic_value);
 }
 
-RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data)
+SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data)
 {
 	auto material = (RenderMaterial*)allocator.allocate(sizeof(RenderMaterial));
 	render_material::init(*material, allocator, data.shader);
@@ -522,7 +535,7 @@ RenderResource create_material(Allocator& allocator, ConcreteRenderer& concrete_
 		render_material::add_uniform(*material, uniform);
 	}
 
-	return RenderResource(material);
+	return single_resource(data.handle, RenderResource(material));
 }
 
 RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets)
@@ -542,11 +555,11 @@ RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const Ren
 	return rt;
 }
 
-RenderResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
+SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
 {
 	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
 	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
-	return concrete_renderer.create_shader(vertex_source, fragment_source);
+	return single_resource(data.handle, concrete_renderer.create_shader(vertex_source, fragment_source));
 }
 
 RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
@@ -567,11 +580,11 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 	return render_texture;
 }
 
-RenderResource create_world(Allocator& allocator, const RenderTarget& render_target)
+SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target)
 {
 	auto rw = (RenderWorld*)allocator.allocate(sizeof(RenderWorld));
 	render_world::init(*rw, render_target, allocator);
-	return RenderResource(rw);
+	return single_resource(data.handle, RenderResource(rw));
 }
 
 void drawable_state_reflection(RenderDrawable& drawable, const DrawableStateReflectionData& data)

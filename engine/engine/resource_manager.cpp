@@ -183,6 +183,7 @@ Material& ResourceManager::load_material(const char* filename)
 	array::deinit(uniforms);
 	
 	MaterialResourceData mrd;
+	mrd.handle = _render_interface.create_handle();
 	mrd.num_uniforms = num_uniforms;
 	mrd.shader = shader.render_handle;
 	RenderResourceData material_resource_data = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
@@ -190,7 +191,7 @@ Material& ResourceManager::load_material(const char* filename)
 	_render_interface.create_resource(material_resource_data, uniforms_data, uniform_data_size);
 
 	auto material = (Material*)_allocator.allocate(sizeof(Material));
-	material->render_handle = material_resource_data.handle;
+	material->render_handle = mrd.handle;
 	material->shader = &shader;
 	add_resource(name, Resource(material));	
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
@@ -204,9 +205,9 @@ RenderResourceData get_create_render_resource_data(RenderInterface& render_inter
 	return resource_data;
 }
 
-RenderResourceData get_update_render_resource_data(RenderResourceData::Type type, RenderResourceHandle handle, void* data)
+RenderResourceData get_update_render_resource_data(RenderResourceData::Type type, void* data)
 {
-	RenderResourceData resource_data = { type, handle, data };
+	RenderResourceData resource_data = { type, data };
 	return resource_data;
 }
 
@@ -255,10 +256,11 @@ Shader& ResourceManager::load_shader(const char* filename)
 		return *(Shader*)existing.object;
 
 	auto resource_package = get_shader_resource_data(_allocator, filename);
+	resource_package.data.handle = _render_interface.create_handle();
 	auto create_resource_data = get_create_render_resource_data(_render_interface, RenderResourceData::Shader, &resource_package.data);
 	_render_interface.create_resource(create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
 	auto shader = (Shader*)_allocator.allocate(sizeof(Shader));
-	shader->render_handle = create_resource_data.handle;
+	shader->render_handle = resource_package.data.handle;
 	add_resource(name, Resource(shader));
 	return *shader;
 }
@@ -403,7 +405,8 @@ void ResourceManager::reload(ResourceType type, const char* filename)
 			{
 				auto& shader = *get<Shader>(type, filename);
 				auto shader_data = get_shader_resource_data(_allocator, filename);
-				auto update_command_data = get_update_render_resource_data(RenderResourceData::Shader, shader.render_handle, &shader_data.data);
+				shader_data.data.handle = shader.render_handle;
+				auto update_command_data = get_update_render_resource_data(RenderResourceData::Shader, &shader_data.data);
 				_render_interface.update_resource(update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);
 			}
 			break;
