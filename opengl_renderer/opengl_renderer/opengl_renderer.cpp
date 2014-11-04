@@ -5,6 +5,7 @@
 #include <engine/view.h>
 #include <engine/rect.h>
 #include <engine/timer.h>
+#include <renderer/render_component.h>
 #include <renderer/render_material.h>
 #include <renderer/render_drawable.h>
 #include <renderer/render_target.h>
@@ -404,46 +405,50 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 			assert(!"Unknown uniform type");
 		}
 	}
-
-
-	auto& drawable_rects = render_world.drawable_rects;
+	
+	auto& components = render_world.components;
 	const unsigned rect_buffer_num_elements = 54;
 	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
-	const unsigned total_buffer_size = rect_buffer_size * array::size(drawable_rects);
+	const unsigned total_buffer_size = rect_buffer_size * array::size(components);
 	TempAllocator<864000> ta;
 	float* buffer = (float*)ta.allocate(total_buffer_size);
 
-	for (unsigned i = 0; i < array::size(drawable_rects); ++i)
+	for (unsigned i = 0; i < array::size(components); ++i)
 	{
 		float* current_buffer = buffer + rect_buffer_num_elements * i;
-		auto x = (float)drawable_rects[i]->position.x;
-		auto y = (float)drawable_rects[i]->position.y;
-		auto w = (float)drawable_rects[i]->size.x;
-		auto h = (float)drawable_rects[i]->size.y;
+		auto x = (float)components[i]->rect.position.x;
+		auto y = (float)components[i]->rect.position.y;
+		auto w = (float)components[i]->rect.size.x;
+		auto h = (float)components[i]->rect.size.y;
 
-		float buffer[rect_buffer_num_elements] = {
+		auto r = (float)components[i]->color.r;
+		auto g = (float)components[i]->color.g;
+		auto b = (float)components[i]->color.b;
+		auto a = (float)components[i]->color.a;
+
+		float current_buffer_data[rect_buffer_num_elements] = {
 			x, y, 0.0f,
 			0.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			r, g, b, a,
 			x + w, y, 0.0f,
 			1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			r, g, b, a,
 			x, y + h, 0.0f,
 			0.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			r, g, b, a,
 
 			x + w, y, 0.0f,
 			1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			r, g, b, a,
 			x + w, y + h, 0.0f,
 			1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			r, g, b, a,
 			x, y + h, 0.0f,
 			0.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f
+			r, g, b, a
 		};
 
-		memcpy(current_buffer, &buffer, rect_buffer_size);
+		memcpy(current_buffer, &current_buffer_data, rect_buffer_size);
 	}	
 
 	auto geometry = create_geometry_internal(buffer, total_buffer_size);
@@ -479,7 +484,7 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		(void*)(5 * sizeof(float))
 		);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6 * array::size(drawable_rects));
+	glDrawArrays(GL_TRIANGLES, 0, 6 * array::size(components));
 	glDisableVertexAttribArray(0);
 
 	destroy_geometry_internal(geometry);

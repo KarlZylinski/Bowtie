@@ -3,6 +3,7 @@
 #include <engine/rect.h>
 #include "render_target.h"
 #include "render_drawable.h"
+#include "render_component.h"
 #include <algorithm>
 
 namespace bowtie
@@ -14,14 +15,14 @@ namespace render_world
 void init(RenderWorld& rw, const RenderTarget& render_target, Allocator& allocator)
 {
 	rw.drawables = array::create<RenderDrawable*>(allocator);
-	rw.drawable_rects = array::create<Rect*>(allocator);
+	rw.components = array::create<RenderComponent*>(allocator);
 	rw.render_target = render_target;
 }
 
 void deinit(RenderWorld& rw)
 {
 	array::deinit(rw.drawables);
-	array::deinit(rw.drawable_rects);
+	array::deinit(rw.components);
 }
 
 void add_drawable(RenderWorld& rw, RenderDrawable* drawable)
@@ -34,9 +35,9 @@ void remove_drawable(RenderWorld& rw, RenderDrawable* drawable)
 	array::remove(rw.drawables, drawable);
 }
 
-void add_drawable_rect(RenderWorld& rw, Rect* rect)
+void add_component(RenderWorld& rw, RenderComponent* component)
 {
-	array::push_back(rw.drawable_rects, rect);	
+	array::push_back(rw.components, component);
 }
 
 void sort(RenderWorld& rw)

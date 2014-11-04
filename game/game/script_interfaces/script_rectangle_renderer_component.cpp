@@ -39,7 +39,7 @@ int destroy(lua_State* lua)
 int rect(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	const Rect& rect = rectangle_renderer_component::rect(*(RectangleRendererComponent*)c.component, c.entity);
+	const auto& rect = rectangle_renderer_component::rect(*(RectangleRendererComponent*)c.component, c.entity);
 	script_interface::push_vector2(lua, rect.position);
 	script_interface::push_vector2(lua, rect.size);
 	return 2;
@@ -53,6 +53,22 @@ int set_rect(lua_State* lua)
 	return 0;
 }
 
+int color(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	const auto& color = rectangle_renderer_component::color(*(RectangleRendererComponent*)c.component, c.entity);
+	script_interface::push_color(lua, color);
+	return 1;
+}
+
+int set_color(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	auto color = script_interface::to_color(lua, 2);
+	rectangle_renderer_component::set_color(*(RectangleRendererComponent*)c.component, c.entity, color);
+	return 0;
+}
+
 void load(lua_State* lua, Allocator& allocator)
 {
 	s_allocator = &allocator;
@@ -61,10 +77,12 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "create", create },
 		{ "destroy", destroy },
 		{ "rect", rect },
-		{ "set_rect", set_rect }
+		{ "set_rect", set_rect },
+		{ "color", color },
+		{ "set_color", set_color }
 	};
 
-	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 4);
+	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 6);
 }
 
 } // namespace drawable_script_interface

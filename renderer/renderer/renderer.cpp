@@ -16,6 +16,7 @@
 #include "render_world.h"
 #include "render_target.h"
 #include "render_texture.h"
+#include "render_component.h"
 
 namespace bowtie
 {
@@ -250,10 +251,11 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
 
 			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
-			Rect* rect = (Rect*)_allocator.allocate(sizeof(Rect));
-			*rect = rectangle->rect[0];
-			render_world::add_drawable_rect(rw, rect);
-			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(rect)), _allocator);
+			auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
+			component->rect = rectangle->rect[0];
+			component->color = rectangle->color[0];
+			render_world::add_component(rw, component);
+			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(component)), _allocator);
 		} break;
 		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
@@ -482,12 +484,13 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 			for (unsigned i = 0; i < rectangle_data->num; ++i)
 			{
 				RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
-				auto rect = (Rect*)render_resource_table::lookup(_resource_table, rectangle->render_handle[i]).object;
-				*rect = rectangle->rect[i];
+				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle->render_handle[i]).object;
+				component->rect = rectangle->rect[i];
+				component->color = rectangle->color[i];
 
 				ur.handles[i] = rectangle->render_handle[i];
-				ur.new_resources[i] = RenderResource(rect);
-				ur.old_resources[i] = RenderResource(rect);
+				ur.new_resources[i] = RenderResource(component);
+				ur.old_resources[i] = RenderResource(component);
 			}
 
 			return ur;

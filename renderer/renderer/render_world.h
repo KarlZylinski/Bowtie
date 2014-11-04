@@ -10,11 +10,12 @@ namespace bowtie
 class Allocator;
 struct RenderDrawable;
 struct Rect;
+struct RenderComponent;
 
 struct RenderWorld
 {
 	Array<RenderDrawable*> drawables;
-	Array<Rect*> drawable_rects;
+	Array<RenderComponent*> components;
 	RenderTarget render_target;
 };
 
@@ -24,7 +25,7 @@ namespace render_world
 	void deinit(RenderWorld& rw);
 	void add_drawable(RenderWorld& rw, RenderDrawable* drawable);
 	void remove_drawable(RenderWorld& rw, RenderDrawable* drawable);
-	void add_drawable_rect(RenderWorld& rw, Rect* rect);
+	void add_component(RenderWorld& rw, RenderComponent* component);
 	void sort(RenderWorld& rw);
 }
 

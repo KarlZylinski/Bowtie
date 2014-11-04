@@ -39,8 +39,12 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 
 void mark_dirty(RectangleRendererComponent& c, Entity e)
 {
-	auto current_dirty_index = ++c.last_dirty_index;
 	auto entity_index = hash::get(c.map, e, 0u);
+
+	if (c.last_dirty_index != (unsigned)-1 && entity_index <= c.last_dirty_index)
+		return;
+
+	auto current_dirty_index = ++c.last_dirty_index;
 
 	if (current_dirty_index == entity_index)
 		return;
