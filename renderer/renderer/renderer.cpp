@@ -32,6 +32,13 @@ struct SingleCreatedResource
 	RenderResource resource;
 };
 
+struct SingleUpdatedResource
+{
+	RenderResourceHandle handle;
+	RenderResource old_resource;
+	RenderResource new_resource;
+};
+
 SingleCreatedResource create_drawable(Allocator& allocator, const RenderResource* resource_table, const DrawableResourceData& data);
 SingleCreatedResource create_geometry(ConcreteRenderer& concrete_renderer, void* dynamic_data, const GeometryResourceData& data);
 SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data);
@@ -47,7 +54,7 @@ void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>&
 void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
 void raise_fence(RenderFence& fence);
 void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view);
-RenderResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data);
+SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource* resource_table, void* dynamic_data, const ShaderResourceData& data);
 
 }
 
@@ -286,7 +293,10 @@ void Renderer::execute_command(const RendererCommand& command)
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (resource.type == RenderResource::Object)
 					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
-			}			
+			}
+
+			_allocator.deallocate(created_resources.handles);
+			_allocator.deallocate(created_resources.resources);
 	
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 			array::push_back(_processed_memory, data.data);
@@ -316,8 +326,12 @@ void Renderer::execute_command(const RendererCommand& command)
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (new_resource.type == RenderResource::Object)
 					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
-			}			
-	
+			}
+
+			_allocator.deallocate(updated_resources.handles);
+			_allocator.deallocate(updated_resources.new_resources);
+			_allocator.deallocate(updated_resources.old_resources);
+
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 			array::push_back(_processed_memory, data.data);
 		}
@@ -435,26 +449,37 @@ void Renderer::thread()
 	}
 }
 
-UpdatedResources single_update(RenderResourceHandle handle, RenderResource old_resource, RenderResource new_resource, Allocator& allocator)
+UpdatedResources single_update(SingleUpdatedResource resource, Allocator& allocator)
 {
 	UpdatedResources ur;
 	ur.num = 1;
 	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
 	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
 	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
-	ur.handles[0] = handle;
-	ur.old_resources[0] = old_resource;
-	ur.new_resources[0] = new_resource;
+	ur.handles[0] = resource.handle;
+	ur.old_resources[0] = resource.old_resource;
+	ur.new_resources[0] = resource.new_resource;
 	return ur;
 }
 
-UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void* , void* )
+UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void* data, void* dynamic_data)
 {
 	switch(type)
 	{
-		case RenderResourceData::Shader: {
-			//return single_update((*(ShaderResourceData*)data).handle, update_shader(_concrete_renderer, resource, dynamic_data, *(ShaderResourceData*)data), _allocator);
-			return UpdatedResources();
+		case RenderResourceData::Shader: return single_update(update_shader(_concrete_renderer, _resource_table, dynamic_data, *(ShaderResourceData*)data), _allocator);
+		case RenderResourceData::RectangleRenderer: {
+			auto rectangle_data = (CreateRectangleRendererData*)data;
+			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
+
+			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
+			unsigned index = render_resource_table::lookup(_resource_table, rectangle->render_handle[0]).handle;
+			rw.drawable_rects[index] = rectangle->rect[0];
+
+			SingleUpdatedResource sur;
+			sur.handle = rectangle->render_handle[0];
+			sur.new_resource = RenderResource(index);
+			sur.old_resource = RenderResource(index);
+			return single_update(sur, _allocator);
 		}
 		default: assert(!"Unknown render resource type"); return UpdatedResources();
 	}
@@ -641,11 +666,17 @@ void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, Rende
 	array::push_back(rendered_worlds, &render_world);
 }
 
-RenderResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource& shader, void* dynamic_data, const ShaderResourceData& data)
+SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource* resource_table, void* dynamic_data, const ShaderResourceData& data)
 {
+	RenderResource old_resource = render_resource_table::lookup(resource_table, data.handle);
 	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
 	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
-	return concrete_renderer.update_shader(shader, vertex_source, fragment_source);
+	RenderResource new_resource = concrete_renderer.update_shader(old_resource, vertex_source, fragment_source);
+	SingleUpdatedResource sur;
+	sur.handle = data.handle;
+	sur.old_resource = old_resource;
+	sur.new_resource = new_resource;
+	return sur;
 }
 
 } // implementation
