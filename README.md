@@ -15,8 +15,11 @@ My 2D engine, built from the ground up using C++ and OpenGL.
         - [x] Make on-demand creation of geometry support multiple rects
         - [x] Material
     - [ ] Transform component
-        - [ ] Link up with rectangle renderer. How to do update by copying in transform positions when indicies aren't matching?
+        - [ ] Iterate over dirty transforms before rect renderers and copy the updated transform to the rects belonging to same entity. What to do if the entity is missing rect? Check? Reverse lookup?
+        - [ ] Copying to rect will make that one dirty, and trigger a update to renderer.
     - [ ] Sprite rendering component
+    - [ ] GC of components
+    - [ ] Convert old stuff to this new thingmajing
 
 - [ ] Turn engine into namespace of functions which operates on engine struct.
 - [ ] Turn font into namespace of functions which operates on font struct.
