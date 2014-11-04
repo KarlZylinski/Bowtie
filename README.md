@@ -4,8 +4,6 @@ Bowtie
 My 2D engine, built from the ground up using C++ and OpenGL.
 
 
-## The big C-style refactor
-
 - [x] Remove render target ctor and free texture in renderer.cpp
     - [x] During rw cleanup, look at rw dstr and the texture stuff there.
 
@@ -46,6 +44,10 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Rename foundation to base
 - [ ] Redo console as external application
 - [ ] Move geometry generation to renderer
+- [ ] Deffered / heightmap lighting
+- [ ] Replace PNG with homebrew DDS loader
+- [ ] Proper assert() and error()
+- [ ] Data compiler? : D
 
 
 ## Style
@@ -55,15 +57,6 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - Prefer splitting things into separate arrays of similar data to monolithic things
 - Prefer enums to bools
 - Templates are only used for collection classes.
-
-
-## Todo
-
-- [ ] Deffered / heightmap lighting
-- [ ] Replace PNG with homebrew DDS loader
-- [ ] Instead of sending geometry for drawables, generate per frame. Do some batching if possible.
-- [ ] Proper assert() and error()
-- [ ] Data compiler? : D
 
 
 ## Old todo
