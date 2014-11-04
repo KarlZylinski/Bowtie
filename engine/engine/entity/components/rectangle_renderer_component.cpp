@@ -25,11 +25,9 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 	void* buffer = allocator.allocate(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
-
 	memcpy(new_data.color, c.data.color, c.num * sizeof(Color));
 	memcpy(new_data.rect, c.data.rect, c.num * sizeof(Rect));
 	memcpy(new_data.render_handle, c.data.render_handle, c.num * sizeof(RenderResourceHandle));
-
 	c.data = new_data;
 
 	allocator.deallocate(c.buffer);
@@ -52,9 +50,9 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 	auto color_at_index = c.data.color[current_dirty_index];
 	auto rect_at_index = c.data.rect[current_dirty_index];
 	auto render_handle_at_index = c.data.render_handle[current_dirty_index];
-	c.data.color[current_dirty_index] = rectangle_renderer_component::color(c, e);
-	c.data.rect[current_dirty_index] = rectangle_renderer_component::rect(c, e);
-	c.data.render_handle[current_dirty_index] = rectangle_renderer_component::render_handle(c, e);
+	c.data.color[current_dirty_index] = c.data.color[entity_index];
+	c.data.rect[current_dirty_index] = c.data.rect[entity_index];
+	c.data.render_handle[current_dirty_index] = c.data.render_handle[entity_index];
 	c.data.color[entity_index] = color_at_index;
 	c.data.rect[entity_index] = rect_at_index;
 	c.data.render_handle[entity_index] = render_handle_at_index;
