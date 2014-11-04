@@ -8,6 +8,7 @@ namespace bowtie
 
 struct RenderComponent
 {
+	RenderResourceHandle material;
 	Color color;
 	Rect rect;
 };

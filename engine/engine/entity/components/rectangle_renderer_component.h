@@ -1,9 +1,6 @@
 #pragma once
 
-#include <foundation/vector4.h>
 #include <foundation/hash.h>
-#include <foundation/murmur_hash.h>
-#include "../../rect.h"
 #include "../../render_resource_handle.h"
 
 namespace bowtie
@@ -11,13 +8,17 @@ namespace bowtie
 
 class Allocator;
 class RenderInterface;
-
+struct Material;
+struct Rect;
+struct Vector4;
+typedef Vector4 Color;
 typedef unsigned Entity;
 
 struct RectangleRendererComponentData
 {
 	Color* color;
 	Rect* rect;
+	RenderResourceHandle* material;
 	RenderResourceHandle* render_handle;
 };
 
@@ -36,7 +37,7 @@ struct RectangleRendererComponent
 
 namespace rectangle_renderer_component
 {
-	const unsigned component_size = (sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle));
+	extern unsigned component_size;
 	void init(RectangleRendererComponent& c, Allocator& allocator);
 	void deinit(RectangleRendererComponent& c, Allocator& allocator);
 	void create(RectangleRendererComponent& c, Entity e, Allocator& allocator);
@@ -46,6 +47,8 @@ namespace rectangle_renderer_component
 	void set_color(RectangleRendererComponent& c, Entity e, const Color& color);
 	const Color& color(RectangleRendererComponent& c, Entity e);
 	void set_render_handle(RectangleRendererComponent& c, Entity e, RenderResourceHandle render_handle);
+	RenderResourceHandle material(RectangleRendererComponent& c, Entity e);
+	void set_material(RectangleRendererComponent& c, Entity e, RenderResourceHandle material);
 	RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e);
 	RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
 	RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);

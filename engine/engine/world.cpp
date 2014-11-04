@@ -65,6 +65,8 @@ void World::handle_rectangle_renderer_created(Entity entity)
 {
 	auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
 	rectangle_renderer_component::set_render_handle(_rectangle_renderer_component, entity, _render_interface.create_handle());
+	auto material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
+	rectangle_renderer_component::set_material(_rectangle_renderer_component, entity, material);
 	CreateRectangleRendererData data;
 	data.num = 1;
 	data.world = _render_handle;
@@ -139,7 +141,7 @@ void World::update()
 			UpdateRectangleRendererData data;
 			data.num = _rectangle_renderer_component.last_dirty_index + 1;
 			rrd.data = &data;
-			_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size);
+			_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
 			_rectangle_renderer_component.last_dirty_index = (unsigned)-1;
 		}
 	}

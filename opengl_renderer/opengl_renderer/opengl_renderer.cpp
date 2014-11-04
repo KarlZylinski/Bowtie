@@ -341,7 +341,7 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
-	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, 4).object;
+	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, render_world.components[0]->material).object;
 	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);

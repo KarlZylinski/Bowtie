@@ -254,6 +254,7 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 			auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
 			component->rect = rectangle->rect[0];
 			component->color = rectangle->color[0];
+			component->material = rectangle->material[0];
 			render_world::add_component(rw, component);
 			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(component)), _allocator);
 		} break;
@@ -487,6 +488,7 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle->render_handle[i]).object;
 				component->rect = rectangle->rect[i];
 				component->color = rectangle->color[i];
+				component->material = rectangle->material[i];
 
 				ur.handles[i] = rectangle->render_handle[i];
 				ur.new_resources[i] = RenderResource(component);

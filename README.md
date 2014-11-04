@@ -13,7 +13,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] Rectangle rendering component
         - [x] Updating / creating needs support for updating / creating many resources at once
         - [x] Make on-demand creation of geometry support multiple rects
-        - [ ] Material
+        - [x] Material
     - [ ] Transform component
         - [ ] Link up with rectangle renderer. How to do update by copying in transform positions when indicies aren't matching?
     - [ ] Sprite rendering component
