@@ -3,6 +3,7 @@
 #include <foundation/collection_types.h>
 #include "render_resource_handle.h"
 #include "entity/components/rectangle_renderer_component.h"
+#include "entity/components/transform_component.h"
 
 namespace bowtie
 {
@@ -32,6 +33,7 @@ public:
 	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
 	RectangleRendererComponent& rectangle_renderer_component();
+	TransformComponent& transform_component();
 	void handle_rectangle_renderer_created(Entity entity);
 
 	const Array<Drawable*>& drawables() const;
@@ -41,6 +43,7 @@ private:
 	RenderResourceHandle _render_handle;
 	RenderInterface& _render_interface;
 	ResourceManager& _resource_manager;
+	TransformComponent _transform_component;
 	RectangleRendererComponent _rectangle_renderer_component;
 
 	World(const World&);

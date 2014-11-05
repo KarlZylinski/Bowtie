@@ -14,6 +14,7 @@
 #include "script_interfaces/script_text.h"
 #include "script_interfaces/script_material.h"
 #include "script_interfaces/script_rectangle_renderer_component.h"
+#include "script_interfaces/script_transform_component.h"
 #include <engine/engine.h>
 #include <random>
 
@@ -78,6 +79,7 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	
 	// Components
 	rectangle_renderer_component_script_interface::load(_lua, allocator);
+	transform_component_script_interface::load(_lua, allocator);
 
 	load_shared_libs(_lua);
 	load_main(_lua);

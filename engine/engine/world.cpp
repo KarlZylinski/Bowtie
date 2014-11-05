@@ -17,6 +17,7 @@ World::World(Allocator& allocator, RenderInterface& render_interface, ResourceMa
 	_allocator(allocator), _drawables(array::create<Drawable*>(allocator)), _render_interface(render_interface), _resource_manager(resource_manager)
 {
 	rectangle_renderer_component::init(_rectangle_renderer_component, allocator);
+	transform_component::init(_transform_component, allocator);
 }
 
 World::~World()
@@ -25,6 +26,8 @@ World::~World()
 		_allocator.destroy(_drawables[i]);
 
 	array::deinit(_drawables);
+	rectangle_renderer_component::deinit(_rectangle_renderer_component, _allocator);
+	transform_component::deinit(_transform_component, _allocator);
 }
 
 void World::set_render_handle(RenderResourceHandle render_handle)
@@ -84,6 +87,11 @@ RectangleRendererComponent& World::rectangle_renderer_component()
 	return _rectangle_renderer_component;
 }
 
+TransformComponent& World::transform_component()
+{
+	return _transform_component;
+}
+
 const Array<Drawable*>& World::drawables() const
 {
 	return _drawables;
@@ -135,14 +143,14 @@ void World::update()
 		if (drawable->geometry_changed())
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
 
-		if (_rectangle_renderer_component.last_dirty_index != (unsigned)-1)
+		if (_rectangle_renderer_component.header.last_dirty_index != (unsigned)-1)
 		{
 			auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
 			UpdateRectangleRendererData data;
-			data.num = _rectangle_renderer_component.last_dirty_index + 1;
+			data.num = _rectangle_renderer_component.header.last_dirty_index + 1;
 			rrd.data = &data;
 			_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
-			_rectangle_renderer_component.last_dirty_index = (unsigned)-1;
+			_rectangle_renderer_component.header.last_dirty_index = (unsigned)-1;
 		}
 	}
 }

@@ -23,8 +23,32 @@ int create(lua_State* lua)
 {
 	Entity entity = (unsigned)lua_tonumber(lua, 1);
 	World& world = *(World*)lua_touserdata(lua, 2);
+	
+	{
+		auto& transform = world.transform_component();
+		if (!component::has_entity(transform.header, entity))
+			transform_component::create(transform, entity, *s_allocator);
+	}
+
+	Vector2 position;
+
+	if (script_interface::is_vector2(lua, 3))
+		position = script_interface::to_vector2(lua, 3);
+
+	Vector2 size;
+
+	if (script_interface::is_vector2(lua, 4))
+		size = script_interface::to_vector2(lua, 4);
+
+	Color color(1, 1, 1, 1);
+
+	if (script_interface::is_color(lua, 5))
+		color = script_interface::to_color(lua, 5);
+
+	Rect rect(position, size);
+
 	auto& component = world.rectangle_renderer_component();
-	rectangle_renderer_component::create(component, entity, *s_allocator);
+	rectangle_renderer_component::create(component, entity, *s_allocator, rect, color);
 	world.handle_rectangle_renderer_created(entity);
 	script_interface::push_component(lua, &component, entity);
 	return 1;

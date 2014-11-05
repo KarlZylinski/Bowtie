@@ -21,6 +21,15 @@ double get_field(lua_State* lua, int index, const char *key)
     lua_pop(lua, 1);
     return result;
 }
+
+bool is_field(lua_State* lua, int index, const char *key)
+{
+	lua_pushstring(lua, key);
+	lua_gettable(lua, index);
+	bool result = lua_isnumber(lua, -1) == 1;
+	lua_pop(lua, 1);
+	return result;
+}
 }
 
 namespace script_interface
@@ -169,6 +178,27 @@ ScriptComponentData to_component(lua_State* lua, int index)
 	c.entity = (Entity)lua_tonumber(lua, -1);
 	lua_pop(lua, 1);
 	return c;
+}
+
+bool is_color(lua_State* lua, int index)
+{
+	return is_vector4(lua, index);
+}
+
+bool is_vector2(lua_State* lua, int index)
+{
+	return lua_istable(lua, index)
+		&& is_field(lua, index, "x")
+		&& is_field(lua, index, "y");
+}
+
+bool is_vector4(lua_State* lua, int index)
+{
+	return lua_istable(lua, index)
+		&& is_field(lua, index, "x")
+		&& is_field(lua, index, "y")
+		&& is_field(lua, index, "z")
+		&& is_field(lua, index, "w");
 }
 
 } // namespace script_interface

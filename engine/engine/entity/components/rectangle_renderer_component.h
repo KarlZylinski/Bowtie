@@ -1,7 +1,7 @@
 #pragma once
 
-#include <foundation/hash.h>
 #include "../../render_resource_handle.h"
+#include "component_header.h"
 
 namespace bowtie
 {
@@ -12,7 +12,6 @@ struct Material;
 struct Rect;
 struct Vector4;
 typedef Vector4 Color;
-typedef unsigned Entity;
 
 struct RectangleRendererComponentData
 {
@@ -24,11 +23,7 @@ struct RectangleRendererComponentData
 
 struct RectangleRendererComponent
 {
-	// Maps entity id to rectangle renderer components
-	Hash<unsigned> map;
-	unsigned num;
-	unsigned capacity;
-	unsigned last_dirty_index;
+	ComponentHeader header;
 	void* buffer;
 	RectangleRendererComponentData data;
 };
@@ -38,7 +33,7 @@ namespace rectangle_renderer_component
 	extern unsigned component_size;
 	void init(RectangleRendererComponent& c, Allocator& allocator);
 	void deinit(RectangleRendererComponent& c, Allocator& allocator);
-	void create(RectangleRendererComponent& c, Entity e, Allocator& allocator);
+	void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const Rect& rect, const Color& color);
 	void destroy(RectangleRendererComponent& c, Entity e);
 	void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect);
 	const Rect& rect(RectangleRendererComponent& c, Entity e);

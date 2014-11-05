@@ -36,6 +36,7 @@
     <ClInclude Include="game\script_interfaces\script_sprite.h" />
     <ClInclude Include="game\script_interfaces\script_text.h" />
     <ClInclude Include="game\script_interfaces\script_time.h" />
+    <ClInclude Include="game\script_interfaces\script_transform_component.h" />
     <ClInclude Include="game\script_interfaces\script_world.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,7 @@
     <ClCompile Include="game\script_interfaces\script_sprite.cpp" />
     <ClCompile Include="game\script_interfaces\script_text.cpp" />
     <ClCompile Include="game\script_interfaces\script_time.cpp" />
+    <ClCompile Include="game\script_interfaces\script_transform_component.cpp" />
     <ClCompile Include="game\script_interfaces\script_world.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

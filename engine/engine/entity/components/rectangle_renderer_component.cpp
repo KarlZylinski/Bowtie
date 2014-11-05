@@ -40,12 +40,12 @@ void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, u
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
 {
-	copy(c, dest, c.num);
+	copy(c, dest, c.header.num);
 }
 
 void grow(RectangleRendererComponent& c, Allocator& allocator)
 {
-	const unsigned new_capacity = c.capacity == 0 ? 8 : c.capacity * 2;
+	const unsigned new_capacity = c.header.capacity == 0 ? 8 : c.header.capacity * 2;
 	const unsigned bytes = new_capacity * rectangle_renderer_component::component_size;
 	void* buffer = allocator.allocate(bytes);
 
@@ -55,17 +55,17 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 
 	allocator.deallocate(c.buffer);
 	c.buffer = buffer;
-	c.capacity = new_capacity;
+	c.header.capacity = new_capacity;
 }
 
 void mark_dirty(RectangleRendererComponent& c, Entity e)
 {
-	auto entity_index = hash::get(c.map, e, 0u);
+	auto entity_index = hash::get(c.header.map, e, 0u);
 
-	if (c.last_dirty_index != (unsigned)-1 && entity_index <= c.last_dirty_index)
+	if (c.header.last_dirty_index != (unsigned)-1 && entity_index <= c.header.last_dirty_index)
 		return;
 
-	auto current_dirty_index = ++c.last_dirty_index;
+	auto current_dirty_index = ++c.header.last_dirty_index;
 
 	if (current_dirty_index == entity_index)
 		return;
@@ -91,81 +91,81 @@ unsigned component_size = (sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceH
 void init(RectangleRendererComponent& c, Allocator& allocator)
 {
 	memset(&c, 0, sizeof(RectangleRendererComponent));
-	c.map = hash::create<unsigned>(allocator);
-	c.last_dirty_index = (unsigned)-1;
+	c.header.map = hash::create<unsigned>(allocator);
+	c.header.last_dirty_index = (unsigned)-1;
 }
 
 void deinit(RectangleRendererComponent& c, Allocator& allocator)
 {
-	hash::deinit(c.map);
+	hash::deinit(c.header.map);
 	allocator.deallocate(c.buffer);
 }
 
-void create(RectangleRendererComponent& c, Entity e, Allocator& allocator)
+void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const Rect& rect, const Color& color)
 {
-	if (c.num >= c.capacity)
+	if (c.header.num >= c.header.capacity)
 		grow(c, allocator);
 
-	unsigned i = c.num++;
-	hash::set(c.map, e, i);
-	c.data.color[i] = Color(1, 1, 1, 1);
-	c.data.rect[i] = Rect();
+	unsigned i = c.header.num++;
+	hash::set(c.header.map, e, i);
+	c.data.color[i] = color;
+	c.data.rect[i] = rect;
 	c.data.material[i] = RenderResourceHandle::NotInitialized;
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
 }
 
 void destroy(RectangleRendererComponent& c, Entity e)
 {
-	unsigned i = hash::get(c.map, e, 0u);
-	hash::remove(c.map, e);
-	--c.num;
+	unsigned i = hash::get(c.header.map, e, 0u);
+	hash::remove(c.header.map, e);
+	--c.header.num;
 
-	if (i == c.num)
+	if (i == c.header.num)
 		return;
 		
-	move_one(c, c.num, i);
+	move_one(c, c.header.num, i);
 }
 
 void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
 {	
-	c.data.rect[hash::get(c.map, e)] = rect;
+	c.data.rect[hash::get(c.header.map, e)] = rect;
 	mark_dirty(c, e);
 }
 
 const Rect& rect(RectangleRendererComponent& c, Entity e)
 {
-	return c.data.rect[hash::get(c.map, e)];
+	return c.data.rect[hash::get(c.header.map, e)];
 }
 
 void set_color(RectangleRendererComponent& c, Entity e, const Color& color)
 {
-	c.data.color[hash::get(c.map, e)] = color;
+	c.data.color[hash::get(c.header.map, e)] = color;
 	mark_dirty(c, e);
 }
 
 const Color& color(RectangleRendererComponent& c, Entity e)
 {
-	return c.data.color[hash::get(c.map, e)];
+	return c.data.color[hash::get(c.header.map, e)];
 }
 
 void set_render_handle(RectangleRendererComponent& c, Entity e, RenderResourceHandle render_handle)
 {
-	c.data.render_handle[hash::get(c.map, e)] = render_handle;
+	c.data.render_handle[hash::get(c.header.map, e)] = render_handle;
 }
 
 RenderResourceHandle material(RectangleRendererComponent& c, Entity e)
 {
-	return c.data.material[hash::get(c.map, e)];
+	return c.data.material[hash::get(c.header.map, e)];
 }
 
 void set_material(RectangleRendererComponent& c, Entity e, RenderResourceHandle material)
 {
-	c.data.material[hash::get(c.map, e)] = material;
+	c.data.material[hash::get(c.header.map, e)] = material;
 }
 
 RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e)
 {
-	return c.data.render_handle[hash::get(c.map, e)];
+	return c.data.render_handle[hash::get(c.header.map, e)];
 }
 
 RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator)
@@ -182,7 +182,7 @@ RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity 
 RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
 {
 	RectangleRendererComponentData* data = (RectangleRendererComponentData*)allocator.allocate(sizeof(RectangleRendererComponentData));
-	auto num_dirty = c.last_dirty_index + 1;
+	auto num_dirty = c.header.last_dirty_index + 1;
 	*data = initialize_data(allocator.allocate(component_size), num_dirty);
 	copy(c, *data, num_dirty);
 	return data;

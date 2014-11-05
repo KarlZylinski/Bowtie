@@ -21,6 +21,12 @@
     <ClCompile Include="engine\entity\components\rectangle_renderer_component.cpp">
       <Filter>entity\components</Filter>
     </ClCompile>
+    <ClCompile Include="engine\entity\components\transform_component.cpp">
+      <Filter>entity\components</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\entity\components\component_header.cpp">
+      <Filter>entity\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />
@@ -58,6 +64,12 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="engine\entity\components\rectangle_renderer_component.h">
+      <Filter>entity\components</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\entity\components\component_header.h">
+      <Filter>entity\components</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\entity\components\transform_component.h">
       <Filter>entity\components</Filter>
     </ClInclude>
   </ItemGroup>

@@ -43,6 +43,9 @@
     <ClCompile Include="game\script_interfaces\script_rectangle_renderer_component.cpp">
       <Filter>script_interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="game\script_interfaces\script_transform_component.cpp">
+      <Filter>script_interfaces</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\script_interfaces\script_sprite.h">
@@ -80,6 +83,9 @@
       <Filter>script_interfaces</Filter>
     </ClInclude>
     <ClInclude Include="game\script_interfaces\script_rectangle_renderer_component.h">
+      <Filter>script_interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="game\script_interfaces\script_transform_component.h">
       <Filter>script_interfaces</Filter>
     </ClInclude>
   </ItemGroup>

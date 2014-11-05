@@ -41,6 +41,9 @@ Vector2u to_vector2u(lua_State* lua, int index);
 Vector4 to_vector4(lua_State* lua, int index);
 uint64_t to_hash(lua_State* lua, int index);
 ScriptComponentData to_component(lua_State* lua, int index);
+bool is_color(lua_State* lua, int index);
+bool is_vector2(lua_State* lua, int index);
+bool is_vector4(lua_State* lua, int index);
 
 }
 
