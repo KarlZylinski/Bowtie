@@ -4,6 +4,7 @@
 #include "../../rect.h"
 #include "../../material.h"
 #include <foundation/vector4.h>
+#include <foundation/matrix4.h>
 #include <cassert>
 
 namespace bowtie
@@ -19,6 +20,7 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 	new_data.rect = (Rect*)(new_data.color + size);
 	new_data.material = (RenderResourceHandle*)(new_data.rect + size);
 	new_data.render_handle = (RenderResourceHandle*)(new_data.material + size);
+	new_data.transform = (Matrix4*)(new_data.render_handle + size);
 	return new_data;
 }
 
@@ -28,6 +30,7 @@ void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
 	c.data.rect[to] = c.data.rect[from];
 	c.data.material[to] = c.data.material[from];
 	c.data.render_handle[to] = c.data.render_handle[from];
+	c.data.transform[to] = c.data.transform[from];
 }
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num)
@@ -36,6 +39,7 @@ void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, u
 	memcpy(dest.rect, c.data.rect, num * sizeof(Rect));
 	memcpy(dest.material, c.data.material, num * sizeof(Material));
 	memcpy(dest.render_handle, c.data.render_handle, num * sizeof(RenderResourceHandle));
+	memcpy(dest.transform, c.data.transform, num * sizeof(Matrix4));
 }
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
@@ -74,11 +78,13 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 	auto rect_at_index = c.data.rect[current_dirty_index];
 	auto material_at_index = c.data.material[current_dirty_index];
 	auto render_handle_at_index = c.data.render_handle[current_dirty_index];
+	auto transform_at_index = c.data.transform[current_dirty_index];
 	move_one(c, entity_index, current_dirty_index);
 	c.data.color[entity_index] = color_at_index;
 	c.data.rect[entity_index] = rect_at_index;
 	c.data.material[entity_index] = material_at_index;
 	c.data.render_handle[entity_index] = render_handle_at_index;
+	c.data.transform[entity_index] = transform_at_index;
 }
 
 }
@@ -112,6 +118,7 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const
 	c.data.rect[i] = rect;
 	c.data.material[i] = RenderResourceHandle::NotInitialized;
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
+	c.data.transform[i] = Matrix4();
 }
 
 void destroy(RectangleRendererComponent& c, Entity e)
@@ -168,14 +175,27 @@ RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e)
 	return c.data.render_handle[hash::get(c.header.map, e)];
 }
 
+void set_transform(RectangleRendererComponent& c, Entity e, const Matrix4& transform)
+{
+	c.data.transform[hash::get(c.header.map, e)] = transform;
+	mark_dirty(c, e);
+}
+
+const Matrix4& transform(RectangleRendererComponent& c, Entity e)
+{
+	return c.data.transform[hash::get(c.header.map, e)];
+}
+
 RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator)
 {
 	RectangleRendererComponentData* data = (RectangleRendererComponentData*)allocator.allocate(sizeof(RectangleRendererComponentData));
 	*data = initialize_data(allocator.allocate(component_size), 1);
-	*data->color = color(c, e);
-	*data->rect = rect(c, e);
-	*data->material = material(c, e);
-	*data->render_handle = render_handle(c, e);
+	unsigned i = hash::get(c.header.map, e);
+	*data->color = c.data.color[i];
+	*data->rect = c.data.rect[i];
+	*data->material = c.data.material[i];
+	*data->render_handle = c.data.render_handle[i];
+	*data->transform = c.data.transform[i];
 	return data;
 }
 

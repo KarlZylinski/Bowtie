@@ -19,6 +19,8 @@ struct ComponentHeader
 namespace component
 {
 	bool has_entity(const ComponentHeader& h, Entity e);
+	unsigned num_dirty(const ComponentHeader& h);
+	void reset_dirty(ComponentHeader& h);
 }
 
 }

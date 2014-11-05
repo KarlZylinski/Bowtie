@@ -10,6 +10,7 @@ struct Vector2;
 
 struct TransformComponentData
 {
+	Entity* entity;
 	Vector2* position;
 	float* rotation;
 	Vector2* pivot;

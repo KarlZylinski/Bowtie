@@ -13,14 +13,16 @@ namespace
 TransformComponentData initialize_data(void* buffer, unsigned size)
 {
 	TransformComponentData new_data;
-	new_data.position = (Vector2*)buffer;
+	new_data.entity = (Entity*)buffer;
+	new_data.position = (Vector2*)(new_data.entity + size);
 	new_data.rotation = (float*)(new_data.position + size);
-	new_data.pivot = (Vector2*)(new_data.position + size);
+	new_data.pivot = (Vector2*)(new_data.rotation + size);
 	return new_data;
 }
 
 void move_one(TransformComponent& c, unsigned from, unsigned to)
 {
+	c.data.entity[to] = c.data.entity[from];
 	c.data.position[to] = c.data.position[from];
 	c.data.rotation[to] = c.data.rotation[from];
 	c.data.pivot[to] = c.data.pivot[from];
@@ -28,6 +30,7 @@ void move_one(TransformComponent& c, unsigned from, unsigned to)
 
 void copy(TransformComponent& c, TransformComponentData& dest, unsigned num)
 {
+	memcpy(dest.entity, c.data.entity, num * sizeof(Entity));
 	memcpy(dest.position, c.data.position, num * sizeof(Vector2));
 	memcpy(dest.rotation, c.data.rotation, num * sizeof(float));
 	memcpy(dest.pivot, c.data.pivot, num * sizeof(Vector2));
@@ -65,10 +68,12 @@ void mark_dirty(TransformComponent& c, Entity e)
 	if (current_dirty_index == entity_index)
 		return;
 
+	auto entity_at_index = c.data.entity[current_dirty_index];
 	auto position_at_index = c.data.position[current_dirty_index];
 	auto rotation_at_index = c.data.rotation[current_dirty_index];
 	auto pivot_at_index = c.data.pivot[current_dirty_index];
 	move_one(c, entity_index, current_dirty_index);
+	c.data.entity[entity_index] = entity_at_index;
 	c.data.position[entity_index] = position_at_index;
 	c.data.rotation[entity_index] = rotation_at_index;
 	c.data.pivot[entity_index] = pivot_at_index;
@@ -79,7 +84,7 @@ void mark_dirty(TransformComponent& c, Entity e)
 namespace transform_component
 {
 
-unsigned component_size = (sizeof(Vector2) + sizeof(float) + sizeof(Vector2));
+unsigned component_size = (sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2));
 
 void init(TransformComponent& c, Allocator& allocator)
 {
@@ -101,6 +106,7 @@ void create(TransformComponent& c, Entity e, Allocator& allocator)
 
 	unsigned i = c.header.num++;
 	hash::set(c.header.map, e, i);
+	c.data.entity[i] = e;
 	c.data.position[i] = Vector2(0, 0);
 	c.data.rotation[i] = 0;
 	c.data.pivot[i] = Vector2(0, 0);

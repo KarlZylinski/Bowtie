@@ -36,6 +36,15 @@ int destroy(lua_State* lua)
 	return 0;
 }
 
+int get(lua_State* lua)
+{
+	Entity entity = (unsigned)lua_tonumber(lua, 1);
+	World& world = *(World*)lua_touserdata(lua, 2);
+	auto& component = world.transform_component();
+	script_interface::push_component(lua, &component, entity);
+	return 1;
+}
+
 int position(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
@@ -71,13 +80,14 @@ void load(lua_State* lua, Allocator& allocator)
 	const interface_function functions[] = {
 		{ "create", create },
 		{ "destroy", destroy },
+		{ "get", get },
 		{ "position", position },
 		{ "set_position", set_position },
 		{ "rotation", rotation },
 		{ "set_rotation", set_rotation }
 	};
 
-	script_interface::register_interface(lua, "TransformComponent", functions, 6);
+	script_interface::register_interface(lua, "TransformComponent", functions, 7);
 }
 
 } // namespace drawable_script_interface

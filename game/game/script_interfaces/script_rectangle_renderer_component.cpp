@@ -61,6 +61,15 @@ int destroy(lua_State* lua)
 	return 0;
 }
 
+int get(lua_State* lua)
+{
+	Entity entity = (unsigned)lua_tonumber(lua, 1);
+	World& world = *(World*)lua_touserdata(lua, 2);
+	auto& component = world.rectangle_renderer_component();
+	script_interface::push_component(lua, &component, entity);
+	return 1;
+}
+
 int rect(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
@@ -101,13 +110,14 @@ void load(lua_State* lua, Allocator& allocator)
 	const interface_function functions[] = {
 		{ "create", create },
 		{ "destroy", destroy },
+		{ "get", get },
 		{ "rect", rect },
 		{ "set_rect", set_rect },
 		{ "color", color },
 		{ "set_color", set_color }
 	};
 
-	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 6);
+	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 7);
 }
 
 } // namespace drawable_script_interface

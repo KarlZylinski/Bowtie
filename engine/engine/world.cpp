@@ -131,6 +131,35 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 	render_interface.dispatch(geometry_changed_command);
 }
 
+Matrix4 make_transform_matrix(const Vector2& position, float rotation, const Vector2& pivot)
+{
+	auto p = Matrix4();
+	p[3][0] = (float)-pivot.x;
+	p[3][1] = (float)-pivot.y;
+
+	/*if (_parent != nullptr)
+	{
+		p[3][0] += (float)_parent->pivot().x;
+		p[3][1] += (float)_parent->pivot().y;
+	}*/
+
+	auto r = Matrix4();
+	r[0][0] = cos(rotation);
+	r[1][0] = -sin(rotation);
+	r[0][1] = sin(rotation);
+	r[1][1] = cos(rotation);
+
+	auto t = Matrix4();
+	t[3][0] = position.x;
+	t[3][1] = position.y;
+
+	return p * r * t;
+	/*if (_parent == nullptr)
+		return p * r * t;
+	else
+		return p * r * t * _parent->model_matrix();*/
+}
+
 void World::update()
 {
 	for (unsigned i = 0; i < array::size(_drawables); ++i)
@@ -142,16 +171,33 @@ void World::update()
 		
 		if (drawable->geometry_changed())
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
+	}
 
-		if (_rectangle_renderer_component.header.last_dirty_index != (unsigned)-1)
+	const auto num_dirty_transforms = component::num_dirty(_transform_component.header);
+
+	if (num_dirty_transforms > 0)
+	{
+		auto& c = _transform_component.data;
+
+		for (unsigned i = 0; i < num_dirty_transforms; ++i)
 		{
-			auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-			UpdateRectangleRendererData data;
-			data.num = _rectangle_renderer_component.header.last_dirty_index + 1;
-			rrd.data = &data;
-			_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
-			_rectangle_renderer_component.header.last_dirty_index = (unsigned)-1;
+			auto transform = make_transform_matrix(c.position[i], c.rotation[i], c.pivot[i]);
+			rectangle_renderer_component::set_transform(_rectangle_renderer_component, c.entity[i], transform);
 		}
+
+		component::reset_dirty(_transform_component.header);
+	}
+
+	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_component.header);
+
+	if (num_dirty_rectangles > 0)
+	{
+		auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
+		UpdateRectangleRendererData data;
+		data.num = num_dirty_rectangles;
+		rrd.data = &data;
+		_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
+		component::reset_dirty(_rectangle_renderer_component.header);
 	}
 }
 
