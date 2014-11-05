@@ -249,15 +249,14 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 		case RenderResourceData::RectangleRenderer: {
 			auto rectangle_data = (CreateRectangleRendererData*)data;
 			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
-
-			RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
+			
+			auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
 			auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
-			component->rect = rectangle->rect[0];
-			component->color = rectangle->color[0];
-			component->material = rectangle->material[0];
-			component->transform = rectangle->transform[0];
+			component->color = rectangle.color[0];
+			component->material = rectangle.material[0];
+			component->geometry = rectangle.geometry[0];
 			render_world::add_component(rw, component);
-			return copy_single_resource(single_resource(rectangle->render_handle[0], RenderResource(component)), _allocator);
+			return copy_single_resource(single_resource(rectangle.render_handle[0], RenderResource(component)), _allocator);
 		} break;
 		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
@@ -485,14 +484,13 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 
 			for (unsigned i = 0; i < rectangle_data->num; ++i)
 			{
-				RectangleRendererComponentData* rectangle = (RectangleRendererComponentData*)dynamic_data;
-				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle->render_handle[i]).object;
-				component->rect = rectangle->rect[i];
-				component->color = rectangle->color[i];
-				component->material = rectangle->material[i];
-				component->transform = rectangle->transform[i];
+				auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
+				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle.render_handle[i]).object;
+				component->color = rectangle.color[i];
+				component->material = rectangle.material[i];
+				component->geometry = rectangle.geometry[i];
 
-				ur.handles[i] = rectangle->render_handle[i];
+				ur.handles[i] = rectangle.render_handle[i];
 				ur.new_resources[i] = RenderResource(component);
 				ur.old_resources[i] = RenderResource(component);
 			}

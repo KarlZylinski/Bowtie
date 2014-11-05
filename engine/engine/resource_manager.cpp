@@ -62,6 +62,8 @@ ResourceManager::~ResourceManager()
 			default: assert(!"Some resource type isn't freed properly."); break;
 		}
 	}
+
+	hash::deinit(_resources);
 }
 
 ResourceType ResourceManager::resource_type_from_string(const char* type)

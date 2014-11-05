@@ -146,12 +146,11 @@ float rotation(TransformComponent& c, Entity e)
 	return c.data.rotation[hash::get(c.header.map, e)];
 }
 
-TransformComponentData* copy_dirty_data(TransformComponent& c, Allocator& allocator)
+TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator)
 {
-	TransformComponentData* data = (TransformComponentData*)allocator.allocate(sizeof(TransformComponentData));
 	auto num_dirty = c.header.last_dirty_index + 1;
-	*data = initialize_data(allocator.allocate(component_size), num_dirty);
-	copy(c, *data, num_dirty);
+	auto data = initialize_data(allocator.allocate(component_size), num_dirty);
+	copy(c, data, num_dirty);
 	return data;
 }
 

@@ -346,7 +346,6 @@ namespace bowtie
 		void shutdown() {
 			_memory_globals.default_scratch_allocator->~ScratchAllocator();
 			_memory_globals.default_allocator->~MallocAllocator();
-			_memory_globals = MemoryGlobals();
 		}
 
 		Allocator* new_allocator(ICallstackCapturer& callstack_capturer, const char* name) {

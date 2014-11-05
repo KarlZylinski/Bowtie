@@ -5,6 +5,7 @@
 #include "../../material.h"
 #include <foundation/vector4.h>
 #include <foundation/matrix4.h>
+#include <foundation/quad.h>
 #include <cassert>
 
 namespace bowtie
@@ -20,7 +21,7 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 	new_data.rect = (Rect*)(new_data.color + size);
 	new_data.material = (RenderResourceHandle*)(new_data.rect + size);
 	new_data.render_handle = (RenderResourceHandle*)(new_data.material + size);
-	new_data.transform = (Matrix4*)(new_data.render_handle + size);
+	new_data.geometry = (Quad*)(new_data.render_handle + size);
 	return new_data;
 }
 
@@ -30,7 +31,7 @@ void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
 	c.data.rect[to] = c.data.rect[from];
 	c.data.material[to] = c.data.material[from];
 	c.data.render_handle[to] = c.data.render_handle[from];
-	c.data.transform[to] = c.data.transform[from];
+	c.data.geometry[to] = c.data.geometry[from];
 }
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num)
@@ -39,7 +40,7 @@ void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, u
 	memcpy(dest.rect, c.data.rect, num * sizeof(Rect));
 	memcpy(dest.material, c.data.material, num * sizeof(Material));
 	memcpy(dest.render_handle, c.data.render_handle, num * sizeof(RenderResourceHandle));
-	memcpy(dest.transform, c.data.transform, num * sizeof(Matrix4));
+	memcpy(dest.geometry, c.data.geometry, num * sizeof(Quad));
 }
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
@@ -78,13 +79,13 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 	auto rect_at_index = c.data.rect[current_dirty_index];
 	auto material_at_index = c.data.material[current_dirty_index];
 	auto render_handle_at_index = c.data.render_handle[current_dirty_index];
-	auto transform_at_index = c.data.transform[current_dirty_index];
+	auto transform_at_index = c.data.geometry[current_dirty_index];
 	move_one(c, entity_index, current_dirty_index);
 	c.data.color[entity_index] = color_at_index;
 	c.data.rect[entity_index] = rect_at_index;
 	c.data.material[entity_index] = material_at_index;
 	c.data.render_handle[entity_index] = render_handle_at_index;
-	c.data.transform[entity_index] = transform_at_index;
+	c.data.geometry[entity_index] = transform_at_index;
 }
 
 }
@@ -92,7 +93,7 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 namespace rectangle_renderer_component
 {
 
-unsigned component_size = (sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle) + sizeof(RenderResourceHandle));
+unsigned component_size = (sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle) + sizeof(RenderResourceHandle) + sizeof(Quad));
 
 void init(RectangleRendererComponent& c, Allocator& allocator)
 {
@@ -118,7 +119,7 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const
 	c.data.rect[i] = rect;
 	c.data.material[i] = RenderResourceHandle::NotInitialized;
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
-	c.data.transform[i] = Matrix4();
+	memset(c.data.geometry + i, 0, sizeof(Quad));
 }
 
 void destroy(RectangleRendererComponent& c, Entity e)
@@ -175,37 +176,40 @@ RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e)
 	return c.data.render_handle[hash::get(c.header.map, e)];
 }
 
-void set_transform(RectangleRendererComponent& c, Entity e, const Matrix4& transform)
+void set_geometry(RectangleRendererComponent& c, Entity e, const Quad& geometry)
 {
-	c.data.transform[hash::get(c.header.map, e)] = transform;
+	c.data.geometry[hash::get(c.header.map, e)] = geometry;
 	mark_dirty(c, e);
 }
 
-const Matrix4& transform(RectangleRendererComponent& c, Entity e)
+const Quad& transform(RectangleRendererComponent& c, Entity e)
 {
-	return c.data.transform[hash::get(c.header.map, e)];
+	return c.data.geometry[hash::get(c.header.map, e)];
 }
 
-RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator)
+RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator)
 {
-	RectangleRendererComponentData* data = (RectangleRendererComponentData*)allocator.allocate(sizeof(RectangleRendererComponentData));
-	*data = initialize_data(allocator.allocate(component_size), 1);
+	auto data = initialize_data(allocator.allocate(component_size), 1);
 	unsigned i = hash::get(c.header.map, e);
-	*data->color = c.data.color[i];
-	*data->rect = c.data.rect[i];
-	*data->material = c.data.material[i];
-	*data->render_handle = c.data.render_handle[i];
-	*data->transform = c.data.transform[i];
+	*data.color = c.data.color[i];
+	*data.rect = c.data.rect[i];
+	*data.material = c.data.material[i];
+	*data.render_handle = c.data.render_handle[i];
+	*data.geometry = c.data.geometry[i];
 	return data;
 }
 
-RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
+RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
 {
-	RectangleRendererComponentData* data = (RectangleRendererComponentData*)allocator.allocate(sizeof(RectangleRendererComponentData));
 	auto num_dirty = c.header.last_dirty_index + 1;
-	*data = initialize_data(allocator.allocate(component_size), num_dirty);
-	copy(c, *data, num_dirty);
+	auto data = initialize_data(allocator.allocate(component_size), num_dirty);
+	copy(c, data, num_dirty);
 	return data;
+}
+
+RectangleRendererComponentData create_data_from_buffer(void* buffer, unsigned num)
+{
+	return initialize_data(buffer, num);
 }
 
 } // rectangle_renderer_component

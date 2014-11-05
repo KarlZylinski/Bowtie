@@ -34,7 +34,7 @@ namespace transform_component
 	const Vector2& position(TransformComponent& c, Entity e);
 	void set_rotation(TransformComponent& c, Entity e, float rotation);
 	float rotation(TransformComponent& c, Entity e);
-	TransformComponentData* copy_dirty_data(TransformComponent& c, Allocator& allocator);
+	TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator);
 }
 
 }

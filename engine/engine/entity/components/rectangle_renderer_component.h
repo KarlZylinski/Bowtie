@@ -12,6 +12,7 @@ struct Material;
 struct Rect;
 struct Vector4;
 struct Matrix4;
+struct Quad;
 typedef Vector4 Color;
 
 struct RectangleRendererComponentData
@@ -20,7 +21,7 @@ struct RectangleRendererComponentData
 	Rect* rect;
 	RenderResourceHandle* material;
 	RenderResourceHandle* render_handle;
-	Matrix4* transform;
+	Quad* geometry;
 };
 
 struct RectangleRendererComponent
@@ -45,10 +46,11 @@ namespace rectangle_renderer_component
 	RenderResourceHandle material(RectangleRendererComponent& c, Entity e);
 	void set_material(RectangleRendererComponent& c, Entity e, RenderResourceHandle material);
 	RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e);
-	void set_transform(RectangleRendererComponent& c, Entity e, const Matrix4& transform);
-	const Matrix4& transform(RectangleRendererComponent& c, Entity e);
-	RectangleRendererComponentData* copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
-	RectangleRendererComponentData* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
+	void set_geometry(RectangleRendererComponent& c, Entity e, const Quad& geometry);
+	const Quad& geometry(RectangleRendererComponent& c, Entity e);
+	RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
+	RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
+	RectangleRendererComponentData create_data_from_buffer(void* buffer, unsigned num);
 }
 
 }

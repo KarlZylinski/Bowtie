@@ -411,10 +411,10 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 	for (unsigned i = start; i < start + size; ++i)
 	{
 		float* current_buffer = buffer + rect_buffer_num_elements * i;
-		auto x = (float)components[i]->rect.position.x;
-		auto y = (float)components[i]->rect.position.y;
-		auto w = (float)components[i]->rect.size.x;
-		auto h = (float)components[i]->rect.size.y;
+		const auto& v1 = components[i]->geometry.v1;
+		const auto& v2 = components[i]->geometry.v2;
+		const auto& v3 = components[i]->geometry.v3;
+		const auto& v4 = components[i]->geometry.v4;
 
 		auto r = (float)components[i]->color.r;
 		auto g = (float)components[i]->color.g;
@@ -422,23 +422,23 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 		auto a = (float)components[i]->color.a;
 
 		float current_buffer_data[rect_buffer_num_elements] = {
-			x, y, 0.0f,
+			v1.x, v1.y, 0.0f,
 			0.0f, 0.0f,
 			r, g, b, a,
-			x + w, y, 0.0f,
+			v3.x, v3.y, 0.0f,
 			1.0f, 0.0f,
 			r, g, b, a,
-			x, y + h, 0.0f,
+			v2.x, v2.y, 0.0f,
 			0.0f, 1.0f,
 			r, g, b, a,
 
-			x + w, y, 0.0f,
+			v2.x, v2.y, 0.0f,
 			1.0f, 0.0f,
 			r, g, b, a,
-			x + w, y + h, 0.0f,
+			v3.x, v3.y, 0.0f,
 			1.0f, 1.0f,
 			r, g, b, a,
-			x, y + h, 0.0f,
+			v4.x, v4.y, 0.0f,
 			0.0f, 1.0f,
 			r, g, b, a
 		};

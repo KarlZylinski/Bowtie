@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 namespace bowtie
 {
 	struct Vector2
@@ -52,5 +54,16 @@ namespace bowtie
 		Vector2 new_vec = v1;
 		new_vec *= scalar;
 		return new_vec;
+	}
+
+	namespace vector2
+	{
+		inline Vector2 rotate(const Vector2& v, float rad)
+		{
+			float s = sin(rad);
+			float c = cos(rad);
+
+			return Vector2((c * v.x) - (s * v.y), (s * v.x) + (c * v.y));
+		}
 	}
 } // namespace bowtie

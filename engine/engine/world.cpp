@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <foundation/array.h>
+#include <foundation/quad.h>
 #include "drawable.h"
 #include "material.h"
 #include "render_interface.h"
@@ -74,7 +75,8 @@ void World::handle_rectangle_renderer_created(Entity entity)
 	data.num = 1;
 	data.world = _render_handle;
 	rrd.data = &data;
-	_render_interface.create_resource(rrd, rectangle_renderer_component::copy_data(_rectangle_renderer_component, entity, _allocator), rectangle_renderer_component::component_size);
+	auto rectangle_data = rectangle_renderer_component::copy_data(_rectangle_renderer_component, entity, _allocator);
+	_render_interface.create_resource(rrd, rectangle_data.color, rectangle_renderer_component::component_size);
 }
 
 RenderResourceHandle World::render_handle()
@@ -180,9 +182,20 @@ void World::update()
 		auto& c = _transform_component.data;
 
 		for (unsigned i = 0; i < num_dirty_transforms; ++i)
-		{
-			auto transform = make_transform_matrix(c.position[i], c.rotation[i], c.pivot[i]);
-			rectangle_renderer_component::set_transform(_rectangle_renderer_component, c.entity[i], transform);
+		{	
+			auto rotation = c.rotation[i];
+			auto position = c.position[i];
+			auto entity = c.entity[i];
+			auto rect = rectangle_renderer_component::rect(_rectangle_renderer_component, entity);
+
+			// Handednessmess? Fix negation of pivot. Move pivot (0, 0) to upper left corner.
+
+			Quad geometry;
+			geometry.v1 = position + vector2::rotate(rect.position - Vector2(-100, 300), rotation);
+			geometry.v2 = position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) - Vector2(-100, 300), rotation);
+			geometry.v3 = position + vector2::rotate(rect.position + Vector2(0, rect.size.y) - Vector2(-100, 300), rotation);
+			geometry.v4 = position + vector2::rotate(rect.position + rect.size - Vector2(-100, 300), rotation);
+			rectangle_renderer_component::set_geometry(_rectangle_renderer_component, entity, geometry);
 		}
 
 		component::reset_dirty(_transform_component.header);
@@ -196,7 +209,8 @@ void World::update()
 		UpdateRectangleRendererData data;
 		data.num = num_dirty_rectangles;
 		rrd.data = &data;
-		_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
+		auto rectangle_data = rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator);
+		_render_interface.update_resource(rrd, rectangle_data.color, rectangle_renderer_component::component_size * data.num);
 		component::reset_dirty(_rectangle_renderer_component.header);
 	}
 }
