@@ -8,13 +8,14 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [x] During rw cleanup, look at rw dstr and the texture stuff there.
 
 - [ ] Create an entity component system
-    - [ ] Rectangle rendering component
+    - [x] Rectangle rendering component
         - [x] Updating / creating needs support for updating / creating many resources at once
         - [x] Make on-demand creation of geometry support multiple rects
         - [x] Material
     - [ ] Transform component
-        - [ ] Iterate over dirty transforms before rect renderers and copy the updated transform to the rects belonging to same entity. What to do if the entity is missing rect? Check? Reverse lookup?
-        - [ ] Copying to rect will make that one dirty, and trigger a update to renderer.
+        - [x] Iterate over dirty transforms before rect renderers and copy the updated transform to the rects belonging to same entity. What to do if the entity is missing rect? Check? Reverse lookup?
+        - [x] Copying to rect will make that one dirty, and trigger a update to renderer.
+        - [ ] Parenting
     - [ ] Sprite rendering component
     - [ ] GC of components
     - [ ] Convert old stuff to this new thingmajing

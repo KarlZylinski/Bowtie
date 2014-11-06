@@ -65,20 +65,6 @@ void World::unspawn(Drawable& drawable)
 	_allocator.destroy(&drawable);
 }
 
-void World::spawn_rectangle_component_renderer(Entity entity)
-{
-	auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-	rectangle_renderer_component::set_render_handle(_rectangle_renderer_component, entity, _render_interface.create_handle());
-	auto material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-	rectangle_renderer_component::set_material(_rectangle_renderer_component, entity, material);
-	CreateRectangleRendererData data;
-	data.num = 1;
-	data.world = _render_handle;
-	rrd.data = &data;
-	auto rectangle_data = rectangle_renderer_component::copy_data(_rectangle_renderer_component, entity, _allocator);
-	_render_interface.create_resource(rrd, rectangle_data.color, rectangle_renderer_component::component_size);
-}
-
 RenderResourceHandle World::render_handle()
 {
 	return _render_handle;
@@ -133,33 +119,26 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 	render_interface.dispatch(geometry_changed_command);
 }
 
-Matrix4 make_transform_matrix(const Vector2& position, float rotation, const Vector2& pivot)
+void update_transform(TransformComponentData& c, unsigned i, RectangleRendererComponent& rectangle_renderer)
 {
-	auto p = Matrix4();
-	p[3][0] = (float)-pivot.x;
-	p[3][1] = (float)-pivot.y;
+	auto rotation = c.rotation[i];
+	auto position = c.position[i];
+	auto pivot = c.pivot[i];
+	auto entity = c.entity[i];
 
-	/*if (_parent != nullptr)
+	if (component::has_entity(rectangle_renderer.header, entity))
 	{
-		p[3][0] += (float)_parent->pivot().x;
-		p[3][1] += (float)_parent->pivot().y;
-	}*/
+		auto rect = rectangle_renderer_component::rect(rectangle_renderer, entity);
 
-	auto r = Matrix4();
-	r[0][0] = cos(rotation);
-	r[1][0] = -sin(rotation);
-	r[0][1] = sin(rotation);
-	r[1][1] = cos(rotation);
+		Quad geometry = {
+			position + vector2::rotate(rect.position - pivot, rotation),
+			position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) - pivot, rotation),
+			position + vector2::rotate(rect.position + Vector2(0, rect.size.y) - pivot, rotation),
+			position + vector2::rotate(rect.position + rect.size - pivot, rotation)
+		};
 
-	auto t = Matrix4();
-	t[3][0] = position.x;
-	t[3][1] = position.y;
-
-	return p * r * t;
-	/*if (_parent == nullptr)
-		return p * r * t;
-	else
-		return p * r * t * _parent->model_matrix();*/
+		rectangle_renderer_component::set_geometry(rectangle_renderer, entity, geometry);
+	}
 }
 
 void World::update()
@@ -175,29 +154,46 @@ void World::update()
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
 	}
 
+	const auto num_new_transforms = component::num_new(_transform_component.header);
+
+	if (num_new_transforms > 0)
+	{
+		for (unsigned i = _transform_component.header.first_new; i < _transform_component.header.num; ++i)
+			update_transform(_transform_component.data, i, _rectangle_renderer_component);
+
+		component::reset_new(_transform_component.header);
+	}
+	
 	const auto num_dirty_transforms = component::num_dirty(_transform_component.header);
 
 	if (num_dirty_transforms > 0)
 	{
-		auto& c = _transform_component.data;
-
 		for (unsigned i = 0; i < num_dirty_transforms; ++i)
-		{	
-			auto rotation = c.rotation[i];
-			auto position = c.position[i];
-			auto pivot = c.pivot[i];
-			auto entity = c.entity[i];
-			auto rect = rectangle_renderer_component::rect(_rectangle_renderer_component, entity);
-
-			Quad geometry;
-			geometry.v1 = position + vector2::rotate(rect.position - pivot, rotation);
-			geometry.v2 = position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) - pivot, rotation);
-			geometry.v3 = position + vector2::rotate(rect.position + Vector2(0, rect.size.y) - pivot, rotation);
-			geometry.v4 = position + vector2::rotate(rect.position + rect.size - pivot, rotation);
-			rectangle_renderer_component::set_geometry(_rectangle_renderer_component, entity, geometry);
-		}
+			update_transform(_transform_component.data, i, _rectangle_renderer_component);
 
 		component::reset_dirty(_transform_component.header);
+	}
+
+	const auto num_new_rectangles = component::num_new(_rectangle_renderer_component.header);
+
+	if (num_new_rectangles > 0)
+	{
+		auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
+		auto material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
+
+		for (unsigned i = _rectangle_renderer_component.header.first_new; i < _rectangle_renderer_component.header.num; ++i)
+		{
+			_rectangle_renderer_component.data.render_handle[i] = _render_interface.create_handle();
+			_rectangle_renderer_component.data.material[i] = material;
+		}
+
+		CreateRectangleRendererData data;
+		data.num = num_new_rectangles;
+		data.world = _render_handle;
+		rrd.data = &data;
+		auto rectangle_data = rectangle_renderer_component::copy_new_data(_rectangle_renderer_component, _allocator);
+		_render_interface.create_resource(rrd, rectangle_data.entity, rectangle_renderer_component::component_size * data.num);
+		component::reset_new(_rectangle_renderer_component.header);
 	}
 
 	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_component.header);
@@ -209,7 +205,7 @@ void World::update()
 		data.num = num_dirty_rectangles;
 		rrd.data = &data;
 		auto rectangle_data = rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator);
-		_render_interface.update_resource(rrd, rectangle_data.color, rectangle_renderer_component::component_size * data.num);
+		_render_interface.update_resource(rrd, rectangle_data.entity, rectangle_renderer_component::component_size * data.num);
 		component::reset_dirty(_rectangle_renderer_component.header);
 	}
 }

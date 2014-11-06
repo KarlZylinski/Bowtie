@@ -34,7 +34,6 @@ public:
 	RenderResourceHandle render_handle();
 	RectangleRendererComponent& rectangle_renderer_component();
 	TransformComponent& transform_component();
-	void spawn_rectangle_component_renderer(Entity entity);
 
 	const Array<Drawable*>& drawables() const;
 private:

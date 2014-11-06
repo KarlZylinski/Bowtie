@@ -49,7 +49,6 @@ int create(lua_State* lua)
 
 	auto& component = world.rectangle_renderer_component();
 	rectangle_renderer_component::create(component, entity, *s_allocator, rect, color);
-	world.spawn_rectangle_component_renderer(entity);
 	script_interface::push_component(lua, &component, entity);
 	return 1;
 }

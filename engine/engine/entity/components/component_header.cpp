@@ -8,6 +8,19 @@ namespace bowtie
 namespace component
 {
 
+void init(ComponentHeader& h, Allocator& allocator)
+{
+	memset(&h, 0, sizeof(ComponentHeader));
+	h.map = hash::create<unsigned>(allocator);
+	reset_dirty(h);
+	reset_new(h);
+}
+
+void deinit(ComponentHeader& h)
+{
+	hash::deinit(h.map);
+}
+
 bool has_entity(const ComponentHeader& h, Entity e)
 {
 	return hash::has(h.map, e);
@@ -21,6 +34,38 @@ unsigned num_dirty(const ComponentHeader& h)
 void reset_dirty(ComponentHeader& h)
 {
 	h.last_dirty_index = (unsigned)-1;
+}
+
+unsigned num_new(const ComponentHeader& h)
+{
+	if (h.first_new == (unsigned)-1)
+		return 0;
+
+	return h.num - h.first_new;
+}
+
+void reset_new(ComponentHeader& h)
+{
+	h.first_new = (unsigned)-1;
+}
+
+DirtyData mark_dirty(ComponentHeader& h, Entity e)
+{
+	auto entity_index = hash::get(h.map, e, 0u);
+
+	DirtyData dd = {
+		entity_index,
+		entity_index
+	};
+
+	if (h.last_dirty_index != (unsigned)-1 && entity_index <= h.last_dirty_index)
+		return dd;
+
+	if (h.first_new != (unsigned)-1 && entity_index >= h.first_new)
+		return dd;
+
+	dd.new_index = ++h.last_dirty_index;
+	return dd;
 }
 
 } // namespace component_header

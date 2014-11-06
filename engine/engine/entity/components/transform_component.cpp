@@ -58,25 +58,22 @@ void grow(TransformComponent& c, Allocator& allocator)
 
 void mark_dirty(TransformComponent& c, Entity e)
 {
-	auto entity_index = hash::get(c.header.map, e, 0u);
+	auto dd = component::mark_dirty(c.header, e);
 
-	if (c.header.last_dirty_index != (unsigned)-1 && entity_index <= c.header.last_dirty_index)
+	if (dd.new_index == dd.old_index)
 		return;
-
-	auto current_dirty_index = ++c.header.last_dirty_index;
-
-	if (current_dirty_index == entity_index)
-		return;
-
-	auto entity_at_index = c.data.entity[current_dirty_index];
-	auto position_at_index = c.data.position[current_dirty_index];
-	auto rotation_at_index = c.data.rotation[current_dirty_index];
-	auto pivot_at_index = c.data.pivot[current_dirty_index];
-	move_one(c, entity_index, current_dirty_index);
-	c.data.entity[entity_index] = entity_at_index;
-	c.data.position[entity_index] = position_at_index;
-	c.data.rotation[entity_index] = rotation_at_index;
-	c.data.pivot[entity_index] = pivot_at_index;
+		
+	hash::set(c.header.map, e, dd.new_index);
+	hash::set(c.header.map, c.data.entity[dd.new_index], dd.old_index);
+	auto entity_at_index = c.data.entity[dd.new_index];
+	auto position_at_index = c.data.position[dd.new_index];
+	auto rotation_at_index = c.data.rotation[dd.new_index];
+	auto pivot_at_index = c.data.pivot[dd.new_index];
+	move_one(c, dd.old_index, dd.new_index);
+	c.data.entity[dd.old_index] = entity_at_index;
+	c.data.position[dd.old_index] = position_at_index;
+	c.data.rotation[dd.old_index] = rotation_at_index;
+	c.data.pivot[dd.old_index] = pivot_at_index;
 }
 
 }
@@ -89,13 +86,12 @@ unsigned component_size = (sizeof(Entity) + sizeof(Vector2) + sizeof(float) + si
 void init(TransformComponent& c, Allocator& allocator)
 {
 	memset(&c, 0, sizeof(TransformComponent));
-	c.header.map = hash::create<unsigned>(allocator);
-	c.header.last_dirty_index = (unsigned)-1;
+	component::init(c.header, allocator);
 }
 
 void deinit(TransformComponent& c, Allocator& allocator)
 {
-	hash::deinit(c.header.map);
+	component::deinit(c.header);
 	allocator.deallocate(c.buffer);
 }
 
@@ -110,6 +106,9 @@ void create(TransformComponent& c, Entity e, Allocator& allocator)
 	c.data.position[i] = Vector2(0, 0);
 	c.data.rotation[i] = 0;
 	c.data.pivot[i] = Vector2(0, 0);
+
+	if (c.header.first_new == (unsigned)-1)
+		c.header.first_new = i;
 }
 
 void destroy(TransformComponent& c, Entity e)
@@ -160,7 +159,7 @@ const Vector2& pivot(TransformComponent& c, Entity e)
 TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator)
 {
 	auto num_dirty = c.header.last_dirty_index + 1;
-	auto data = initialize_data(allocator.allocate(component_size), num_dirty);
+	auto data = initialize_data(allocator.allocate(component_size * num_dirty), num_dirty);
 	copy(c, data, num_dirty);
 	return data;
 }

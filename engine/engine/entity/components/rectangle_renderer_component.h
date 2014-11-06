@@ -17,6 +17,7 @@ typedef Vector4 Color;
 
 struct RectangleRendererComponentData
 {
+	Entity* entity;
 	Color* color;
 	Rect* rect;
 	RenderResourceHandle* material;
@@ -50,6 +51,7 @@ namespace rectangle_renderer_component
 	const Quad& geometry(RectangleRendererComponent& c, Entity e);
 	RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
 	RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
+	RectangleRendererComponentData copy_new_data(RectangleRendererComponent& c, Allocator& allocator);
 	RectangleRendererComponentData create_data_from_buffer(void* buffer, unsigned num);
 }
 

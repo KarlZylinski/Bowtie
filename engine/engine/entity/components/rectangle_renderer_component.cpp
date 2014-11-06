@@ -17,7 +17,8 @@ namespace
 RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 {
 	RectangleRendererComponentData new_data;
-	new_data.color = (Color*)buffer;
+	new_data.entity = (Entity*)buffer;
+	new_data.color = (Color*)(new_data.entity + size);
 	new_data.rect = (Rect*)(new_data.color + size);
 	new_data.material = (RenderResourceHandle*)(new_data.rect + size);
 	new_data.render_handle = (RenderResourceHandle*)(new_data.material + size);
@@ -27,6 +28,7 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 
 void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
 {
+	c.data.entity[to] = c.data.entity[from];
 	c.data.color[to] = c.data.color[from];
 	c.data.rect[to] = c.data.rect[from];
 	c.data.material[to] = c.data.material[from];
@@ -34,13 +36,19 @@ void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
 	c.data.geometry[to] = c.data.geometry[from];
 }
 
+void copy_from_offset(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num, unsigned offset)
+{
+	memcpy(dest.entity, c.data.entity + offset, num * sizeof(Entity));
+	memcpy(dest.color, c.data.color + offset, num * sizeof(Color));
+	memcpy(dest.rect, c.data.rect + offset, num * sizeof(Rect));
+	memcpy(dest.material, c.data.material + offset, num * sizeof(Material));
+	memcpy(dest.render_handle, c.data.render_handle + offset, num * sizeof(RenderResourceHandle));
+	memcpy(dest.geometry, c.data.geometry + offset, num * sizeof(Quad));
+}
+
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num)
 {
-	memcpy(dest.color, c.data.color, num * sizeof(Color));
-	memcpy(dest.rect, c.data.rect, num * sizeof(Rect));
-	memcpy(dest.material, c.data.material, num * sizeof(Material));
-	memcpy(dest.render_handle, c.data.render_handle, num * sizeof(RenderResourceHandle));
-	memcpy(dest.geometry, c.data.geometry, num * sizeof(Quad));
+	copy_from_offset(c, dest, num, 0);
 }
 
 void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
@@ -65,27 +73,26 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 
 void mark_dirty(RectangleRendererComponent& c, Entity e)
 {
-	auto entity_index = hash::get(c.header.map, e, 0u);
+	auto dd = component::mark_dirty(c.header, e);
 
-	if (c.header.last_dirty_index != (unsigned)-1 && entity_index <= c.header.last_dirty_index)
+	if (dd.new_index == dd.old_index)
 		return;
 
-	auto current_dirty_index = ++c.header.last_dirty_index;
-
-	if (current_dirty_index == entity_index)
-		return;
-
-	auto color_at_index = c.data.color[current_dirty_index];
-	auto rect_at_index = c.data.rect[current_dirty_index];
-	auto material_at_index = c.data.material[current_dirty_index];
-	auto render_handle_at_index = c.data.render_handle[current_dirty_index];
-	auto transform_at_index = c.data.geometry[current_dirty_index];
-	move_one(c, entity_index, current_dirty_index);
-	c.data.color[entity_index] = color_at_index;
-	c.data.rect[entity_index] = rect_at_index;
-	c.data.material[entity_index] = material_at_index;
-	c.data.render_handle[entity_index] = render_handle_at_index;
-	c.data.geometry[entity_index] = transform_at_index;
+	hash::set(c.header.map, e, dd.new_index);
+	hash::set(c.header.map, c.data.entity[dd.new_index], dd.old_index);
+	auto enity_at_index = c.data.entity[dd.new_index];
+	auto color_at_index = c.data.color[dd.new_index];
+	auto rect_at_index = c.data.rect[dd.new_index];
+	auto material_at_index = c.data.material[dd.new_index];
+	auto render_handle_at_index = c.data.render_handle[dd.new_index];
+	auto transform_at_index = c.data.geometry[dd.new_index];
+	move_one(c, dd.old_index, dd.new_index);
+	c.data.entity[dd.old_index] = enity_at_index;
+	c.data.color[dd.old_index] = color_at_index;
+	c.data.rect[dd.old_index] = rect_at_index;
+	c.data.material[dd.old_index] = material_at_index;
+	c.data.render_handle[dd.old_index] = render_handle_at_index;
+	c.data.geometry[dd.old_index] = transform_at_index;
 }
 
 }
@@ -93,18 +100,17 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 namespace rectangle_renderer_component
 {
 
-unsigned component_size = (sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle) + sizeof(RenderResourceHandle) + sizeof(Quad));
+unsigned component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle) + sizeof(RenderResourceHandle) + sizeof(Quad));
 
 void init(RectangleRendererComponent& c, Allocator& allocator)
 {
 	memset(&c, 0, sizeof(RectangleRendererComponent));
-	c.header.map = hash::create<unsigned>(allocator);
-	c.header.last_dirty_index = (unsigned)-1;
+	component::init(c.header, allocator);
 }
 
 void deinit(RectangleRendererComponent& c, Allocator& allocator)
 {
-	hash::deinit(c.header.map);
+	component::deinit(c.header);
 	allocator.deallocate(c.buffer);
 }
 
@@ -115,11 +121,15 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const
 
 	unsigned i = c.header.num++;
 	hash::set(c.header.map, e, i);
+	c.data.entity[i] = e;
 	c.data.color[i] = color;
 	c.data.rect[i] = rect;
 	c.data.material[i] = RenderResourceHandle::NotInitialized;
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
 	memset(c.data.geometry + i, 0, sizeof(Quad));
+	
+	if (c.header.first_new == (unsigned)-1)
+		c.header.first_new = i;
 }
 
 void destroy(RectangleRendererComponent& c, Entity e)
@@ -191,6 +201,7 @@ RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e
 {
 	auto data = initialize_data(allocator.allocate(component_size), 1);
 	unsigned i = hash::get(c.header.map, e);
+	*data.entity = c.data.entity[i];
 	*data.color = c.data.color[i];
 	*data.rect = c.data.rect[i];
 	*data.material = c.data.material[i];
@@ -201,9 +212,17 @@ RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e
 
 RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
 {
-	auto num_dirty = c.header.last_dirty_index + 1;
-	auto data = initialize_data(allocator.allocate(component_size), num_dirty);
+	auto num_dirty = component::num_dirty(c.header);
+	auto data = initialize_data(allocator.allocate(component_size * num_dirty), num_dirty);
 	copy(c, data, num_dirty);
+	return data;
+}
+
+RectangleRendererComponentData copy_new_data(RectangleRendererComponent& c, Allocator& allocator)
+{
+	auto num_new = component::num_new(c.header);
+	auto data = initialize_data(allocator.allocate(component_size * num_new), num_new);
+	copy_from_offset(c, data, num_new, c.header.first_new);
 	return data;
 }
 

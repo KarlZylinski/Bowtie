@@ -230,6 +230,15 @@ CreatedResources copy_single_resource(SingleCreatedResource resource, Allocator&
 	return cr;
 }
 
+CreatedResources create_created_resources(unsigned num, Allocator& allocator)
+{
+	CreatedResources cr;
+	cr.num = num;
+	cr.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
+	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	return cr;
+}
+
 CreatedResources Renderer::create_resources(RenderResourceData::Type type, void* data, void* dynamic_data)
 {
 	switch(type)
@@ -249,14 +258,22 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 		case RenderResourceData::RectangleRenderer: {
 			auto rectangle_data = (CreateRectangleRendererData*)data;
 			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
-			
+			CreatedResources cr = create_created_resources(rectangle_data->num, _allocator);
 			auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
-			auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
-			component->color = rectangle.color[0];
-			component->material = rectangle.material[0];
-			component->geometry = rectangle.geometry[0];
-			render_world::add_component(rw, component);
-			return copy_single_resource(single_resource(rectangle.render_handle[0], RenderResource(component)), _allocator);
+
+			for (unsigned i = 0; i < rectangle_data->num; ++i)
+			{
+				auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
+				component->color = rectangle.color[i];
+				component->material = rectangle.material[i];
+				component->geometry = rectangle.geometry[i];
+				render_world::add_component(rw, component);
+
+				cr.handles[i] = rectangle.render_handle[i];
+				cr.resources[i] = RenderResource(component);
+			}
+
+			return cr;
 		} break;
 		default: assert(!"Unknown render resource type"); return CreatedResources();
 	}
