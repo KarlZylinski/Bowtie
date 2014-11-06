@@ -197,33 +197,22 @@ const Quad& transform(RectangleRendererComponent& c, Entity e)
 	return c.data.geometry[hash::get(c.header.map, e)];
 }
 
-RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator)
-{
-	auto data = initialize_data(allocator.allocate(component_size), 1);
-	unsigned i = hash::get(c.header.map, e);
-	*data.entity = c.data.entity[i];
-	*data.color = c.data.color[i];
-	*data.rect = c.data.rect[i];
-	*data.material = c.data.material[i];
-	*data.render_handle = c.data.render_handle[i];
-	*data.geometry = c.data.geometry[i];
-	return data;
-}
-
-RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
+void* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
 {
 	auto num_dirty = component::num_dirty(c.header);
-	auto data = initialize_data(allocator.allocate(component_size * num_dirty), num_dirty);
+	void* buffer = allocator.allocate(component_size * num_dirty);
+	auto data = initialize_data(buffer, num_dirty);
 	copy(c, data, num_dirty);
-	return data;
+	return buffer;
 }
 
-RectangleRendererComponentData copy_new_data(RectangleRendererComponent& c, Allocator& allocator)
+void* copy_new_data(RectangleRendererComponent& c, Allocator& allocator)
 {
 	auto num_new = component::num_new(c.header);
-	auto data = initialize_data(allocator.allocate(component_size * num_new), num_new);
+	void* buffer = allocator.allocate(component_size * num_new);
+	auto data = initialize_data(buffer, num_new);
 	copy_from_offset(c, data, num_new, c.header.first_new);
-	return data;
+	return buffer;
 }
 
 RectangleRendererComponentData create_data_from_buffer(void* buffer, unsigned num)

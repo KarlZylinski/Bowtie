@@ -156,12 +156,13 @@ const Vector2& pivot(TransformComponent& c, Entity e)
 	return c.data.pivot[hash::get(c.header.map, e)];
 }
 
-TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator)
+void* copy_dirty_data(TransformComponent& c, Allocator& allocator)
 {
 	auto num_dirty = c.header.last_dirty_index + 1;
-	auto data = initialize_data(allocator.allocate(component_size * num_dirty), num_dirty);
+	void* buffer = allocator.allocate(component_size * num_dirty);
+	auto data = initialize_data(buffer, num_dirty);
 	copy(c, data, num_dirty);
-	return data;
+	return buffer;
 }
 
 } // namespace transform_component

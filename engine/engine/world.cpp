@@ -191,8 +191,7 @@ void World::update()
 		data.num = num_new_rectangles;
 		data.world = _render_handle;
 		rrd.data = &data;
-		auto rectangle_data = rectangle_renderer_component::copy_new_data(_rectangle_renderer_component, _allocator);
-		_render_interface.create_resource(rrd, rectangle_data.entity, rectangle_renderer_component::component_size * data.num);
+		_render_interface.create_resource(rrd, rectangle_renderer_component::copy_new_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
 		component::reset_new(_rectangle_renderer_component.header);
 	}
 
@@ -204,8 +203,7 @@ void World::update()
 		UpdateRectangleRendererData data;
 		data.num = num_dirty_rectangles;
 		rrd.data = &data;
-		auto rectangle_data = rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator);
-		_render_interface.update_resource(rrd, rectangle_data.entity, rectangle_renderer_component::component_size * data.num);
+		_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
 		component::reset_dirty(_rectangle_renderer_component.header);
 	}
 }

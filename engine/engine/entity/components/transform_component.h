@@ -36,7 +36,7 @@ namespace transform_component
 	float rotation(TransformComponent& c, Entity e);
 	void set_pivot(TransformComponent& c, Entity e, const Vector2& pivot);
 	const Vector2& pivot(TransformComponent& c, Entity e);
-	TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator);
+	void* copy_dirty_data(TransformComponent& c, Allocator& allocator);
 }
 
 }

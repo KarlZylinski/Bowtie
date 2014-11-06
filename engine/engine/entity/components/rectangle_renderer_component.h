@@ -49,9 +49,8 @@ namespace rectangle_renderer_component
 	RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e);
 	void set_geometry(RectangleRendererComponent& c, Entity e, const Quad& geometry);
 	const Quad& geometry(RectangleRendererComponent& c, Entity e);
-	RectangleRendererComponentData copy_data(RectangleRendererComponent& c, Entity e, Allocator& allocator);
-	RectangleRendererComponentData copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
-	RectangleRendererComponentData copy_new_data(RectangleRendererComponent& c, Allocator& allocator);
+	void* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator);
+	void* copy_new_data(RectangleRendererComponent& c, Allocator& allocator);
 	RectangleRendererComponentData create_data_from_buffer(void* buffer, unsigned num);
 }
 
