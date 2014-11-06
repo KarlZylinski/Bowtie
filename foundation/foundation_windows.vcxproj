@@ -33,6 +33,7 @@
     <ClInclude Include="foundation\option.h" />
     <ClInclude Include="foundation\quad.h" />
     <ClInclude Include="foundation\result.h" />
+    <ClInclude Include="foundation\stream.h" />
     <ClInclude Include="foundation\string_stream.h" />
     <ClInclude Include="foundation\string_utils.h" />
     <ClInclude Include="foundation\temp_allocator.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="foundation\jzon.c" />
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />
+    <ClCompile Include="foundation\stream.cpp" />
     <ClCompile Include="foundation\string_stream.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>

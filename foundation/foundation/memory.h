@@ -28,6 +28,13 @@ namespace bowtie
 		/// Frees an allocation previously made with allocate().
 		virtual void deallocate(void *p) = 0;
 		virtual void deallocate(const void *p) { deallocate((void*)p); }
+
+		void* initialize(uint32_t size, uint32_t align = DEFAULT_ALIGN)
+		{
+			auto p = allocate(size, align);
+			memset(p, 0, size);
+			return p;
+		}
 		
 		template<typename T> T* construct() { return new(allocate(sizeof(T), alignof(T))) T(); }
 		

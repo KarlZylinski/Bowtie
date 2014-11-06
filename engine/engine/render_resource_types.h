@@ -58,9 +58,9 @@ struct DrawableResourceData
 struct UniformResourceData
 {
 	uniform::AutomaticValue automatic_value;
-	char* name;
 	uniform::Type type;
-	void* value;
+	unsigned name_offset;
+	unsigned value_offset;
 };
 
 struct GeometryResourceData

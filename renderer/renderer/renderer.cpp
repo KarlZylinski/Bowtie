@@ -529,10 +529,10 @@ SingleCreatedResource create_geometry(ConcreteRenderer& concrete_renderer, void*
 	return single_resource(data.handle, concrete_renderer.create_geometry(dynamic_data, data.size));
 }
 
-RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data)
+RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data, const char* name)
 {
-	auto location = concrete_renderer.get_uniform_location(shader, uniform_data.name);
-	auto name_hash = hash_str(uniform_data.name);
+	auto location = concrete_renderer.get_uniform_location(shader, name);
+	auto name_hash = hash_str(name);
 
 	if (uniform_data.automatic_value == uniform::None)
 		return RenderUniform(uniform_data.type, name_hash, location);
@@ -550,22 +550,24 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 	for (unsigned i = 0; i < data.num_uniforms; ++i)
 	{
 		const auto& uniform_data = uniforms_data[i];
-		auto uniform = create_uniform(concrete_renderer, shader, uniform_data);
-
-		if (uniform_data.value != nullptr)
+		auto uniform = create_uniform(concrete_renderer, shader, uniform_data, (char*)memory::pointer_add(dynamic_data, uniform_data.name_offset));
+		
+		if (uniform_data.automatic_value == uniform::None)
 		{
+			auto value = (void*)memory::pointer_add(dynamic_data, uniform_data.name_offset);
+
 			switch (uniform_data.type)
 			{
 			case uniform::Float:
-				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(float));
+				render_uniform::set_value(uniform, allocator, value, sizeof(float));
 				break;
 			case uniform::Texture1:
 			case uniform::Texture2:
 			case uniform::Texture3:
-				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(unsigned));
+				render_uniform::set_value(uniform, allocator, value, sizeof(unsigned));
 				break;
 			case uniform::Vec4:
-				render_uniform::set_value(uniform, allocator, uniform_data.value, sizeof(Vector4));
+				render_uniform::set_value(uniform, allocator, value, sizeof(Vector4));
 				break;
 			default:
 				assert(!"Unkonwn uniform type.");

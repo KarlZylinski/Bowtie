@@ -29,6 +29,8 @@ Engine::~Engine()
 {
 	if (_game.initialized())
 		_game.deinit();
+
+	entity_manager::deinit(_entity_manager);
 }
 
 World* Engine::create_world()

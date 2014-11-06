@@ -19,6 +19,7 @@ struct EntityManager
 namespace entity_manager
 {
 	void init(EntityManager& manager, Allocator& allocator);
+	void deinit(EntityManager& manager);
 	Entity create(EntityManager& manager);
 	void destroy(EntityManager& manager, Entity entity);
 	bool is_alive(EntityManager& manager, Entity entity);

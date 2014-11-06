@@ -52,6 +52,12 @@ void init(EntityManager& manager, Allocator& allocator)
 	array::init(manager.generation, allocator);
 }
 
+void deinit(EntityManager& manager)
+{
+	array::deinit(manager.index_holes);
+	array::deinit(manager.generation);
+}
+
 Entity create(EntityManager& manager)
 {
 	unsigned index = get_next_index(manager);

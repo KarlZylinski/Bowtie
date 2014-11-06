@@ -206,7 +206,7 @@ namespace bowtie {
 			}
 
 			Hash<T> empty = hash::create<T>(*h._hash._allocator);
-			h.~Hash<T>();
+			hash::deinit(h);
 			memcpy(&h, &nh, sizeof(Hash<T>));
 			memcpy(&nh, &empty, sizeof(Hash<T>));
 		}

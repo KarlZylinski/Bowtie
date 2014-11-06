@@ -8,6 +8,7 @@
 #include <foundation/jzon.h>
 #include <foundation/string_utils.h>
 #include <foundation/temp_allocator.h>
+#include <foundation/stream.h>
 #include <resource_path.h>
 
 #include "drawable.h"
@@ -129,15 +130,14 @@ Material& ResourceManager::load_material(const char* filename)
 	auto shader_filename = jzon_get(jzon, "shader")->string_value;
 	auto& shader = load_shader(shader_filename);
 	auto uniforms_jzon = jzon_get(jzon, "uniforms");
-
-	auto uniforms = array::create<UniformResourceData>(_allocator);
+	
+	unsigned uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
+	auto uniforms = (UniformResourceData*)_allocator.allocate(uniforms_size);
+	Stream dynamic_uniform_data = {0};
 
 	for(unsigned i = 0; i < uniforms_jzon->size; ++i)
 	{
 		auto uniform_json = uniforms_jzon->array_values[i];
-
-		if (!uniform_json->is_string)
-			continue;
 		
 		TempAllocator4096 ta;
 		auto uniform_str = uniform_json->string_value;
@@ -147,8 +147,11 @@ Material& ResourceManager::load_material(const char* filename)
 
 		UniformResourceData uniform;
 		uniform.type = type;
-		uniform.name = copy_str(_allocator, split_uniform[1]);
-		uniform.value = nullptr;
+		uniform.name_offset = uniforms_size + dynamic_uniform_data.size;
+		auto name = split_uniform[1];
+		auto name_len = strlen32(name) + 1;
+		stream::write(dynamic_uniform_data, name, name_len, _allocator);
+		uniform.value_offset = (unsigned)-1;
 
 		if (array::size(split_uniform) > 2)
 		{
@@ -157,17 +160,20 @@ Material& ResourceManager::load_material(const char* filename)
 			
 			if (uniform.automatic_value == uniform::None)
 			{
+				uniform.value_offset = uniforms_size + dynamic_uniform_data.size;
+
 				switch (type)
 				{
-				case uniform::Float:
-					uniform.value = _allocator.construct<float>(float_from_str(value_str));
-					break;
+				case uniform::Float: {
+					auto float_val = float_from_str(value_str);
+					stream::write(dynamic_uniform_data, &float_val, sizeof(float), _allocator);
+					} break;
 				case uniform::Texture1:
 				case uniform::Texture2:
 				case uniform::Texture3:
 					{
-						auto texture = load_texture(value_str);						
-						uniform.value = _allocator.construct<unsigned>(texture.render_handle.handle);
+						auto texture = load_texture(value_str);	
+						stream::write(dynamic_uniform_data, &texture.render_handle.handle, sizeof(unsigned), _allocator);
 					}
 					break;
 				}
@@ -175,18 +181,20 @@ Material& ResourceManager::load_material(const char* filename)
 		}
 
 		array::deinit(split_uniform);
-		array::push_back(uniforms, uniform);
+		uniforms[i] = uniform;
 	}
 	
-	auto num_uniforms = array::size(uniforms);
-	auto uniform_data_size = unsigned(num_uniforms * sizeof(UniformResourceData));
+	
+	auto uniform_data_size = uniforms_size + dynamic_uniform_data.size;
 	auto uniforms_data = _allocator.allocate(uniform_data_size);
-	memcpy(uniforms_data, &uniforms[0], uniform_data_size);
-	array::deinit(uniforms);
+	memcpy(uniforms_data, uniforms, uniforms_size);
+	memcpy(memory::pointer_add(uniforms_data, uniforms_size), dynamic_uniform_data.start, dynamic_uniform_data.size);
+	_allocator.deallocate(uniforms);
+	_allocator.deallocate(dynamic_uniform_data.start);
 	
 	MaterialResourceData mrd;
 	mrd.handle = _render_interface.create_handle();
-	mrd.num_uniforms = num_uniforms;
+	mrd.num_uniforms = uniforms_jzon->size;
 	mrd.shader = shader.render_handle;
 	RenderResourceData material_resource_data = _render_interface.create_render_resource_data(RenderResourceData::RenderMaterial);
 	material_resource_data.data = &mrd;	
@@ -343,6 +351,7 @@ Drawable& ResourceManager::load_sprite_prototype(const char* filename)
 	assert(sprite_option.is_some && "Failed loading sprite.");
 	auto file = sprite_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
+	_allocator.deallocate(file.data);
 	assert(jzon_result.success && "Failed to parse font");
 	auto jzon = jzon_result.output;
 	auto texture_filename = jzon_get(jzon, "texture")->string_value;
