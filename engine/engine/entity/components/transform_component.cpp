@@ -146,6 +146,17 @@ float rotation(TransformComponent& c, Entity e)
 	return c.data.rotation[hash::get(c.header.map, e)];
 }
 
+void set_pivot(TransformComponent& c, Entity e, const Vector2& pivot)
+{
+	c.data.pivot[hash::get(c.header.map, e)] = pivot;
+	mark_dirty(c, e);
+}
+
+const Vector2& pivot(TransformComponent& c, Entity e)
+{
+	return c.data.pivot[hash::get(c.header.map, e)];
+}
+
 TransformComponentData copy_dirty_data(TransformComponent& c, Allocator& allocator)
 {
 	auto num_dirty = c.header.last_dirty_index + 1;

@@ -73,6 +73,22 @@ int set_rotation(lua_State* lua)
 	return 0;
 }
 
+int pivot(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	const auto& pivot = transform_component::pivot(*(TransformComponent*)c.component, c.entity);
+	script_interface::push_vector2(lua, pivot);
+	return 1;
+}
+
+int set_pivot(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	auto pivot = script_interface::to_vector2(lua, 2);
+	transform_component::set_pivot(*(TransformComponent*)c.component, c.entity, pivot);
+	return 0;
+}
+
 void load(lua_State* lua, Allocator& allocator)
 {
 	s_allocator = &allocator;
@@ -84,10 +100,12 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "position", position },
 		{ "set_position", set_position },
 		{ "rotation", rotation },
-		{ "set_rotation", set_rotation }
+		{ "set_rotation", set_rotation },
+		{ "pivot", pivot },
+		{ "set_pivot", set_pivot }
 	};
 
-	script_interface::register_interface(lua, "TransformComponent", functions, 7);
+	script_interface::register_interface(lua, "TransformComponent", functions, 9);
 }
 
 } // namespace drawable_script_interface

@@ -185,16 +185,15 @@ void World::update()
 		{	
 			auto rotation = c.rotation[i];
 			auto position = c.position[i];
+			auto pivot = c.pivot[i];
 			auto entity = c.entity[i];
 			auto rect = rectangle_renderer_component::rect(_rectangle_renderer_component, entity);
 
-			// Handednessmess? Fix negation of pivot. Move pivot (0, 0) to upper left corner.
-
 			Quad geometry;
-			geometry.v1 = position + vector2::rotate(rect.position + Vector2(100, -300), rotation);
-			geometry.v2 = position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) + Vector2(100, -300), rotation);
-			geometry.v3 = position + vector2::rotate(rect.position + Vector2(0, rect.size.y) + Vector2(100, -300), rotation);
-			geometry.v4 = position + vector2::rotate(rect.position + rect.size + Vector2(100, -300), rotation);
+			geometry.v1 = position + vector2::rotate(rect.position - pivot, rotation);
+			geometry.v2 = position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) - pivot, rotation);
+			geometry.v3 = position + vector2::rotate(rect.position + Vector2(0, rect.size.y) - pivot, rotation);
+			geometry.v4 = position + vector2::rotate(rect.position + rect.size - pivot, rotation);
 			rectangle_renderer_component::set_geometry(_rectangle_renderer_component, entity, geometry);
 		}
 
