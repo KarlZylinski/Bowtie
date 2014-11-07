@@ -26,34 +26,24 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 	return new_data;
 }
 
-void move_one(RectangleRendererComponent& c, unsigned from, unsigned to)
+void copy_offset(RectangleRendererComponentData& from, RectangleRendererComponentData& to, unsigned num, unsigned from_offset, unsigned to_offset)
 {
-	c.data.entity[to] = c.data.entity[from];
-	c.data.color[to] = c.data.color[from];
-	c.data.rect[to] = c.data.rect[from];
-	c.data.material[to] = c.data.material[from];
-	c.data.render_handle[to] = c.data.render_handle[from];
-	c.data.geometry[to] = c.data.geometry[from];
+	memcpy(to.entity + to_offset, from.entity + from_offset, num * sizeof(Entity));
+	memcpy(to.color + to_offset, from.color + from_offset, num * sizeof(Color));
+	memcpy(to.rect + to_offset, from.rect + from_offset, num * sizeof(Rect));
+	memcpy(to.material + to_offset, from.material + from_offset, num * sizeof(Material));
+	memcpy(to.render_handle + to_offset, from.render_handle + from_offset, num * sizeof(RenderResourceHandle));
+	memcpy(to.geometry + to_offset, from.geometry + from_offset, num * sizeof(Quad));
 }
 
-void copy_from_offset(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num, unsigned offset)
+void copy(RectangleRendererComponentData& from, RectangleRendererComponentData& to, unsigned num)
 {
-	memcpy(dest.entity, c.data.entity + offset, num * sizeof(Entity));
-	memcpy(dest.color, c.data.color + offset, num * sizeof(Color));
-	memcpy(dest.rect, c.data.rect + offset, num * sizeof(Rect));
-	memcpy(dest.material, c.data.material + offset, num * sizeof(Material));
-	memcpy(dest.render_handle, c.data.render_handle + offset, num * sizeof(RenderResourceHandle));
-	memcpy(dest.geometry, c.data.geometry + offset, num * sizeof(Quad));
+	copy_offset(from, to, num, 0, 0);
 }
 
-void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest, unsigned num)
+void internal_copy(RectangleRendererComponentData& c, unsigned from, unsigned to)
 {
-	copy_from_offset(c, dest, num, 0);
-}
-
-void copy(RectangleRendererComponent& c, RectangleRendererComponentData& dest)
-{
-	copy(c, dest, c.header.num);
+	copy_offset(c, c, 1, from, to);
 }
 
 void grow(RectangleRendererComponent& c, Allocator& allocator)
@@ -63,7 +53,7 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 	void* buffer = allocator.allocate(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
-	copy(c, new_data);
+	copy(c.data, new_data, c.header.num);
 	c.data = new_data;
 
 	allocator.deallocate(c.buffer);
@@ -80,19 +70,9 @@ void mark_dirty(RectangleRendererComponent& c, Entity e)
 
 	hash::set(c.header.map, e, dd.new_index);
 	hash::set(c.header.map, c.data.entity[dd.new_index], dd.old_index);
-	auto enity_at_index = c.data.entity[dd.new_index];
-	auto color_at_index = c.data.color[dd.new_index];
-	auto rect_at_index = c.data.rect[dd.new_index];
-	auto material_at_index = c.data.material[dd.new_index];
-	auto render_handle_at_index = c.data.render_handle[dd.new_index];
-	auto transform_at_index = c.data.geometry[dd.new_index];
-	move_one(c, dd.old_index, dd.new_index);
-	c.data.entity[dd.old_index] = enity_at_index;
-	c.data.color[dd.old_index] = color_at_index;
-	c.data.rect[dd.old_index] = rect_at_index;
-	c.data.material[dd.old_index] = material_at_index;
-	c.data.render_handle[dd.old_index] = render_handle_at_index;
-	c.data.geometry[dd.old_index] = transform_at_index;
+	internal_copy(c.data, dd.new_index, c.header.num);
+	internal_copy(c.data, dd.old_index, dd.new_index);
+	internal_copy(c.data, c.header.num, dd.old_index);
 }
 
 }
@@ -141,7 +121,7 @@ void destroy(RectangleRendererComponent& c, Entity e)
 	if (i == c.header.num)
 		return;
 		
-	move_one(c, c.header.num, i);
+	internal_copy(c.data, c.header.num, i);
 }
 
 void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
@@ -202,7 +182,7 @@ void* copy_dirty_data(RectangleRendererComponent& c, Allocator& allocator)
 	auto num_dirty = component::num_dirty(c.header);
 	void* buffer = allocator.allocate(component_size * num_dirty);
 	auto data = initialize_data(buffer, num_dirty);
-	copy(c, data, num_dirty);
+	copy(c.data, data, num_dirty);
 	return buffer;
 }
 
@@ -211,7 +191,7 @@ void* copy_new_data(RectangleRendererComponent& c, Allocator& allocator)
 	auto num_new = component::num_new(c.header);
 	void* buffer = allocator.allocate(component_size * num_new);
 	auto data = initialize_data(buffer, num_new);
-	copy_from_offset(c, data, num_new, c.header.first_new);
+	copy_offset(c.data, data, num_new, c.header.first_new, 0);
 	return buffer;
 }
 

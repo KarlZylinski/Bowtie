@@ -20,35 +20,32 @@ TransformComponentData initialize_data(void* buffer, unsigned size)
 	return new_data;
 }
 
-void move_one(TransformComponent& c, unsigned from, unsigned to)
+void copy_offset(TransformComponentData& from, TransformComponentData& to, unsigned num, unsigned from_offset, unsigned to_offset)
 {
-	c.data.entity[to] = c.data.entity[from];
-	c.data.position[to] = c.data.position[from];
-	c.data.rotation[to] = c.data.rotation[from];
-	c.data.pivot[to] = c.data.pivot[from];
+	memcpy(to.entity + to_offset, from.entity + from_offset, num * sizeof(Entity));
+	memcpy(to.position + to_offset, from.position + from_offset, num * sizeof(Vector2));
+	memcpy(to.rotation + to_offset, from.rotation + from_offset, num * sizeof(float));
+	memcpy(to.pivot + to_offset, from.pivot + from_offset, num * sizeof(Vector2));
 }
 
-void copy(TransformComponent& c, TransformComponentData& dest, unsigned num)
+void copy(TransformComponentData& from, TransformComponentData& to, unsigned num)
 {
-	memcpy(dest.entity, c.data.entity, num * sizeof(Entity));
-	memcpy(dest.position, c.data.position, num * sizeof(Vector2));
-	memcpy(dest.rotation, c.data.rotation, num * sizeof(float));
-	memcpy(dest.pivot, c.data.pivot, num * sizeof(Vector2));
+	copy_offset(from, to, num, 0, 0);
 }
 
-void copy(TransformComponent& c, TransformComponentData& dest)
+void internal_copy(TransformComponentData& c, unsigned from, unsigned to)
 {
-	copy(c, dest, c.header.num);
+	copy_offset(c, c, 1, from, to);
 }
 
 void grow(TransformComponent& c, Allocator& allocator)
 {
-	const unsigned new_capacity = c.header.capacity == 0 ? 8 : c.header.capacity * 2;
+	const unsigned new_capacity = (c.header.capacity == 0 ? 8 : c.header.capacity * 2) + 1; // One extra so last index always can be used for swapping.
 	const unsigned bytes = new_capacity * transform_component::component_size;
 	void* buffer = allocator.allocate(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
-	copy(c, new_data);
+	copy(c.data, new_data, c.header.num);
 	c.data = new_data;
 
 	allocator.deallocate(c.buffer);
@@ -65,15 +62,9 @@ void mark_dirty(TransformComponent& c, Entity e)
 		
 	hash::set(c.header.map, e, dd.new_index);
 	hash::set(c.header.map, c.data.entity[dd.new_index], dd.old_index);
-	auto entity_at_index = c.data.entity[dd.new_index];
-	auto position_at_index = c.data.position[dd.new_index];
-	auto rotation_at_index = c.data.rotation[dd.new_index];
-	auto pivot_at_index = c.data.pivot[dd.new_index];
-	move_one(c, dd.old_index, dd.new_index);
-	c.data.entity[dd.old_index] = entity_at_index;
-	c.data.position[dd.old_index] = position_at_index;
-	c.data.rotation[dd.old_index] = rotation_at_index;
-	c.data.pivot[dd.old_index] = pivot_at_index;
+	internal_copy(c.data, dd.new_index, c.header.num);
+	internal_copy(c.data, dd.old_index, dd.new_index);
+	internal_copy(c.data, c.header.num, dd.old_index);
 }
 
 }
@@ -120,7 +111,7 @@ void destroy(TransformComponent& c, Entity e)
 	if (i == c.header.num)
 		return;
 		
-	move_one(c, c.header.num, i);
+	internal_copy(c.data, c.header.num - 1, i);
 }
 
 void set_position(TransformComponent& c, Entity e, const Vector2& position)
@@ -161,7 +152,7 @@ void* copy_dirty_data(TransformComponent& c, Allocator& allocator)
 	auto num_dirty = c.header.last_dirty_index + 1;
 	void* buffer = allocator.allocate(component_size * num_dirty);
 	auto data = initialize_data(buffer, num_dirty);
-	copy(c, data, num_dirty);
+	copy(c.data, data, num_dirty);
 	return buffer;
 }
 
