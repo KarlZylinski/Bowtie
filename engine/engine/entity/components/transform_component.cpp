@@ -143,16 +143,20 @@ void mark_dirty(TransformComponent& c, unsigned index)
 	
 	auto child_iter = c.data.first_child[dd.new_index];
 
+	// Mark all children dirty as well.
 	while (child_iter != not_assigned)
 	{
 		auto entity = c.data.entity[child_iter];
 		mark_dirty(c, child_iter);
-		child_iter = hash::get(c.header.map, entity); // Index might change when swapping in recursive call.
+		child_iter = hash::get(c.header.map, entity); // Index might change when swapping, refetch it.
 		auto child_parent = c.data.parent[child_iter];
 		assert(c.data.parent[child_iter] != not_assigned);
 
 		if (child_iter < child_parent)
+		{
 			swap(c, child_iter, child_parent); // Parents must be before all children, otherwise updating will be wonky.
+			child_iter = hash::get(c.header.map, entity);
+		}
 
 		child_iter = c.data.next_sibling[child_iter];
 	}
