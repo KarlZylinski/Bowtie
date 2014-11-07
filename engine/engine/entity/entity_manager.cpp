@@ -87,6 +87,6 @@ bool is_alive(EntityManager& manager, Entity entity)
 	return manager.generation[entity_index(entity)] == entity_generation(entity);
 }
 
-} //namespace entity_manager
+} // namespace entity_manager
 
 } // namespace bowtie

@@ -20,6 +20,9 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] GC of components
     - [ ] Convert old stuff to this new thingmajing
 
+- [ ] Redo console as external application
+- [ ] Fix fonts, maybe as entity component or as some kind of gui thing... Not sure. Maybe have the renderer agnostic of the CPU impl?
+- [ ] Fix sorting of batches so that it breaks on not only material, but also on uniform permutations
 - [ ] Turn engine into namespace of functions which operates on engine struct.
 - [ ] Turn font into namespace of functions which operates on font struct.
 - [ ] Turn render_interface into namespace of functions which operates on render_interface struct.
@@ -43,7 +46,6 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest. Or maybe specify default package from main.lua?
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base
-- [ ] Redo console as external application
 - [ ] Move geometry generation to renderer
 - [ ] Deffered / heightmap lighting
 - [ ] Replace PNG with homebrew DDS loader
