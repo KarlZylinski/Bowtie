@@ -14,7 +14,19 @@ struct TransformComponentData
 	Vector2* position;
 	float* rotation;
 	Vector2* pivot;
+	unsigned* parent;
+	unsigned* first_child;
+	unsigned* next_sibling;
+	unsigned* previous_sibling;
 };
+
+/*
+
+check parent -> update first_child if match
+go to next and previous sibling if exists -> update previous / next
+go through all children -> update parent
+
+*/
 
 struct TransformComponent
 {
@@ -36,6 +48,8 @@ namespace transform_component
 	float rotation(TransformComponent& c, Entity e);
 	void set_pivot(TransformComponent& c, Entity e, const Vector2& pivot);
 	const Vector2& pivot(TransformComponent& c, Entity e);
+	void set_parent(TransformComponent& c, Entity e, Entity parent);
+	Entity parent(TransformComponent& c, Entity e);
 	void* copy_dirty_data(TransformComponent& c, Allocator& allocator);
 }
 

@@ -33,7 +33,7 @@ namespace component
 		unsigned new_index;
 	};
 
-	DirtyData mark_dirty(ComponentHeader& h, Entity e);
+	DirtyData mark_dirty(ComponentHeader& h, unsigned entity_index);
 }
 
 }

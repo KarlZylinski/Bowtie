@@ -49,19 +49,17 @@ void reset_new(ComponentHeader& h)
 	h.first_new = (unsigned)-1;
 }
 
-DirtyData mark_dirty(ComponentHeader& h, Entity e)
+DirtyData mark_dirty(ComponentHeader& h, unsigned index)
 {
-	auto entity_index = hash::get(h.map, e, 0u);
-
 	DirtyData dd = {
-		entity_index,
-		entity_index
+		index,
+		index
 	};
 
-	if (h.last_dirty_index != (unsigned)-1 && entity_index <= h.last_dirty_index)
+	if (h.last_dirty_index != (unsigned)-1 && index <= h.last_dirty_index)
 		return dd;
 
-	if (h.first_new != (unsigned)-1 && entity_index >= h.first_new)
+	if (h.first_new != (unsigned)-1 && index >= h.first_new)
 		return dd;
 
 	dd.new_index = ++h.last_dirty_index;

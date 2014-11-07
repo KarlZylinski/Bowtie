@@ -46,6 +46,15 @@ void internal_copy(RectangleRendererComponentData& c, unsigned from, unsigned to
 	copy_offset(c, c, 1, from, to);
 }
 
+void swap(RectangleRendererComponent& c, unsigned i1, unsigned i2)
+{
+	hash::set(c.header.map, c.data.entity[i1], i2);
+	hash::set(c.header.map, c.data.entity[i2], i1);
+	internal_copy(c.data, i2, c.header.num);
+	internal_copy(c.data, i1, i2);
+	internal_copy(c.data, c.header.num, i1);
+}
+
 void grow(RectangleRendererComponent& c, Allocator& allocator)
 {
 	const unsigned new_capacity = c.header.capacity == 0 ? 8 : c.header.capacity * 2;
@@ -61,18 +70,14 @@ void grow(RectangleRendererComponent& c, Allocator& allocator)
 	c.header.capacity = new_capacity;
 }
 
-void mark_dirty(RectangleRendererComponent& c, Entity e)
+void mark_dirty(RectangleRendererComponent& c, unsigned index)
 {
-	auto dd = component::mark_dirty(c.header, e);
+	auto dd = component::mark_dirty(c.header, index);
 
 	if (dd.new_index == dd.old_index)
 		return;
 
-	hash::set(c.header.map, e, dd.new_index);
-	hash::set(c.header.map, c.data.entity[dd.new_index], dd.old_index);
-	internal_copy(c.data, dd.new_index, c.header.num);
-	internal_copy(c.data, dd.old_index, dd.new_index);
-	internal_copy(c.data, c.header.num, dd.old_index);
+	swap(c, dd.old_index, dd.new_index);
 }
 
 }
@@ -125,9 +130,10 @@ void destroy(RectangleRendererComponent& c, Entity e)
 }
 
 void set_rect(RectangleRendererComponent& c, Entity e, const Rect& rect)
-{	
-	c.data.rect[hash::get(c.header.map, e)] = rect;
-	mark_dirty(c, e);
+{
+	auto i = hash::get(c.header.map, e);
+	c.data.rect[i] = rect;
+	mark_dirty(c, i);
 }
 
 const Rect& rect(RectangleRendererComponent& c, Entity e)
@@ -137,8 +143,9 @@ const Rect& rect(RectangleRendererComponent& c, Entity e)
 
 void set_color(RectangleRendererComponent& c, Entity e, const Color& color)
 {
-	c.data.color[hash::get(c.header.map, e)] = color;
-	mark_dirty(c, e);
+	auto i = hash::get(c.header.map, e);
+	c.data.color[i] = color;
+	mark_dirty(c, i);
 }
 
 const Color& color(RectangleRendererComponent& c, Entity e)
@@ -168,8 +175,9 @@ RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e)
 
 void set_geometry(RectangleRendererComponent& c, Entity e, const Quad& geometry)
 {
-	c.data.geometry[hash::get(c.header.map, e)] = geometry;
-	mark_dirty(c, e);
+	auto i = hash::get(c.header.map, e);
+	c.data.geometry[i] = geometry;
+	mark_dirty(c, i);
 }
 
 const Quad& transform(RectangleRendererComponent& c, Entity e)

@@ -76,16 +76,28 @@ int set_rotation(lua_State* lua)
 int pivot(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	const auto& pivot = transform_component::pivot(*(TransformComponent*)c.component, c.entity);
-	script_interface::push_vector2(lua, pivot);
+	script_interface::push_vector2(lua, transform_component::pivot(*(TransformComponent*)c.component, c.entity));
 	return 1;
 }
 
 int set_pivot(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	auto pivot = script_interface::to_vector2(lua, 2);
-	transform_component::set_pivot(*(TransformComponent*)c.component, c.entity, pivot);
+	transform_component::set_pivot(*(TransformComponent*)c.component, c.entity, script_interface::to_vector2(lua, 2));
+	return 0;
+}
+
+int parent(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	lua_pushnumber(lua, transform_component::parent(*(TransformComponent*)c.component, c.entity));
+	return 1;
+}
+
+int set_parent(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	transform_component::set_parent(*(TransformComponent*)c.component, c.entity, (unsigned)lua_tonumber(lua, 2));
 	return 0;
 }
 
@@ -102,10 +114,12 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "rotation", rotation },
 		{ "set_rotation", set_rotation },
 		{ "pivot", pivot },
-		{ "set_pivot", set_pivot }
+		{ "set_pivot", set_pivot },
+		{ "parent", parent },
+		{ "set_parent", set_parent }
 	};
 
-	script_interface::register_interface(lua, "TransformComponent", functions, 9);
+	script_interface::register_interface(lua, "TransformComponent", functions, 11);
 }
 
 } // namespace drawable_script_interface
