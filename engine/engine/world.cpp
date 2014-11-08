@@ -119,7 +119,6 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 	render_interface.dispatch(geometry_changed_command);
 }
 
-
 Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 {
 	auto m = Matrix4();
@@ -165,6 +164,31 @@ void update_transforms(TransformComponentData& c, unsigned start, unsigned end, 
 	}
 }
 
+void create_rectangles(Allocator& allocator, RenderInterface& ri, RenderResourceHandle default_material, RenderResourceHandle render_world, RectangleRendererComponent& c, unsigned num)
+{
+	auto rrd = ri.create_render_resource_data(RenderResourceData::RectangleRenderer);
+
+	for (unsigned i = c.header.first_new; i < c.header.num; ++i)
+	{
+		c.data.render_handle[i] = ri.create_handle();
+		c.data.material[i] = default_material;
+	}
+
+	CreateRectangleRendererData data;
+	data.num = num;
+	data.world = render_world;
+	rrd.data = &data;
+	ri.create_resource(rrd, rectangle_renderer_component::copy_new_data(c, allocator), rectangle_renderer_component::component_size * data.num);
+}
+
+void update_rectangles(Allocator& allocator, RenderInterface& ri, RectangleRendererComponent& c, unsigned num)
+{
+	auto rrd = ri.create_render_resource_data(RenderResourceData::RectangleRenderer);
+	UpdateRectangleRendererData data;
+	data.num = num;
+	rrd.data = &data;
+	ri.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(c, allocator), rectangle_renderer_component::component_size * data.num);
+}
 
 void World::update()
 {
@@ -189,39 +213,21 @@ void World::update()
 		update_transforms(_transform_component.data, 0, num_dirty_transforms, _rectangle_renderer_component);
 
 	component::reset_dirty(_transform_component.header);
-
 	const auto num_new_rectangles = component::num_new(_rectangle_renderer_component.header);
 
 	if (num_new_rectangles > 0)
 	{
-		auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-		auto material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-
-		for (unsigned i = _rectangle_renderer_component.header.first_new; i < _rectangle_renderer_component.header.num; ++i)
-		{
-			_rectangle_renderer_component.data.render_handle[i] = _render_interface.create_handle();
-			_rectangle_renderer_component.data.material[i] = material;
-		}
-
-		CreateRectangleRendererData data;
-		data.num = num_new_rectangles;
-		data.world = _render_handle;
-		rrd.data = &data;
-		_render_interface.create_resource(rrd, rectangle_renderer_component::copy_new_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
-		component::reset_new(_rectangle_renderer_component.header);
+		auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
+		create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_component, num_new_rectangles);
 	}
 
+	component::reset_new(_rectangle_renderer_component.header);
 	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_component.header);
 
 	if (num_dirty_rectangles > 0)
-	{
-		auto rrd = _render_interface.create_render_resource_data(RenderResourceData::RectangleRenderer);
-		UpdateRectangleRendererData data;
-		data.num = num_dirty_rectangles;
-		rrd.data = &data;
-		_render_interface.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(_rectangle_renderer_component, _allocator), rectangle_renderer_component::component_size * data.num);
-		component::reset_dirty(_rectangle_renderer_component.header);
-	}
+		update_rectangles(_allocator, _render_interface, _rectangle_renderer_component, num_dirty_rectangles);
+	
+	component::reset_dirty(_rectangle_renderer_component.header);
 }
 
 void World::draw(const Rect& view)
