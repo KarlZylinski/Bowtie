@@ -84,12 +84,20 @@ void set_parent_internal(TransformComponentData& d, unsigned index, unsigned par
 		if (d.first_child[old_parent] == index)
 			d.first_child[old_parent] = d.next_sibling[index];
 	}
+	
+	// Unset any previous siblings to this component.
+	d.previous_sibling[index] = transform_component::not_assigned;
+	d.next_sibling[index] = transform_component::not_assigned;
 
 	if (parent_index != transform_component::not_assigned)
 	{
 		// Parent already has children, insert at front of list.
 		if (d.first_child[parent_index] != transform_component::not_assigned)
-			d.previous_sibling[d.first_child[parent_index]] = index;
+		{
+			auto current_first_child = d.first_child[parent_index];
+			d.previous_sibling[current_first_child] = index;
+			d.next_sibling[index] = current_first_child;
+		}
 
 		d.first_child[parent_index] = index;
 	}
@@ -168,8 +176,9 @@ void mark_dirty(TransformComponent& c, unsigned index)
 namespace transform_component
 {
 
-	unsigned component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2)
-							  + sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned);
+unsigned component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2)
+							+ sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned)
+							+ sizeof(Matrix4);
 
 void init(TransformComponent& c, Allocator& allocator)
 {
