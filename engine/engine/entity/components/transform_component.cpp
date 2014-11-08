@@ -105,7 +105,6 @@ void set_parent_internal(TransformComponentData& d, unsigned index, unsigned par
 	d.parent[index] = parent_index;
 }
 
-
 void swap(TransformComponent& c, unsigned i1, unsigned i2)
 {
 	auto i1_parent = c.data.parent[i1];

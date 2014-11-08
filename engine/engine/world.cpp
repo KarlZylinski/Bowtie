@@ -122,32 +122,18 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 
 Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 {
-	auto parent_index = c.parent[i];
-
-	auto p = Matrix4();
-	p[3][0] = -c.pivot[i].x;
-	p[3][1] = -c.pivot[i].y;
-
-	/*if (parent_index != transform_component::not_assigned)
-	{
-		p[3][0] += c.pivot[parent_index].x;
-		p[3][1] += c.pivot[parent_index].y;
-	}*/
-
-	auto r = Matrix4();
-	r[0][0] = cos(c.rotation[i]);
-	r[1][0] = -sin(c.rotation[i]);
-	r[0][1] = sin(c.rotation[i]);
-	r[1][1] = cos(c.rotation[i]);
-
-	auto t = Matrix4();
-	t[3][0] = c.position[i].x;
-	t[3][1] = c.position[i].y;
-
-	if (parent_index == transform_component::not_assigned)
-		return p * r * t;
+	auto m = Matrix4();
+	m[3][0] = c.position[i].x - c.pivot[i].x;
+	m[3][1] = c.position[i].y - c.pivot[i].y;
+	m[0][0] = cos(c.rotation[i]);
+	m[1][0] = -sin(c.rotation[i]);
+	m[0][1] = sin(c.rotation[i]);
+	m[1][1] = cos(c.rotation[i]);
+	
+	if (c.parent[i] == transform_component::not_assigned)
+		return m;
 	else
-		return p * r * t * c.world_transform[parent_index];
+		return m * c.world_transform[c.parent[i]];
 }
 
 void update_transform(TransformComponentData& c, unsigned i, RectangleRendererComponent& rectangle_renderer)
