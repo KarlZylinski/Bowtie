@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include "vector4.h"
 
 namespace bowtie
 {
@@ -52,6 +53,19 @@ namespace bowtie
 		m2m1[3][3] = m1[3][0] * m2[0][3] + m1[3][1] * m2[1][3] + m1[3][2] * m2[2][3] + m1[3][3] * m2[3][3];
 
 		return m2m1;
+	}
+
+
+	inline Vector4 operator*(const Matrix4& m, const Vector4& v)
+	{
+		Vector4 mv;
+
+		mv.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0] * v.w;
+		mv.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] * v.w;
+		mv.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] * v.w;
+		mv.w = m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] * v.w;
+
+		return mv;
 	}
 
 } // namespace bowtie

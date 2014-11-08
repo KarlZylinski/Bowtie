@@ -119,22 +119,57 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 	render_interface.dispatch(geometry_changed_command);
 }
 
+
+Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
+{
+	auto parent_index = c.parent[i];
+
+	auto p = Matrix4();
+	p[3][0] = -c.pivot[i].x;
+	p[3][1] = -c.pivot[i].y;
+
+	/*if (parent_index != transform_component::not_assigned)
+	{
+		p[3][0] += c.pivot[parent_index].x;
+		p[3][1] += c.pivot[parent_index].y;
+	}*/
+
+	auto r = Matrix4();
+	r[0][0] = cos(c.rotation[i]);
+	r[1][0] = -sin(c.rotation[i]);
+	r[0][1] = sin(c.rotation[i]);
+	r[1][1] = cos(c.rotation[i]);
+
+	auto t = Matrix4();
+	t[3][0] = c.position[i].x;
+	t[3][1] = c.position[i].y;
+
+	if (parent_index == transform_component::not_assigned)
+		return p * r * t;
+	else
+		return p * r * t * c.world_transform[parent_index];
+}
+
 void update_transform(TransformComponentData& c, unsigned i, RectangleRendererComponent& rectangle_renderer)
 {
-	auto rotation = c.rotation[i];
-	auto position = c.position[i];
-	auto pivot = c.pivot[i];
 	auto entity = c.entity[i];
+	auto world_transform = world_matrix(c, i);
+	c.world_transform[i] = world_transform;
 
 	if (component::has_entity(rectangle_renderer.header, entity))
 	{
 		auto rect = rectangle_renderer_component::rect(rectangle_renderer, entity);
 
+		auto v1 = world_transform * Vector4(rect.position.x, rect.position.y, 0, 1);
+		auto v2 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y, 0, 1);
+		auto v3 = world_transform * Vector4(rect.position.x, rect.position.y + rect.size.y, 0, 1);
+		auto v4 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y + rect.size.y, 0, 1);
+
 		Quad geometry = {
-			position + vector2::rotate(rect.position - pivot, rotation),
-			position + vector2::rotate(rect.position + Vector2(rect.size.x, 0) - pivot, rotation),
-			position + vector2::rotate(rect.position + Vector2(0, rect.size.y) - pivot, rotation),
-			position + vector2::rotate(rect.position + rect.size - pivot, rotation)
+			Vector2(v1.x, v1.y),
+			Vector2(v2.x, v2.y),
+			Vector2(v3.x, v3.y),
+			Vector2(v4.x, v4.y)
 		};
 
 		rectangle_renderer_component::set_geometry(rectangle_renderer, entity, geometry);

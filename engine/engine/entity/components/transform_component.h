@@ -7,6 +7,7 @@ namespace bowtie
 {
 
 struct Vector2;
+struct Matrix4;
 
 struct TransformComponentData
 {
@@ -18,6 +19,7 @@ struct TransformComponentData
 	unsigned* first_child;
 	unsigned* next_sibling;
 	unsigned* previous_sibling;
+	Matrix4* world_transform;
 };
 
 /*
@@ -37,6 +39,7 @@ struct TransformComponent
 
 namespace transform_component
 {
+	const unsigned not_assigned = (unsigned)-1;
 	extern unsigned component_size;
 	void init(TransformComponent& c, Allocator& allocator);
 	void deinit(TransformComponent& c, Allocator& allocator);
