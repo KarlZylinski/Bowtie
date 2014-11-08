@@ -22,14 +22,6 @@ struct TransformComponentData
 	Matrix4* world_transform;
 };
 
-/*
-
-check parent -> update first_child if match
-go to next and previous sibling if exists -> update previous / next
-go through all children -> update parent
-
-*/
-
 struct TransformComponent
 {
 	ComponentHeader header;
