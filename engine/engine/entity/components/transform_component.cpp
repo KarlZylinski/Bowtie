@@ -239,7 +239,7 @@ const Vector2& position(TransformComponent& c, Entity e)
 void set_rotation(TransformComponent& c, Entity e, float rotation)
 {
 	auto i = hash::get(c.header.map, e);
-	c.data.rotation[hash::get(c.header.map, e)] = rotation;
+	c.data.rotation[i] = rotation;
 	mark_dirty(c, i);
 }
 
@@ -251,7 +251,7 @@ float rotation(TransformComponent& c, Entity e)
 void set_pivot(TransformComponent& c, Entity e, const Vector2& pivot)
 {
 	auto i = hash::get(c.header.map, e);
-	c.data.pivot[hash::get(c.header.map, e)] = pivot;
+	c.data.pivot[i] = pivot;
 	mark_dirty(c, i);
 }
 
@@ -270,6 +270,18 @@ void set_parent(TransformComponent& c, Entity e, Entity parent_entity)
 Entity parent(TransformComponent& c, Entity e)
 {
 	return c.data.parent[hash::get(c.header.map, e)];
+}
+
+void set_world_transform(TransformComponent& c, Entity e, const Matrix4& world_transform)
+{
+	auto i = hash::get(c.header.map, e);
+	c.data.world_transform[i] = world_transform;
+	mark_dirty(c, i);
+}
+
+const Matrix4& world_transform(TransformComponent& c, Entity e)
+{
+	return c.data.world_transform[hash::get(c.header.map, e)];
 }
 
 void* copy_dirty_data(TransformComponent& c, Allocator& allocator)

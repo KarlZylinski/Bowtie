@@ -53,6 +53,8 @@ namespace transform_component
 	const Vector2& pivot(TransformComponent& c, Entity e);
 	void set_parent(TransformComponent& c, Entity e, Entity parent);
 	Entity parent(TransformComponent& c, Entity e);
+	void set_world_transform(TransformComponent& c, Entity e, const Matrix4& world_transform);
+	const Matrix4& world_transform(TransformComponent& c, Entity e);
 	void* copy_dirty_data(TransformComponent& c, Allocator& allocator);
 }
 

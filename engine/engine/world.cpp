@@ -136,16 +136,19 @@ Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 		return m * c.world_transform[c.parent[i]];
 }
 
-void update_transform(TransformComponentData& c, unsigned i, RectangleRendererComponent& rectangle_renderer)
+void update_transforms(TransformComponentData& c, unsigned start, unsigned end, RectangleRendererComponent& rectangle_renderer)
 {
-	auto entity = c.entity[i];
-	auto world_transform = world_matrix(c, i);
-	c.world_transform[i] = world_transform;
-
-	if (component::has_entity(rectangle_renderer.header, entity))
+	for (unsigned i = start; i < end; ++i)
 	{
-		auto rect = rectangle_renderer_component::rect(rectangle_renderer, entity);
+		auto entity = c.entity[i];
+		auto world_transform = world_matrix(c, i);
+		c.world_transform[i] = world_transform;
 
+		if (!component::has_entity(rectangle_renderer.header, entity))
+			continue;
+
+		auto rectangle_index = hash::get(rectangle_renderer.header.map, c.entity[i]);
+		auto rect = rectangle_renderer.data.rect[rectangle_index];
 		auto v1 = world_transform * Vector4(rect.position.x, rect.position.y, 0, 1);
 		auto v2 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y, 0, 1);
 		auto v3 = world_transform * Vector4(rect.position.x, rect.position.y + rect.size.y, 0, 1);
@@ -162,6 +165,7 @@ void update_transform(TransformComponentData& c, unsigned i, RectangleRendererCo
 	}
 }
 
+
 void World::update()
 {
 	for (unsigned i = 0; i < array::size(_drawables); ++i)
@@ -175,25 +179,16 @@ void World::update()
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
 	}
 
-	const auto num_new_transforms = component::num_new(_transform_component.header);
-
-	if (num_new_transforms > 0)
-	{
-		for (unsigned i = _transform_component.header.first_new; i < _transform_component.header.num; ++i)
-			update_transform(_transform_component.data, i, _rectangle_renderer_component);
-
-		component::reset_new(_transform_component.header);
-	}
+	if (component::num_new(_transform_component.header) > 0)
+		update_transforms(_transform_component.data, _transform_component.header.first_new, _transform_component.header.num, _rectangle_renderer_component);
 	
+	component::reset_new(_transform_component.header);	
 	const auto num_dirty_transforms = component::num_dirty(_transform_component.header);
 
 	if (num_dirty_transforms > 0)
-	{
-		for (unsigned i = 0; i < num_dirty_transforms; ++i)
-			update_transform(_transform_component.data, i, _rectangle_renderer_component);
+		update_transforms(_transform_component.data, 0, num_dirty_transforms, _rectangle_renderer_component);
 
-		component::reset_dirty(_transform_component.header);
-	}
+	component::reset_dirty(_transform_component.header);
 
 	const auto num_new_rectangles = component::num_new(_rectangle_renderer_component.header);
 
