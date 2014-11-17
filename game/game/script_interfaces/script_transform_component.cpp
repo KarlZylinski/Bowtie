@@ -23,7 +23,7 @@ int create(lua_State* lua)
 {
 	Entity entity = (unsigned)lua_tonumber(lua, 1);
 	World& world = *(World*)lua_touserdata(lua, 2);
-	auto& component = world.transform_component();
+	auto& component = world.transform_components();
 	transform_component::create(component, entity, *s_allocator);
 	script_interface::push_component(lua, &component, entity);
 	return 1;
@@ -40,7 +40,7 @@ int get(lua_State* lua)
 {
 	Entity entity = (unsigned)lua_tonumber(lua, 1);
 	World& world = *(World*)lua_touserdata(lua, 2);
-	auto& component = world.transform_component();
+	auto& component = world.transform_components();
 	script_interface::push_component(lua, &component, entity);
 	return 1;
 }

@@ -32,8 +32,8 @@ public:
 	void update();
 	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
-	RectangleRendererComponent& rectangle_renderer_component();
-	TransformComponent& transform_component();
+	RectangleRendererComponent& rectangle_renderer_components();
+	TransformComponent& transform_components();
 
 	const Array<Drawable*>& drawables() const;
 private:
@@ -42,8 +42,8 @@ private:
 	RenderResourceHandle _render_handle;
 	RenderInterface& _render_interface;
 	ResourceManager& _resource_manager;
-	TransformComponent _transform_component;
-	RectangleRendererComponent _rectangle_renderer_component;
+	TransformComponent _transform_components;
+	RectangleRendererComponent _rectangle_renderer_components;
 
 	World(const World&);
 	World& operator=(const World&);

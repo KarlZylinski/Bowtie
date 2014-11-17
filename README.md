@@ -12,10 +12,10 @@ My 2D engine, built from the ground up using C++ and OpenGL.
         - [x] Updating / creating needs support for updating / creating many resources at once
         - [x] Make on-demand creation of geometry support multiple rects
         - [x] Material
-    - [ ] Transform component
+    - [x] Transform component
         - [x] Iterate over dirty transforms before rect renderers and copy the updated transform to the rects belonging to same entity. What to do if the entity is missing rect? Check? Reverse lookup?
         - [x] Copying to rect will make that one dirty, and trigger a update to renderer.
-        - [ ] Parenting
+        - [x] Parenting
     - [ ] Sprite rendering component
     - [ ] GC of components
     - [ ] Convert old stuff to this new thingmajing

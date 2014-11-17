@@ -17,8 +17,8 @@ namespace bowtie
 World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
 	_allocator(allocator), _drawables(array::create<Drawable*>(allocator)), _render_interface(render_interface), _resource_manager(resource_manager)
 {
-	rectangle_renderer_component::init(_rectangle_renderer_component, allocator);
-	transform_component::init(_transform_component, allocator);
+	rectangle_renderer_component::init(_rectangle_renderer_components, allocator);
+	transform_component::init(_transform_components, allocator);
 }
 
 World::~World()
@@ -27,8 +27,8 @@ World::~World()
 		_allocator.destroy(_drawables[i]);
 
 	array::deinit(_drawables);
-	rectangle_renderer_component::deinit(_rectangle_renderer_component, _allocator);
-	transform_component::deinit(_transform_component, _allocator);
+	rectangle_renderer_component::deinit(_rectangle_renderer_components, _allocator);
+	transform_component::deinit(_transform_components, _allocator);
 }
 
 void World::set_render_handle(RenderResourceHandle render_handle)
@@ -70,14 +70,14 @@ RenderResourceHandle World::render_handle()
 	return _render_handle;
 }
 
-RectangleRendererComponent& World::rectangle_renderer_component()
+RectangleRendererComponent& World::rectangle_renderer_components()
 {
-	return _rectangle_renderer_component;
+	return _rectangle_renderer_components;
 }
 
-TransformComponent& World::transform_component()
+TransformComponent& World::transform_components()
 {
-	return _transform_component;
+	return _transform_components;
 }
 
 const Array<Drawable*>& World::drawables() const
@@ -209,31 +209,31 @@ void World::update()
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
 	}
 
-	if (component::num_new(_transform_component.header) > 0)
-		update_transforms(_transform_component.data, _transform_component.header.first_new, _transform_component.header.num, _rectangle_renderer_component);
+	if (component::num_new(_transform_components.header) > 0)
+		update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _rectangle_renderer_components);
 	
-	component::reset_new(_transform_component.header);	
-	const auto num_dirty_transforms = component::num_dirty(_transform_component.header);
+	component::reset_new(_transform_components.header);	
+	const auto num_dirty_transforms = component::num_dirty(_transform_components.header);
 
 	if (num_dirty_transforms > 0)
-		update_transforms(_transform_component.data, 0, num_dirty_transforms, _rectangle_renderer_component);
+		update_transforms(_transform_components.data, 0, num_dirty_transforms, _rectangle_renderer_components);
 
-	component::reset_dirty(_transform_component.header);
-	const auto num_new_rectangles = component::num_new(_rectangle_renderer_component.header);
+	component::reset_dirty(_transform_components.header);
+	const auto num_new_rectangles = component::num_new(_rectangle_renderer_components.header);
 
 	if (num_new_rectangles > 0)
 	{
 		auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-		create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_component, num_new_rectangles);
+		create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_components, num_new_rectangles);
 	}
 
-	component::reset_new(_rectangle_renderer_component.header);
-	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_component.header);
+	component::reset_new(_rectangle_renderer_components.header);
+	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_components.header);
 
 	if (num_dirty_rectangles > 0)
-		update_rectangles(_allocator, _render_interface, _rectangle_renderer_component, num_dirty_rectangles);
+		update_rectangles(_allocator, _render_interface, _rectangle_renderer_components, num_dirty_rectangles);
 	
-	component::reset_dirty(_rectangle_renderer_component.header);
+	component::reset_dirty(_rectangle_renderer_components.header);
 }
 
 void World::draw(const Rect& view)
