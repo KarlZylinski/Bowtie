@@ -16,7 +16,9 @@ My 2D engine, built from the ground up using C++ and OpenGL.
         - [x] Iterate over dirty transforms before rect renderers and copy the updated transform to the rects belonging to same entity. What to do if the entity is missing rect? Check? Reverse lookup?
         - [x] Copying to rect will make that one dirty, and trigger a update to renderer.
         - [x] Parenting
-    - [ ] Sprite rendering component
+    - [x] Sprite rendering component
+    - [ ] Remove Component suffix from script interfaces
+    - [ ] Add world ptr to entity and thus bind them to world... Or???
     - [ ] GC of components
     - [ ] Convert old stuff to this new thingmajing
 
