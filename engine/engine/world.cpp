@@ -177,7 +177,9 @@ void create_rectangles(Allocator& allocator, RenderInterface& ri, RenderResource
 	for (unsigned i = rectangle_renderer.header.first_new; i < rectangle_renderer.header.num; ++i)
 	{
 		rectangle_renderer.data.render_handle[i] = ri.create_handle();
-		rectangle_renderer.data.material[i] = default_material;
+
+		if (rectangle_renderer.data.material[i].render_handle == (unsigned)-1)
+			rectangle_renderer.data.material[i].render_handle = default_material;
 	}
 
 	CreateRectangleRendererData data;

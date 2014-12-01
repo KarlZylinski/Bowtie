@@ -20,7 +20,7 @@ struct RectangleRendererComponentData
 	Entity* entity;
 	Color* color;
 	Rect* rect;
-	RenderResourceHandle* material;
+	Material* material;
 	RenderResourceHandle* render_handle;
 	Quad* geometry;
 };
@@ -44,8 +44,8 @@ namespace rectangle_renderer_component
 	void set_color(RectangleRendererComponent& c, Entity e, const Color& color);
 	const Color& color(RectangleRendererComponent& c, Entity e);
 	void set_render_handle(RectangleRendererComponent& c, Entity e, RenderResourceHandle render_handle);
-	RenderResourceHandle material(RectangleRendererComponent& c, Entity e);
-	void set_material(RectangleRendererComponent& c, Entity e, RenderResourceHandle material);
+	const Material& material(RectangleRendererComponent& c, Entity e);
+	void set_material(RectangleRendererComponent& c, Entity e, Material& material);
 	RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e);
 	void set_geometry(RectangleRendererComponent& c, Entity e, const Quad& geometry);
 	const Quad& geometry(RectangleRendererComponent& c, Entity e);

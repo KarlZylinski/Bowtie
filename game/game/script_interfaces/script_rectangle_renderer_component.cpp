@@ -102,6 +102,14 @@ int set_color(lua_State* lua)
 	return 0;
 }
 
+int set_material(lua_State* lua)
+{
+	auto c = script_interface::to_component(lua, 1);
+	auto& material = *(Material*)lua_touserdata(lua, 2);
+	rectangle_renderer_component::set_material(*(RectangleRendererComponent*)c.component, c.entity, material);
+	return 0;
+}
+
 void load(lua_State* lua, Allocator& allocator)
 {
 	s_allocator = &allocator;
@@ -113,10 +121,11 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "rect", rect },
 		{ "set_rect", set_rect },
 		{ "color", color },
-		{ "set_color", set_color }
+		{ "set_color", set_color },
+		{ "set_material", set_material }
 	};
 
-	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 7);
+	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 8);
 }
 
 } // namespace drawable_script_interface

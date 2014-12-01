@@ -20,7 +20,7 @@ RectangleRendererComponentData initialize_data(void* buffer, unsigned size)
 	new_data.entity = (Entity*)buffer;
 	new_data.color = (Color*)(new_data.entity + size);
 	new_data.rect = (Rect*)(new_data.color + size);
-	new_data.material = (RenderResourceHandle*)(new_data.rect + size);
+	new_data.material = (Material*)(new_data.rect + size);
 	new_data.render_handle = (RenderResourceHandle*)(new_data.material + size);
 	new_data.geometry = (Quad*)(new_data.render_handle + size);
 	return new_data;
@@ -85,7 +85,7 @@ void mark_dirty(RectangleRendererComponent& c, unsigned index)
 namespace rectangle_renderer_component
 {
 
-unsigned component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(RenderResourceHandle) + sizeof(RenderResourceHandle) + sizeof(Quad));
+unsigned component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(Material) + sizeof(RenderResourceHandle) + sizeof(Quad));
 
 void init(RectangleRendererComponent& c, Allocator& allocator)
 {
@@ -109,7 +109,7 @@ void create(RectangleRendererComponent& c, Entity e, Allocator& allocator, const
 	c.data.entity[i] = e;
 	c.data.color[i] = color;
 	c.data.rect[i] = rect;
-	c.data.material[i] = RenderResourceHandle::NotInitialized;
+	c.data.material[i].render_handle = (unsigned)-1;
 	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
 	memset(c.data.geometry + i, 0, sizeof(Quad));
 	
@@ -158,14 +158,16 @@ void set_render_handle(RectangleRendererComponent& c, Entity e, RenderResourceHa
 	c.data.render_handle[hash::get(c.header.map, e)] = render_handle;
 }
 
-RenderResourceHandle material(RectangleRendererComponent& c, Entity e)
+const Material& material(RectangleRendererComponent& c, Entity e)
 {
 	return c.data.material[hash::get(c.header.map, e)];
 }
 
-void set_material(RectangleRendererComponent& c, Entity e, RenderResourceHandle material)
+void set_material(RectangleRendererComponent& c, Entity e, Material& material)
 {
-	c.data.material[hash::get(c.header.map, e)] = material;
+	auto i = hash::get(c.header.map, e);
+	c.data.material[i] = material;
+	mark_dirty(c, i);
 }
 
 RenderResourceHandle render_handle(RectangleRendererComponent& c, Entity e)

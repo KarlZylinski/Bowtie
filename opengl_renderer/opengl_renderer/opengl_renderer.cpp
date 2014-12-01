@@ -391,6 +391,9 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 		case uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
 		case uniform::Texture1:
 		{
+			if (uniform.location == -1)
+				break;
+
 			glActiveTexture(GL_TEXTURE0);
 			auto texture_handle = *(RenderResourceHandle*)value;
 			auto texture = *(RenderTexture*)render_resource_table::lookup(resource_table, texture_handle).object;
@@ -410,7 +413,7 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 
 	for (unsigned i = start; i < start + size; ++i)
 	{
-		float* current_buffer = buffer + rect_buffer_num_elements * i;
+		float* current_buffer = buffer + rect_buffer_num_elements * (i - start);
 		const auto& v1 = components[i]->geometry.v1;
 		const auto& v2 = components[i]->geometry.v2;
 		const auto& v3 = components[i]->geometry.v3;
@@ -425,20 +428,20 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 			v1.x, v1.y, 0.0f,
 			0.0f, 0.0f,
 			r, g, b, a,
-			v3.x, v3.y, 0.0f,
+			v2.x, v2.y, 0.0f,
 			1.0f, 0.0f,
 			r, g, b, a,
-			v2.x, v2.y, 0.0f,
+			v3.x, v3.y, 0.0f,
 			0.0f, 1.0f,
 			r, g, b, a,
 
 			v2.x, v2.y, 0.0f,
 			1.0f, 0.0f,
 			r, g, b, a,
-			v3.x, v3.y, 0.0f,
+			v4.x, v4.y, 0.0f,
 			1.0f, 1.0f,
 			r, g, b, a,
-			v4.x, v4.y, 0.0f,
+			v3.x, v3.y, 0.0f,
 			0.0f, 1.0f,
 			r, g, b, a
 		};

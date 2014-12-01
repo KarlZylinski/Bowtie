@@ -17,6 +17,7 @@
 #include "render_target.h"
 #include "render_texture.h"
 #include "render_component.h"
+#include <engine/material.h>
 
 namespace bowtie
 {
@@ -265,7 +266,7 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 			{
 				auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
 				component->color = rectangle.color[i];
-				component->material = rectangle.material[i];
+				component->material = rectangle.material[i].render_handle;
 				component->geometry = rectangle.geometry[i];
 				render_world::add_component(rw, component);
 
@@ -504,7 +505,7 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 				auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
 				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle.render_handle[i]).object;
 				component->color = rectangle.color[i];
-				component->material = rectangle.material[i];
+				component->material = rectangle.material[i].render_handle;
 				component->geometry = rectangle.geometry[i];
 
 				ur.handles[i] = rectangle.render_handle[i];
@@ -571,7 +572,7 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 		
 		if (uniform_data.automatic_value == uniform::None)
 		{
-			auto value = (void*)memory::pointer_add(dynamic_data, uniform_data.name_offset);
+			auto value = (void*)memory::pointer_add(dynamic_data, uniform_data.value_offset);
 
 			switch (uniform_data.type)
 			{
