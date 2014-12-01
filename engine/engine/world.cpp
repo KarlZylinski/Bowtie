@@ -209,31 +209,42 @@ void World::update()
 			update_drawable_geometry(_allocator, _render_interface, *drawable);
 	}
 
-	if (component::num_new(_transform_components.header) > 0)
-		update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _rectangle_renderer_components);
-	
-	component::reset_new(_transform_components.header);	
-	const auto num_dirty_transforms = component::num_dirty(_transform_components.header);
-
-	if (num_dirty_transforms > 0)
-		update_transforms(_transform_components.data, 0, num_dirty_transforms, _rectangle_renderer_components);
-
-	component::reset_dirty(_transform_components.header);
-	const auto num_new_rectangles = component::num_new(_rectangle_renderer_components.header);
-
-	if (num_new_rectangles > 0)
 	{
-		auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-		create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_components, num_new_rectangles);
+		if (component::num_new(_transform_components.header) > 0)
+			update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _rectangle_renderer_components);
+	
+		component::reset_new(_transform_components.header);	
 	}
 
-	component::reset_new(_rectangle_renderer_components.header);
-	const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_components.header);
+	{
+		const auto num_dirty_transforms = component::num_dirty(_transform_components.header);
 
-	if (num_dirty_rectangles > 0)
-		update_rectangles(_allocator, _render_interface, _rectangle_renderer_components, num_dirty_rectangles);
+		if (num_dirty_transforms > 0)
+			update_transforms(_transform_components.data, 0, num_dirty_transforms, _rectangle_renderer_components);
+
+		component::reset_dirty(_transform_components.header);
+	}
 	
-	component::reset_dirty(_rectangle_renderer_components.header);
+	{
+		const auto num_new_rectangles = component::num_new(_rectangle_renderer_components.header);
+
+		if (num_new_rectangles > 0)
+		{
+			auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
+			create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_components, num_new_rectangles);
+		}
+
+		component::reset_new(_rectangle_renderer_components.header);
+	}
+
+	{
+		const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_components.header);
+
+		if (num_dirty_rectangles > 0)
+			update_rectangles(_allocator, _render_interface, _rectangle_renderer_components, num_dirty_rectangles);
+	
+		component::reset_dirty(_rectangle_renderer_components.header);
+	}
 }
 
 void World::draw(const Rect& view)

@@ -51,6 +51,9 @@ void internal_copy(TransformComponentData& c, unsigned from, unsigned to)
 
 void set_parent_internal(TransformComponentData& d, unsigned index, unsigned parent_index)
 {
+	if (d.parent[index] == parent_index)
+		return;
+
 	// Remove any references to this transform from old parent and siblings.
 	if (d.parent[index] != transform_component::not_assigned)
 	{
@@ -105,6 +108,16 @@ void set_parent_internal(TransformComponentData& d, unsigned index, unsigned par
 	d.parent[index] = parent_index;
 }
 
+void update_child_parent_indices(TransformComponent& c, unsigned parent)
+{
+	auto child = c.data.first_child[parent];
+
+	while (child != (unsigned)-1)
+	{
+		c.data.parent[child] = parent;
+		child = c.data.next_sibling[child];
+	}
+}
 
 void swap(TransformComponent& c, unsigned i1, unsigned i2)
 {
@@ -128,6 +141,9 @@ void swap(TransformComponent& c, unsigned i1, unsigned i2)
 
 	if (i2_parent != transform_component::not_assigned)
 		set_parent_internal(c.data, i1, i2_parent);
+
+	update_child_parent_indices(c, i1);
+	update_child_parent_indices(c, i2);
 }
 
 void grow(TransformComponent& c, Allocator& allocator)
