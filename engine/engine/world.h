@@ -2,7 +2,7 @@
 
 #include <foundation/collection_types.h>
 #include "render_resource_handle.h"
-#include "entity/components/rectangle_renderer_component.h"
+#include "entity/components/sprite_renderer_component.h"
 #include "entity/components/transform_component.h"
 
 namespace bowtie
@@ -32,7 +32,7 @@ public:
 	void update();
 	void draw(const Rect& view);
 	RenderResourceHandle render_handle();
-	RectangleRendererComponent& rectangle_renderer_components();
+	SpriteRendererComponent& sprite_renderer_components();
 	TransformComponent& transform_components();
 
 	const Array<Drawable*>& drawables() const;
@@ -43,7 +43,7 @@ private:
 	RenderInterface& _render_interface;
 	ResourceManager& _resource_manager;
 	TransformComponent _transform_components;
-	RectangleRendererComponent _rectangle_renderer_components;
+	SpriteRendererComponent _sprite_renderer_components;
 
 	World(const World&);
 	World& operator=(const World&);

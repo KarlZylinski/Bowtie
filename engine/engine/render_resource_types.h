@@ -13,7 +13,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Drawable, Geometry, RenderTarget, Shader, Texture, World, RenderMaterial, RectangleRenderer
+		Drawable, Geometry, RenderTarget, Shader, Texture, World, RenderMaterial, SpriteRenderer
 	};
 
 	Type type;
@@ -69,13 +69,13 @@ struct GeometryResourceData
 	unsigned size;
 };
 
-struct CreateRectangleRendererData
+struct CreateSpriteRendererData
 {
 	RenderResourceHandle world;
 	unsigned num;
 };
 
-struct UpdateRectangleRendererData
+struct UpdateSpriteRendererData
 {
 	unsigned num;
 };

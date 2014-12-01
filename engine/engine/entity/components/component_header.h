@@ -9,7 +9,7 @@ typedef unsigned Entity;
 
 struct ComponentHeader
 {
-	// Maps entity id to rectangle renderer components
+	// Maps entity id to component indices
 	Hash<unsigned> map;
 	unsigned num;
 	unsigned capacity;

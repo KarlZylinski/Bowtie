@@ -6,7 +6,7 @@
 #include <foundation/murmur_hash.h>
 #include "script_interface_helpers.h"
 #include "script_console.h"
-#include <engine/entity/components/rectangle_renderer_component.h>
+#include <engine/entity/components/sprite_renderer_component.h>
 
 namespace bowtie
 {

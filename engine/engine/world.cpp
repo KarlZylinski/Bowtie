@@ -17,7 +17,7 @@ namespace bowtie
 World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
 	_allocator(allocator), _drawables(array::create<Drawable*>(allocator)), _render_interface(render_interface), _resource_manager(resource_manager)
 {
-	rectangle_renderer_component::init(_rectangle_renderer_components, allocator);
+	sprite_renderer_component::init(_sprite_renderer_components, allocator);
 	transform_component::init(_transform_components, allocator);
 }
 
@@ -27,7 +27,7 @@ World::~World()
 		_allocator.destroy(_drawables[i]);
 
 	array::deinit(_drawables);
-	rectangle_renderer_component::deinit(_rectangle_renderer_components, _allocator);
+	sprite_renderer_component::deinit(_sprite_renderer_components, _allocator);
 	transform_component::deinit(_transform_components, _allocator);
 }
 
@@ -70,9 +70,9 @@ RenderResourceHandle World::render_handle()
 	return _render_handle;
 }
 
-RectangleRendererComponent& World::rectangle_renderer_components()
+SpriteRendererComponent& World::sprite_renderer_components()
 {
-	return _rectangle_renderer_components;
+	return _sprite_renderer_components;
 }
 
 TransformComponent& World::transform_components()
@@ -141,7 +141,7 @@ Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 		return p * t * c.world_transform[parent_index];
 }
 
-void update_transforms(TransformComponentData& transform, unsigned start, unsigned end, RectangleRendererComponent& rectangle_renderer)
+void update_transforms(TransformComponentData& transform, unsigned start, unsigned end, SpriteRendererComponent& sprite_renderer)
 {
 	for (unsigned i = start; i < end; ++i)
 	{
@@ -149,11 +149,11 @@ void update_transforms(TransformComponentData& transform, unsigned start, unsign
 		auto world_transform = world_matrix(transform, i);
 		transform.world_transform[i] = world_transform;
 
-		if (!component::has_entity(rectangle_renderer.header, entity))
+		if (!component::has_entity(sprite_renderer.header, entity))
 			continue;
 
-		auto rectangle_index = hash::get(rectangle_renderer.header.map, transform.entity[i]);
-		auto rect = rectangle_renderer.data.rect[rectangle_index];
+		auto sprite_index = hash::get(sprite_renderer.header.map, transform.entity[i]);
+		auto rect = sprite_renderer.data.rect[sprite_index];
 		auto v1 = world_transform * Vector4(rect.position.x, rect.position.y, 0, 1);
 		auto v2 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y, 0, 1);
 		auto v3 = world_transform * Vector4(rect.position.x, rect.position.y + rect.size.y, 0, 1);
@@ -166,36 +166,36 @@ void update_transforms(TransformComponentData& transform, unsigned start, unsign
 			Vector2(v4.x, v4.y)
 		};
 
-		rectangle_renderer_component::set_geometry(rectangle_renderer, entity, geometry);
+		sprite_renderer_component::set_geometry(sprite_renderer, entity, geometry);
 	}
 }
 
-void create_rectangles(Allocator& allocator, RenderInterface& ri, RenderResourceHandle default_material, RenderResourceHandle render_world, RectangleRendererComponent& rectangle_renderer, unsigned num)
+void create_sprites(Allocator& allocator, RenderInterface& ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent& sprite_renderer, unsigned num)
 {
-	auto rrd = ri.create_render_resource_data(RenderResourceData::RectangleRenderer);
+	auto rrd = ri.create_render_resource_data(RenderResourceData::SpriteRenderer);
 
-	for (unsigned i = rectangle_renderer.header.first_new; i < rectangle_renderer.header.num; ++i)
+	for (unsigned i = sprite_renderer.header.first_new; i < sprite_renderer.header.num; ++i)
 	{
-		rectangle_renderer.data.render_handle[i] = ri.create_handle();
+		sprite_renderer.data.render_handle[i] = ri.create_handle();
 
-		if (rectangle_renderer.data.material[i].render_handle == (unsigned)-1)
-			rectangle_renderer.data.material[i].render_handle = default_material;
+		if (sprite_renderer.data.material[i].render_handle == (unsigned)-1)
+			sprite_renderer.data.material[i].render_handle = default_material;
 	}
 
-	CreateRectangleRendererData data;
+	CreateSpriteRendererData data;
 	data.num = num;
 	data.world = render_world;
 	rrd.data = &data;
-	ri.create_resource(rrd, rectangle_renderer_component::copy_new_data(rectangle_renderer, allocator), rectangle_renderer_component::component_size * data.num);
+	ri.create_resource(rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
-void update_rectangles(Allocator& allocator, RenderInterface& ri, RectangleRendererComponent& rectangle_renderer, unsigned num)
+void update_sprites(Allocator& allocator, RenderInterface& ri, SpriteRendererComponent& sprite_renderer, unsigned num)
 {
-	auto rrd = ri.create_render_resource_data(RenderResourceData::RectangleRenderer);
-	UpdateRectangleRendererData data;
+	auto rrd = ri.create_render_resource_data(RenderResourceData::SpriteRenderer);
+	UpdateSpriteRendererData data;
 	data.num = num;
 	rrd.data = &data;
-	ri.update_resource(rrd, rectangle_renderer_component::copy_dirty_data(rectangle_renderer, allocator), rectangle_renderer_component::component_size * data.num);
+	ri.update_resource(rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
 void World::update()
@@ -213,7 +213,7 @@ void World::update()
 
 	{
 		if (component::num_new(_transform_components.header) > 0)
-			update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _rectangle_renderer_components);
+			update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _sprite_renderer_components);
 	
 		component::reset_new(_transform_components.header);	
 	}
@@ -222,30 +222,30 @@ void World::update()
 		const auto num_dirty_transforms = component::num_dirty(_transform_components.header);
 
 		if (num_dirty_transforms > 0)
-			update_transforms(_transform_components.data, 0, num_dirty_transforms, _rectangle_renderer_components);
+			update_transforms(_transform_components.data, 0, num_dirty_transforms, _sprite_renderer_components);
 
 		component::reset_dirty(_transform_components.header);
 	}
 	
 	{
-		const auto num_new_rectangles = component::num_new(_rectangle_renderer_components.header);
+		const auto num_new_sprites = component::num_new(_sprite_renderer_components.header);
 
-		if (num_new_rectangles > 0)
+		if (num_new_sprites > 0)
 		{
 			auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-			create_rectangles(_allocator, _render_interface, default_material, _render_handle, _rectangle_renderer_components, num_new_rectangles);
+			create_sprites(_allocator, _render_interface, default_material, _render_handle, _sprite_renderer_components, num_new_sprites);
 		}
 
-		component::reset_new(_rectangle_renderer_components.header);
+		component::reset_new(_sprite_renderer_components.header);
 	}
 
 	{
-		const auto num_dirty_rectangles = component::num_dirty(_rectangle_renderer_components.header);
+		const auto num_dirty_sprites = component::num_dirty(_sprite_renderer_components.header);
 
-		if (num_dirty_rectangles > 0)
-			update_rectangles(_allocator, _render_interface, _rectangle_renderer_components, num_dirty_rectangles);
+		if (num_dirty_sprites > 0)
+			update_sprites(_allocator, _render_interface, _sprite_renderer_components, num_dirty_sprites);
 	
-		component::reset_dirty(_rectangle_renderer_components.header);
+		component::reset_dirty(_sprite_renderer_components.header);
 	}
 }
 

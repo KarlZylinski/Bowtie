@@ -22,7 +22,7 @@
     <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\entity\components\component_header.h" />
-    <ClInclude Include="engine\entity\components\rectangle_renderer_component.h" />
+    <ClInclude Include="engine\entity\components\sprite_renderer_component.h" />
     <ClInclude Include="engine\entity\components\transform_component.h" />
     <ClInclude Include="engine\entity\entity.h" />
     <ClInclude Include="engine\entity\entity_manager.h" />
@@ -57,7 +57,7 @@
     <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\entity\components\component_header.cpp" />
-    <ClCompile Include="engine\entity\components\rectangle_renderer_component.cpp" />
+    <ClCompile Include="engine\entity\components\sprite_renderer_component.cpp" />
     <ClCompile Include="engine\entity\components\transform_component.cpp" />
     <ClCompile Include="engine\entity\entity_manager.cpp" />
     <ClCompile Include="engine\font.cpp" />

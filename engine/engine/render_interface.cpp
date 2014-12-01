@@ -198,9 +198,9 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 			copied_resource->data = allocator.allocate(sizeof(GeometryResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(GeometryResourceData));
 			break;
-		case RenderResourceData::RectangleRenderer:
-			copied_resource->data = allocator.allocate(sizeof(CreateRectangleRendererData));
-			memcpy(copied_resource->data, resource.data, sizeof(CreateRectangleRendererData));
+		case RenderResourceData::SpriteRenderer:
+			copied_resource->data = allocator.allocate(sizeof(CreateSpriteRendererData));
+			memcpy(copied_resource->data, resource.data, sizeof(CreateSpriteRendererData));
 			break;
 		case RenderResourceData::World:
 			copied_resource->data = allocator.allocate(sizeof(RenderWorldResourceData));

@@ -11,7 +11,7 @@
 namespace bowtie
 {
 
-namespace rectangle_renderer_component_script_interface
+namespace sprite_renderer_component_script_interface
 {
 
 namespace
@@ -47,8 +47,8 @@ int create(lua_State* lua)
 
 	Rect rect(position, size);
 
-	auto& component = world.rectangle_renderer_components();
-	rectangle_renderer_component::create(component, entity, *s_allocator, rect, color);
+	auto& component = world.sprite_renderer_components();
+	sprite_renderer_component::create(component, entity, *s_allocator, rect, color);
 	script_interface::push_component(lua, &component, entity);
 	return 1;
 }
@@ -56,7 +56,7 @@ int create(lua_State* lua)
 int destroy(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	rectangle_renderer_component::destroy(*(RectangleRendererComponent*)c.component, c.entity);
+	sprite_renderer_component::destroy(*(SpriteRendererComponent*)c.component, c.entity);
 	return 0;
 }
 
@@ -64,7 +64,7 @@ int get(lua_State* lua)
 {
 	Entity entity = (unsigned)lua_tonumber(lua, 1);
 	World& world = *(World*)lua_touserdata(lua, 2);
-	auto& component = world.rectangle_renderer_components();
+	auto& component = world.sprite_renderer_components();
 	script_interface::push_component(lua, &component, entity);
 	return 1;
 }
@@ -72,7 +72,7 @@ int get(lua_State* lua)
 int rect(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	const auto& rect = rectangle_renderer_component::rect(*(RectangleRendererComponent*)c.component, c.entity);
+	const auto& rect = sprite_renderer_component::rect(*(SpriteRendererComponent*)c.component, c.entity);
 	script_interface::push_vector2(lua, rect.position);
 	script_interface::push_vector2(lua, rect.size);
 	return 2;
@@ -82,14 +82,14 @@ int set_rect(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
 	Rect rect(script_interface::to_vector2(lua, 2), script_interface::to_vector2(lua, 3));
-	rectangle_renderer_component::set_rect(*(RectangleRendererComponent*)c.component, c.entity, rect);
+	sprite_renderer_component::set_rect(*(SpriteRendererComponent*)c.component, c.entity, rect);
 	return 0;
 }
 
 int color(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
-	const auto& color = rectangle_renderer_component::color(*(RectangleRendererComponent*)c.component, c.entity);
+	const auto& color = sprite_renderer_component::color(*(SpriteRendererComponent*)c.component, c.entity);
 	script_interface::push_color(lua, color);
 	return 1;
 }
@@ -98,7 +98,7 @@ int set_color(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
 	auto color = script_interface::to_color(lua, 2);
-	rectangle_renderer_component::set_color(*(RectangleRendererComponent*)c.component, c.entity, color);
+	sprite_renderer_component::set_color(*(SpriteRendererComponent*)c.component, c.entity, color);
 	return 0;
 }
 
@@ -106,7 +106,7 @@ int set_material(lua_State* lua)
 {
 	auto c = script_interface::to_component(lua, 1);
 	auto& material = *(Material*)lua_touserdata(lua, 2);
-	rectangle_renderer_component::set_material(*(RectangleRendererComponent*)c.component, c.entity, material);
+	sprite_renderer_component::set_material(*(SpriteRendererComponent*)c.component, c.entity, material);
 	return 0;
 }
 
@@ -125,7 +125,7 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "set_material", set_material }
 	};
 
-	script_interface::register_interface(lua, "RectangleRendererComponent", functions, 8);
+	script_interface::register_interface(lua, "SpriteRendererComponent", functions, 8);
 }
 
 } // namespace drawable_script_interface

@@ -18,13 +18,13 @@
     <ClCompile Include="engine\entity\entity_manager.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="engine\entity\components\rectangle_renderer_component.cpp">
-      <Filter>entity\components</Filter>
-    </ClCompile>
     <ClCompile Include="engine\entity\components\transform_component.cpp">
       <Filter>entity\components</Filter>
     </ClCompile>
     <ClCompile Include="engine\entity\components\component_header.cpp">
+      <Filter>entity\components</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\entity\components\sprite_renderer_component.cpp">
       <Filter>entity\components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,13 +63,13 @@
     <ClInclude Include="engine\entity\entity_manager.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="engine\entity\components\rectangle_renderer_component.h">
-      <Filter>entity\components</Filter>
-    </ClInclude>
     <ClInclude Include="engine\entity\components\component_header.h">
       <Filter>entity\components</Filter>
     </ClInclude>
     <ClInclude Include="engine\entity\components\transform_component.h">
+      <Filter>entity\components</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\entity\components\sprite_renderer_component.h">
       <Filter>entity\components</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <engine/render_fence.h>
 #include <engine/shader_utils.h>
-#include <engine/entity/components/rectangle_renderer_component.h>
+#include <engine/entity/components/sprite_renderer_component.h>
 #include <foundation/array.h>
 #include <foundation/file.h>
 #include <foundation/murmur_hash.h>
@@ -256,21 +256,21 @@ CreatedResources Renderer::create_resources(RenderResourceData::Type type, void*
 		case RenderResourceData::World: {
 			return copy_single_resource(create_world(_allocator, *(RenderWorldResourceData*)data, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets)), _allocator);
 		}
-		case RenderResourceData::RectangleRenderer: {
-			auto rectangle_data = (CreateRectangleRendererData*)data;
-			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, rectangle_data->world).object;
-			CreatedResources cr = create_created_resources(rectangle_data->num, _allocator);
-			auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
+		case RenderResourceData::SpriteRenderer: {
+			auto sprite_data = (CreateSpriteRendererData*)data;
+			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, sprite_data->world).object;
+			CreatedResources cr = create_created_resources(sprite_data->num, _allocator);
+			auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
 
-			for (unsigned i = 0; i < rectangle_data->num; ++i)
+			for (unsigned i = 0; i < sprite_data->num; ++i)
 			{
 				auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
-				component->color = rectangle.color[i];
-				component->material = rectangle.material[i].render_handle;
-				component->geometry = rectangle.geometry[i];
+				component->color = sprite.color[i];
+				component->material = sprite.material[i].render_handle;
+				component->geometry = sprite.geometry[i];
 				render_world::add_component(rw, component);
 
-				cr.handles[i] = rectangle.render_handle[i];
+				cr.handles[i] = sprite.render_handle[i];
 				cr.resources[i] = RenderResource(component);
 			}
 
@@ -496,19 +496,19 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 	switch(type)
 	{
 		case RenderResourceData::Shader: return single_update(update_shader(_concrete_renderer, _resource_table, dynamic_data, *(ShaderResourceData*)data), _allocator);
-		case RenderResourceData::RectangleRenderer: {
-			auto rectangle_data = (UpdateRectangleRendererData*)data;
-			UpdatedResources ur = create_updated_resources(rectangle_data->num, _allocator);
+		case RenderResourceData::SpriteRenderer: {
+			auto sprite_data = (UpdateSpriteRendererData*)data;
+			UpdatedResources ur = create_updated_resources(sprite_data->num, _allocator);
 
-			for (unsigned i = 0; i < rectangle_data->num; ++i)
+			for (unsigned i = 0; i < sprite_data->num; ++i)
 			{
-				auto rectangle = rectangle_renderer_component::create_data_from_buffer(dynamic_data, rectangle_data->num);
-				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, rectangle.render_handle[i]).object;
-				component->color = rectangle.color[i];
-				component->material = rectangle.material[i].render_handle;
-				component->geometry = rectangle.geometry[i];
+				auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
+				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, sprite.render_handle[i]).object;
+				component->color = sprite.color[i];
+				component->material = sprite.material[i].render_handle;
+				component->geometry = sprite.geometry[i];
 
-				ur.handles[i] = rectangle.render_handle[i];
+				ur.handles[i] = sprite.render_handle[i];
 				ur.new_resources[i] = RenderResource(component);
 				ur.old_resources[i] = RenderResource(component);
 			}
