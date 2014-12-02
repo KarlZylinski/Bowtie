@@ -121,9 +121,17 @@ void update_drawable_geometry(Allocator& allocator, RenderInterface& render_inte
 
 Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 {
+	auto parent_index = c.parent[i];
+
 	auto p = Matrix4();
 	p[3][0] = -c.pivot[i].x;
 	p[3][1] = -c.pivot[i].y;
+
+	if (parent_index != transform_component::not_assigned)
+	{
+		p[3][0] += c.pivot[parent_index].x;
+		p[3][1] += c.pivot[parent_index].y;
+	}
 
 	auto t = Matrix4();
 	t[0][0] = cos(c.rotation[i]);
@@ -133,7 +141,6 @@ Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 	t[3][0] = c.position[i].x;
 	t[3][1] = c.position[i].y;
 
-	auto parent_index = c.parent[i];
 
 	if (parent_index == transform_component::not_assigned)
 		return p * t;
