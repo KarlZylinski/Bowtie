@@ -7,6 +7,7 @@
 #include "script_interface_helpers.h"
 #include "script_console.h"
 #include <engine/rect.h>
+#include <cassert>
 
 namespace bowtie
 {
@@ -78,14 +79,17 @@ int set_pivot(lua_State* lua)
 int parent(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	lua_pushnumber(lua, transform_component::parent(e.world->transform_components(), e.entity));
+	auto parent = transform_component::parent(e.world->transform_components(), e.entity);
+	script_interface::push_entity(lua, parent, e.world);
 	return 1;
 }
 
 int set_parent(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	transform_component::set_parent(e.world->transform_components(), e.entity, (unsigned)lua_tonumber(lua, 2));
+	auto parent = script_interface::to_entity(lua, 2);
+	assert(e.world == parent.world);
+	transform_component::set_parent(e.world->transform_components(), e.entity, parent.entity);
 	return 0;
 }
 
