@@ -18,9 +18,9 @@ My 2D engine, built from the ground up using C++ and OpenGL.
         - [x] Parenting
     - [x] Sprite rendering component
     - [x] Remove Component suffix from script interfaces
-    - [ ] Add world ptr to entity and thus bind them to world... Or???
+    - [x] Add world ptr to entity and thus bind them to world... Or???
     - [ ] GC of components
-    - [ ] Convert old stuff to this new thingmajing
+    - [x] Convert old stuff to this new thingmajing
 
 - [ ] Redo console as external application
 - [ ] Fix fonts, maybe as entity component or as some kind of gui thing... Not sure. Maybe have the renderer agnostic of the CPU impl?
