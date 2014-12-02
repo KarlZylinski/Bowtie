@@ -88,12 +88,12 @@ void push_vector4(lua_State* lua, const Vector4& v)
 	script_interface::check_errors(lua, error);
 }
 
-void push_component(lua_State* lua, void* component, Entity entity)
+void push_entity(lua_State* lua, Entity entity, World* world)
 {
 	lua_newtable(lua);
-	lua_pushlightuserdata(lua, component);
-	lua_rawseti(lua, -2, 1);
 	lua_pushnumber(lua, entity);
+	lua_rawseti(lua, -2, 1);
+	lua_pushlightuserdata(lua, world);
 	lua_rawseti(lua, -2, 2);
 }
 
@@ -166,18 +166,18 @@ uint64_t to_hash(lua_State* lua, int index)
 	return hash_str(lua_tostring(lua, index));
 }
 
-ScriptComponentData to_component(lua_State* lua, int index)
+SpawnedEntity to_entity(lua_State* lua, int index)
 {
-	ScriptComponentData c;
+	SpawnedEntity e;
 	lua_pushnumber(lua, 1);
 	lua_gettable(lua, index);
-	c.component = lua_touserdata(lua, -1);
+	e.entity = (Entity)lua_tonumber(lua, -1);
 	lua_pop(lua, 1);
 	lua_pushnumber(lua, 2);
 	lua_gettable(lua, index);
-	c.entity = (Entity)lua_tonumber(lua, -1);
+	e.world = (World*)lua_touserdata(lua, -1);
 	lua_pop(lua, 1);
-	return c;
+	return e;
 }
 
 bool is_color(lua_State* lua, int index)

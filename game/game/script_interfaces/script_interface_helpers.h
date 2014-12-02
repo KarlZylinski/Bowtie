@@ -7,7 +7,12 @@
 #include <stdint.h>
 
 struct lua_State;
-typedef int (*lua_CFunction) (lua_State *L);
+typedef int(*lua_CFunction) (lua_State *L);
+
+namespace bowtie
+{
+
+class World;
 typedef unsigned Entity;
 
 struct interface_function {
@@ -15,13 +20,10 @@ struct interface_function {
 	lua_CFunction function;
 };
 
-struct ScriptComponentData {
-	void* component;
+struct SpawnedEntity {
 	Entity entity;
+	World* world;
 };
-
-namespace bowtie
-{
 
 namespace script_interface
 {
@@ -32,7 +34,7 @@ void push_vector2(lua_State* lua, const Vector2& v);
 void push_vector2(lua_State* lua, const Vector2i& v);
 void push_vector2(lua_State* lua, const Vector2u& v);
 void push_vector4(lua_State* lua, const Vector4& v);
-void push_component(lua_State* lua, void* component, Entity entity);
+void push_entity(lua_State* lua, Entity entity, World* world);
 void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions);
 Color to_color(lua_State* lua, int index);
 Vector2 to_vector2(lua_State* lua, int index);
@@ -40,7 +42,7 @@ Vector2i to_vector2i(lua_State* lua, int index);
 Vector2u to_vector2u(lua_State* lua, int index);
 Vector4 to_vector4(lua_State* lua, int index);
 uint64_t to_hash(lua_State* lua, int index);
-ScriptComponentData to_component(lua_State* lua, int index);
+SpawnedEntity to_entity(lua_State* lua, int index);
 bool is_color(lua_State* lua, int index);
 bool is_vector2(lua_State* lua, int index);
 bool is_vector4(lua_State* lua, int index);

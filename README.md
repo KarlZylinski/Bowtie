@@ -17,7 +17,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
         - [x] Copying to rect will make that one dirty, and trigger a update to renderer.
         - [x] Parenting
     - [x] Sprite rendering component
-    - [ ] Remove Component suffix from script interfaces
+    - [x] Remove Component suffix from script interfaces
     - [ ] Add world ptr to entity and thus bind them to world... Or???
     - [ ] GC of components
     - [ ] Convert old stuff to this new thingmajing
