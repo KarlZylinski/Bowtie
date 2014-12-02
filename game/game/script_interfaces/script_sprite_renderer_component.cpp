@@ -125,7 +125,7 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "set_material", set_material }
 	};
 
-	script_interface::register_interface(lua, "SpriteRendererComponent", functions, 8);
+	script_interface::register_interface(lua, "SpriteRenderer", functions, 8);
 }
 
 } // namespace drawable_script_interface

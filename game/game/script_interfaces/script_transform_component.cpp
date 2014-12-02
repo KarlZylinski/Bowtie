@@ -119,7 +119,7 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "set_parent", set_parent }
 	};
 
-	script_interface::register_interface(lua, "TransformComponent", functions, 11);
+	script_interface::register_interface(lua, "Transform", functions, 11);
 }
 
 } // namespace drawable_script_interface
