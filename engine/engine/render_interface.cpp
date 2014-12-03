@@ -17,91 +17,8 @@
 namespace bowtie
 {
 
-RenderInterface::RenderInterface(IRenderer& renderer, Allocator& allocator) : _allocator(allocator), _renderer(renderer)
+namespace
 {
-}
-
-void RenderInterface::create_texture(Texture& texture)
-{
-	assert(texture.render_handle == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
-
-	Image& image = *texture.image;
-
-	auto texture_resource = create_render_resource_data(RenderResourceData::Texture);
-
-	auto trd = TextureResourceData();
-	trd.handle = create_handle();
-	trd.resolution = image.resolution;
-	trd.texture_data_dynamic_data_offset = 0;
-	trd.texture_data_size = image.data_size;
-	trd.pixel_format = image.pixel_format;
-
-	texture_resource.data = &trd;
-	create_resource(texture_resource, image.data, image.data_size);
-	texture.render_handle = trd.handle;
-}
-
-void RenderInterface::create_render_world(World& world)
-{
-	assert(world.render_handle == RenderResourceHandle::NotInitialized);
-	auto render_world_data = create_render_resource_data(RenderResourceData::World);
-	RenderWorldResourceData rwrd;
-	rwrd.handle = create_handle();
-	render_world_data.data = &rwrd;
-	world.render_handle = rwrd.handle;
-	create_resource(render_world_data);
-}
-
-RenderResourceData RenderInterface::create_render_resource_data(RenderResourceData::Type type)
-{
-	RenderResourceData rr = { type, 0 };
-	return rr;
-}
-
-RendererCommand RenderInterface::create_command(RendererCommand::Type type)
-{
-	RendererCommand command;
-	memset(&command, 0, sizeof(RendererCommand));
-	command.type = type;
-
-	switch (type)
-	{
-	case RendererCommand::SetUniformValue:
-		command.data = _allocator.allocate(sizeof(SetUniformValueData));
-		break;
-	}
-
-	return command;
-}
-
-RenderResourceHandle RenderInterface::create_handle()
-{
-	return _renderer.create_handle();
-}
-
-bool RenderInterface::is_setup() const
-{
-	return _renderer.is_setup();
-}
-
-bool RenderInterface::is_active() const
-{
-	return _renderer.is_active();
-}
-
-void RenderInterface::dispatch(const RendererCommand& command)
-{
-	_renderer.add_renderer_command(command);
-}
-
-void RenderInterface::dispatch(const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size)
-{
-	auto command_with_dynamic_data = command;
-	command_with_dynamic_data.dynamic_data = _allocator.allocate(dynamic_data_size);
-	command_with_dynamic_data.dynamic_data_size = dynamic_data_size;
-	memcpy(command_with_dynamic_data.dynamic_data, dynamic_data, dynamic_data_size);
-	_renderer.add_renderer_command(command_with_dynamic_data);
-}
 
 RendererCommand create_or_update_resource_renderer_command(Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
 {
@@ -111,32 +28,32 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 	memcpy(copied_resource, &resource, sizeof(RenderResourceData));
 	rc.data = copied_resource;
 	rc.type = command_type;
-	
+
 	switch (resource.type)
 	{
-		case RenderResourceData::RenderMaterial:
-			copied_resource->data = allocator.allocate(sizeof(MaterialResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
-			break;
-		case RenderResourceData::Shader:
-			copied_resource->data = allocator.allocate(sizeof(ShaderResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));
-			break;
-		case RenderResourceData::Texture:
-			copied_resource->data = allocator.allocate(sizeof(TextureResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
-			break;
-		case RenderResourceData::SpriteRenderer:
-			copied_resource->data = allocator.allocate(sizeof(CreateSpriteRendererData));
-			memcpy(copied_resource->data, resource.data, sizeof(CreateSpriteRendererData));
-			break;
-		case RenderResourceData::World:
-			copied_resource->data = allocator.allocate(sizeof(RenderWorldResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(RenderWorldResourceData));
-			break;
-		default:
-			assert(!"Unknown resource data type.");
-			break;
+	case RenderResourceData::RenderMaterial:
+		copied_resource->data = allocator.allocate(sizeof(MaterialResourceData));
+		memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
+		break;
+	case RenderResourceData::Shader:
+		copied_resource->data = allocator.allocate(sizeof(ShaderResourceData));
+		memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));
+		break;
+	case RenderResourceData::Texture:
+		copied_resource->data = allocator.allocate(sizeof(TextureResourceData));
+		memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
+		break;
+	case RenderResourceData::SpriteRenderer:
+		copied_resource->data = allocator.allocate(sizeof(CreateSpriteRendererData));
+		memcpy(copied_resource->data, resource.data, sizeof(CreateSpriteRendererData));
+		break;
+	case RenderResourceData::World:
+		copied_resource->data = allocator.allocate(sizeof(RenderWorldResourceData));
+		memcpy(copied_resource->data, resource.data, sizeof(RenderWorldResourceData));
+		break;
+	default:
+		assert(!"Unknown resource data type.");
+		break;
 	}
 
 	rc.dynamic_data = dynamic_data;
@@ -145,51 +62,149 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 	return rc;
 }
 
-void RenderInterface::create_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
-{	
-	dispatch(create_or_update_resource_renderer_command(_allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource));
+RendererCommand create_command_internal(Allocator& allocator, RendererCommand::Type type)
+{
+	RendererCommand command;
+	memset(&command, 0, sizeof(RendererCommand));
+	command.type = type;
+
+	switch (type)
+	{
+	case RendererCommand::SetUniformValue:
+		command.data = allocator.allocate(sizeof(SetUniformValueData));
+		break;
+	}
+
+	return command;
 }
 
-void RenderInterface::update_resource(RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+void dispatch_internal(IRenderer& renderer, const RendererCommand& command)
 {
-	dispatch(create_or_update_resource_renderer_command(_allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
+	renderer.add_renderer_command(command);
 }
 
-void RenderInterface::deallocate_processed_commands(Allocator& allocator)
+void create_resource_internal(IRenderer& renderer, Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	_renderer.deallocate_processed_commands(allocator);
+	dispatch_internal(renderer, create_or_update_resource_renderer_command(allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource));
 }
 
-RenderFence& RenderInterface::create_fence()
+void update_resource_internal(IRenderer& renderer, Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	auto fence_command = create_command(RendererCommand::Fence);
-	fence_command.data = _allocator.construct<RenderFence>();
-	dispatch(fence_command);	
+	dispatch_internal(renderer, create_or_update_resource_renderer_command(allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
+}
+
+} // anonymous namespace
+
+namespace render_interface
+{
+
+void init(RenderInterface& ri, Allocator& allocator, IRenderer& renderer)
+{
+	ri.allocator = &allocator;
+	ri.renderer = &renderer;
+}
+
+void create_texture(RenderInterface& ri, Texture& texture)
+{
+	assert(texture.render_handle == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
+
+	Image& image = *texture.image;
+
+	auto texture_resource = render_resource_data::create(RenderResourceData::Texture);
+
+	auto trd = TextureResourceData();
+	trd.handle = ri.renderer->create_handle();
+	trd.resolution = image.resolution;
+	trd.texture_data_dynamic_data_offset = 0;
+	trd.texture_data_size = image.data_size;
+	trd.pixel_format = image.pixel_format;
+
+	texture_resource.data = &trd;
+	create_resource_internal(*ri.renderer, *ri.allocator, texture_resource, image.data, image.data_size);
+	texture.render_handle = trd.handle;
+}
+
+void create_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+{
+	create_resource_internal(*ri.renderer, *ri.allocator, resource, dynamic_data, dynamic_data_size);
+}
+
+void update_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+{
+	update_resource_internal(*ri.renderer, *ri.allocator, resource, dynamic_data, dynamic_data_size);
+}
+
+void create_resource(RenderInterface& ri, RenderResourceData& resource)
+{
+	create_resource_internal(*ri.renderer, *ri.allocator, resource, nullptr, 0);
+}
+
+void update_resource(RenderInterface& ri, RenderResourceData& resource)
+{
+	update_resource_internal(*ri.renderer, *ri.allocator, resource, nullptr, 0);
+}
+
+void create_render_world(RenderInterface& ri, World& world)
+{
+	assert(world.render_handle == RenderResourceHandle::NotInitialized);
+	auto render_world_data = render_resource_data::create(RenderResourceData::World);
+	RenderWorldResourceData rwrd;
+	rwrd.handle = ri.renderer->create_handle();
+	render_world_data.data = &rwrd;
+	world.render_handle = rwrd.handle;
+	create_resource_internal(*ri.renderer, *ri.allocator, render_world_data, nullptr, 0);
+}
+
+RendererCommand create_command(RenderInterface& ri, RendererCommand::Type type)
+{
+	return create_command_internal(*ri.allocator, type);
+}
+
+void dispatch(RenderInterface& ri, const RendererCommand& command)
+{
+	dispatch_internal(*ri.renderer, command);
+}
+
+void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size)
+{
+	auto command_with_dynamic_data = command;
+	command_with_dynamic_data.dynamic_data = ri.allocator->allocate(dynamic_data_size);
+	command_with_dynamic_data.dynamic_data_size = dynamic_data_size;
+	memcpy(command_with_dynamic_data.dynamic_data, dynamic_data, dynamic_data_size);
+	dispatch_internal(*ri.renderer, command_with_dynamic_data);
+}
+
+RenderFence& create_fence(RenderInterface& ri)
+{
+	auto fence_command = create_command_internal(*ri.allocator, RendererCommand::Fence);
+	fence_command.data = ri.allocator->construct<RenderFence>();
+	dispatch_internal(*ri.renderer, fence_command);
 	return *(RenderFence*)fence_command.data;
 }
 
-void RenderInterface::wait_for_fence(RenderFence& fence)
+void wait_for_fence(RenderInterface& ri, RenderFence& fence)
 {
 	{
 		std::unique_lock<std::mutex> lock(fence.mutex);
 		fence.fence_processed.wait(lock, [&fence] { return fence.processed; });
 	}
-	_allocator.destroy(&fence);
+
+	ri.allocator->destroy(&fence);
 }
 
-void RenderInterface::resize(const Vector2u& resolution)
+void wait_until_idle(RenderInterface& ri)
 {
-	ResizeData& rd = *(ResizeData*)_allocator.allocate(sizeof(ResizeData));
+	wait_for_fence(ri, create_fence(ri));
+}
+
+void resize(RenderInterface& ri, const Vector2u& resolution)
+{
+	ResizeData& rd = *(ResizeData*)ri.allocator->allocate(sizeof(ResizeData));
 	rd.resolution = resolution;
-	
-	auto resize_command = create_command(RendererCommand::Resize);
-	resize_command.data = &rd;	
-	dispatch(resize_command);
+	auto resize_command = create_command_internal(*ri.allocator, RendererCommand::Resize);
+	resize_command.data = &rd;
+	dispatch(ri, resize_command);
 }
 
-const Vector2u& RenderInterface::resolution() const
-{
-	return _renderer.resolution();
 }
-
 }

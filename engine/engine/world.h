@@ -13,7 +13,7 @@ struct Vector4;
 struct Font;
 struct Rect;
 struct Material;
-class RenderInterface;
+struct RenderInterface;
 class ResourceManager;
 
 struct World

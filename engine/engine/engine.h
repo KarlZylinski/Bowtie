@@ -11,7 +11,7 @@ namespace bowtie
 {
 
 class Allocator;
-class RenderInterface;
+struct RenderInterface;
 struct World;
 
 class Engine

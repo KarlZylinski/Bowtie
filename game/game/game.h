@@ -7,7 +7,7 @@ namespace bowtie
 
 class Allocator;
 class Engine;
-class RenderInterface;
+struct RenderInterface;
 
 struct Game
 {

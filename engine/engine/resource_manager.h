@@ -14,7 +14,7 @@
 namespace bowtie
 {
 struct Material;
-class RenderInterface;
+struct RenderInterface;
 struct Texture;
 struct Image;
 struct Shader;

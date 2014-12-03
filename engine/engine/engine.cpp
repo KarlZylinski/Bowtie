@@ -9,6 +9,7 @@
 #include <foundation/string_utils.h>
 
 #include "render_interface.h"
+#include "irenderer.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
 #include "timer.h"
@@ -38,7 +39,7 @@ World* Engine::create_world()
 {
 	auto world = (World*)_allocator.init(sizeof(World));
 	world::init(*world, _allocator, _render_interface, _resource_manager);
-	_render_interface.create_render_world(*world);
+	render_interface::create_render_world(_render_interface, *world);
 	return world;
 }
 
@@ -70,7 +71,7 @@ RenderInterface& Engine::render_interface()
 
 void Engine::resize(const Vector2u& resolution)
 {
-	_render_interface.resize(resolution);
+	render_interface::resize(_render_interface, resolution);
 }
 
 ResourceManager& Engine::resource_manager()
@@ -80,7 +81,7 @@ ResourceManager& Engine::resource_manager()
 
 void Engine::update()
 {
-	if (!_render_interface.is_setup())
+	if (!_render_interface.renderer->is_setup())
 		return;
 
 	if (!_game.initialized)
@@ -92,13 +93,13 @@ void Engine::update()
 
 	_time_since_start += dt;
 
-	_render_interface.wait_for_fence(_render_interface.create_fence());
-	_render_interface.deallocate_processed_commands(_allocator);
+	render_interface::wait_until_idle(_render_interface);
+	_render_interface.renderer->deallocate_processed_commands(_allocator);
 
 	game::update(_game, dt);
 	game::draw(_game);
 	
-	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
+	render_interface::dispatch(_render_interface, render_interface::create_command(_render_interface, RendererCommand::CombineRenderedWorlds));
 
 	if (keyboard::key_pressed(_keyboard, keyboard::F5))
 		_resource_manager.reload_all();

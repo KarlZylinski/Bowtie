@@ -5,6 +5,7 @@
 #include <foundation/quad.h>
 #include "material.h"
 #include "render_interface.h"
+#include "irenderer.h"
 #include "resource_manager.h"
 
 namespace bowtie
@@ -73,11 +74,11 @@ void update_transforms(TransformComponentData& transform, unsigned start, unsign
 
 void create_sprites(Allocator& allocator, RenderInterface& ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent& sprite_renderer, unsigned num)
 {
-	auto rrd = ri.create_render_resource_data(RenderResourceData::SpriteRenderer);
+	auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
 
 	for (unsigned i = sprite_renderer.header.first_new; i < sprite_renderer.header.num; ++i)
 	{
-		sprite_renderer.data.render_handle[i] = ri.create_handle();
+		sprite_renderer.data.render_handle[i] = ri.renderer->create_handle();
 
 		if (sprite_renderer.data.material[i].render_handle == (unsigned)-1)
 			sprite_renderer.data.material[i].render_handle = default_material;
@@ -87,16 +88,16 @@ void create_sprites(Allocator& allocator, RenderInterface& ri, RenderResourceHan
 	data.num = num;
 	data.world = render_world;
 	rrd.data = &data;
-	ri.create_resource(rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::create_resource(ri, rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
 void update_sprites(Allocator& allocator, RenderInterface& ri, SpriteRendererComponent& sprite_renderer, unsigned num)
 {
-	auto rrd = ri.create_render_resource_data(RenderResourceData::SpriteRenderer);
+	auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
 	UpdateSpriteRendererData data;
 	data.num = num;
 	rrd.data = &data;
-	ri.update_resource(rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::update_resource(ri, rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
 } // anonymous namespace
@@ -159,14 +160,14 @@ void update(World& w)
 
 void draw(World& w, const Rect& view)
 {
-	auto render_world_command = w.render_interface->create_command(RendererCommand::RenderWorld);
+	auto render_world_command = render_interface::create_command(*w.render_interface, RendererCommand::RenderWorld);
 
 	auto& rwd = *(RenderWorldData*)w.allocator->allocate(sizeof(RenderWorldData));
 	rwd.view = view;
 	rwd.render_world = w.render_handle;
 	render_world_command.data = &rwd;
 
-	w.render_interface->dispatch(render_world_command);
+	render_interface::dispatch(*w.render_interface, render_world_command);
 }
 
 } // namespace world

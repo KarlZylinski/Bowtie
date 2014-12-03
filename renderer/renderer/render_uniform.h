@@ -10,6 +10,7 @@ namespace bowtie
 class Allocator;
 struct RenderUniform
 {
+	// TODO: Move to namespace when usages are correct.
 	RenderUniform(uniform::Type type, uint64_t name, unsigned location, uniform::AutomaticValue automatic_value);
 	RenderUniform(uniform::Type type, uint64_t name, unsigned location);
 

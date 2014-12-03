@@ -22,13 +22,13 @@ int set_uniform_value(lua_State* lua)
 	auto material = (Material*)lua_touserdata(lua, 1);
 	auto name = hash_str(lua_tostring(lua, 2));
 	auto value = (float)lua_tonumber(lua, 3);
-	auto command = s_render_interface->create_command(RendererCommand::SetUniformValue);
+	auto command = render_interface::create_command(*s_render_interface, RendererCommand::SetUniformValue);
 	SetUniformValueData& suvd = *(SetUniformValueData*)command.data;
 	suvd.material = material->render_handle;
 	suvd.type = uniform::Float;
 	suvd.uniform_name = name;
 	command.data = &suvd;
-	s_render_interface->dispatch(command, &value, sizeof(float));
+	render_interface::dispatch(*s_render_interface, command, &value, sizeof(float));
 	return 0;
 }
 

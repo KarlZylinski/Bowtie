@@ -61,9 +61,10 @@ SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const R
 
 Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator) :
 	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _command_queue(array::create<RendererCommand>(_allocator)), _free_handles(array::create<RenderResourceHandle>(_allocator)),
-	_unprocessed_commands(array::create<RendererCommand>(_allocator)), _processed_memory(array::create<void*>(_allocator)), _render_interface(*this, render_interface_allocator), _context(nullptr), _setup(false), _shut_down(false),
+	_unprocessed_commands(array::create<RendererCommand>(_allocator)), _processed_memory(array::create<void*>(_allocator)), _context(nullptr), _setup(false), _shut_down(false),
 	_resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
 {
+	render_interface::init(_render_interface, render_interface_allocator, *this);
 	auto num_handles = render_resource_table::size;
 	array::set_capacity(_free_handles, num_handles);
 	
@@ -171,7 +172,7 @@ void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 	_thread = std::thread(&Renderer::thread, this);
 
 	// Do stuff here which should happen before anything else.
-	_render_interface.resize(resolution);
+	render_interface::resize(_render_interface, resolution);
 	_setup = true;
 }
 

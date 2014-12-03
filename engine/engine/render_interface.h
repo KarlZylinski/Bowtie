@@ -12,38 +12,29 @@ struct World;
 struct Texture;
 struct RenderFence;
 class ResourceManager;
-class RenderInterface
+
+struct RenderInterface
 {
-public:
-	RenderInterface(IRenderer& renderer, Allocator& allocator);
-	
-	bool is_setup() const;
-	bool is_active() const;
-	
-	void create_texture(Texture& texture);
-	void create_render_world(World& world);
-	RenderResourceData create_render_resource_data(RenderResourceData::Type type);
-	RendererCommand create_command(RendererCommand::Type type);
-	RenderResourceHandle create_handle();
-	void dispatch(const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size);
-	void dispatch(const RendererCommand& command);
-	void create_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
-	void update_resource(RenderResourceData& resource, void* dynamic_data = nullptr, unsigned dynamic_data_size = 0);
-						  
-	// Pass the main thread allocator.
-	void deallocate_processed_commands(Allocator& allocator);
-
-	RenderFence& create_fence();
-	void wait_for_fence(RenderFence& fence);
-	void resize(const Vector2u& resolution);
-	const Vector2u& resolution() const;
-
-private:
-	Allocator& _allocator;
-	IRenderer& _renderer;
-	
-	RenderInterface(const RenderInterface&);
-	RenderInterface& operator=(const RenderInterface&);
+	Allocator* allocator;
+	IRenderer* renderer;
 };
+
+namespace render_interface
+{
+	void init(RenderInterface& ri, Allocator& allocator, IRenderer& renderer);
+	void create_texture(RenderInterface& ri, Texture& texture);
+	void create_render_world(RenderInterface& ri, World& world);
+	RendererCommand create_command(RenderInterface& ri, RendererCommand::Type type);
+	void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size);
+	void dispatch(RenderInterface& ri, const RendererCommand& command);
+	void create_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size);
+	void update_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size);
+	void create_resource(RenderInterface& ri, RenderResourceData& resource);
+	void update_resource(RenderInterface& ri, RenderResourceData& resource);
+	RenderFence& create_fence(RenderInterface& ri);
+	void wait_for_fence(RenderInterface& ri, RenderFence& fence);
+	void wait_until_idle(RenderInterface& ri);
+	void resize(RenderInterface& ri, const Vector2u& resolution);
+}
 
 }

@@ -67,4 +67,15 @@ struct RenderWorldResourceData
 	RenderResourceHandle handle;
 };
 
+namespace render_resource_data
+{
+
+inline RenderResourceData create(RenderResourceData::Type type)
+{
+	RenderResourceData rr = { type, 0 };
+	return rr;
+}
+
+} // render_resource_data
+
 } // namespace bowtie
