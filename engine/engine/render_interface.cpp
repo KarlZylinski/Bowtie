@@ -43,14 +43,12 @@ void RenderInterface::create_texture(Texture& texture)
 
 void RenderInterface::create_render_world(World& world)
 {
-	assert(world.render_handle() == RenderResourceHandle::NotInitialized);
-
+	assert(world.render_handle == RenderResourceHandle::NotInitialized);
 	auto render_world_data = create_render_resource_data(RenderResourceData::World);
-
 	RenderWorldResourceData rwrd;
 	rwrd.handle = create_handle();
 	render_world_data.data = &rwrd;
-	world.set_render_handle(rwrd.handle);
+	world.render_handle = rwrd.handle;
 	create_resource(render_world_data);
 }
 

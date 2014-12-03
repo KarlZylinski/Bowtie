@@ -12,7 +12,7 @@ typedef int(*lua_CFunction) (lua_State *L);
 namespace bowtie
 {
 
-class World;
+struct World;
 typedef unsigned Entity;
 
 struct interface_function {

@@ -8,7 +8,7 @@ namespace bowtie
 
 class Allocator;
 class IRenderer;
-class World;
+struct World;
 struct Texture;
 struct RenderFence;
 class ResourceManager;

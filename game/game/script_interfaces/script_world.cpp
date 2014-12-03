@@ -32,9 +32,7 @@ int destroy(lua_State* lua)
 
 int update(lua_State* lua)
 {
-	auto& world = *(World*)lua_touserdata(lua, 1);
-	world.update();
-
+	world::update(*(World*)lua_touserdata(lua, 1));
 	return 0;
 }
 
@@ -43,8 +41,7 @@ int draw(lua_State* lua)
 	auto& world = *(World*)lua_touserdata(lua, 1);
 	auto view_pos = script_interface::to_vector2(lua, 2);
 	auto view_size = script_interface::to_vector2(lua, 3);
-	world.draw(Rect(view_pos, view_size));
-
+	world::draw(world, Rect(view_pos, view_size));
 	return 0;
 }
 

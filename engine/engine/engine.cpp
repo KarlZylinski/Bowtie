@@ -35,7 +35,8 @@ Engine::~Engine()
 
 World* Engine::create_world()
 {
-	auto world = _allocator.construct<World>(_allocator, _render_interface, _resource_manager);
+	auto world = (World*)_allocator.init(sizeof(World));
+	world::init(*world, _allocator, _render_interface, _resource_manager);
 	_render_interface.create_render_world(*world);
 	return world;
 }

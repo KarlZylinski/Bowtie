@@ -29,7 +29,7 @@ namespace bowtie
 		virtual void deallocate(void *p) = 0;
 		virtual void deallocate(const void *p) { deallocate((void*)p); }
 
-		void* initialize(uint32_t size, uint32_t align = DEFAULT_ALIGN)
+		void* init(uint32_t size, uint32_t align = DEFAULT_ALIGN)
 		{
 			auto p = allocate(size, align);
 			memset(p, 0, size);

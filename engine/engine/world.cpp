@@ -10,38 +10,8 @@
 namespace bowtie
 {
 
-World::World(Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager) :
-	_allocator(allocator), _render_interface(render_interface), _resource_manager(resource_manager)
+namespace
 {
-	sprite_renderer_component::init(_sprite_renderer_components, allocator);
-	transform_component::init(_transform_components, allocator);
-}
-
-World::~World()
-{
-	sprite_renderer_component::deinit(_sprite_renderer_components, _allocator);
-	transform_component::deinit(_transform_components, _allocator);
-}
-
-void World::set_render_handle(RenderResourceHandle render_handle)
-{
-	_render_handle = render_handle;
-}
-
-RenderResourceHandle World::render_handle()
-{
-	return _render_handle;
-}
-
-SpriteRendererComponent& World::sprite_renderer_components()
-{
-	return _sprite_renderer_components;
-}
-
-TransformComponent& World::transform_components()
-{
-	return _transform_components;
-}
 
 Matrix4 world_matrix(const TransformComponentData& c, unsigned i)
 {
@@ -129,56 +99,76 @@ void update_sprites(Allocator& allocator, RenderInterface& ri, SpriteRendererCom
 	ri.update_resource(rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
-void World::update()
+} // anonymous namespace
+
+namespace world
+{
+
+void init(World& w, Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager)
+{
+	w.allocator = &allocator;
+	w.render_interface = &render_interface;
+	w.render_handle = RenderResourceHandle::NotInitialized;
+	w.default_material = ((Material*)resource_manager.load(ResourceType::Material, "default.material").object)->render_handle;
+	sprite_renderer_component::init(w.sprite_renderer_components, allocator);
+	transform_component::init(w.transform_components, allocator);
+}
+
+void deinit(World& w)
+{
+	sprite_renderer_component::deinit(w.sprite_renderer_components, *w.allocator);
+	transform_component::deinit(w.transform_components, *w.allocator);
+}
+
+void update(World& w)
 {
 	{
-		if (component::num_new(_transform_components.header) > 0)
-			update_transforms(_transform_components.data, _transform_components.header.first_new, _transform_components.header.num, _sprite_renderer_components);
+		if (component::num_new(w.transform_components.header) > 0)
+			update_transforms(w.transform_components.data, w.transform_components.header.first_new, w.transform_components.header.num, w.sprite_renderer_components);
 	
-		component::reset_new(_transform_components.header);	
+		component::reset_new(w.transform_components.header);
 	}
 
 	{
-		const auto num_dirty_transforms = component::num_dirty(_transform_components.header);
+		const auto num_dirty_transforms = component::num_dirty(w.transform_components.header);
 
 		if (num_dirty_transforms > 0)
-			update_transforms(_transform_components.data, 0, num_dirty_transforms, _sprite_renderer_components);
+			update_transforms(w.transform_components.data, 0, num_dirty_transforms, w.sprite_renderer_components);
 
-		component::reset_dirty(_transform_components.header);
+		component::reset_dirty(w.transform_components.header);
 	}
 	
 	{
-		const auto num_new_sprites = component::num_new(_sprite_renderer_components.header);
+		const auto num_new_sprites = component::num_new(w.sprite_renderer_components.header);
 
 		if (num_new_sprites > 0)
-		{
-			auto default_material = ((Material*)_resource_manager.load(ResourceType::Material, "shared/default_resources/rect.material").object)->render_handle;
-			create_sprites(_allocator, _render_interface, default_material, _render_handle, _sprite_renderer_components, num_new_sprites);
-		}
+			create_sprites(*w.allocator, *w.render_interface, w.default_material, w.render_handle, w.sprite_renderer_components, num_new_sprites);
 
-		component::reset_new(_sprite_renderer_components.header);
+		component::reset_new(w.sprite_renderer_components.header);
 	}
 
 	{
-		const auto num_dirty_sprites = component::num_dirty(_sprite_renderer_components.header);
+		const auto num_dirty_sprites = component::num_dirty(w.sprite_renderer_components.header);
 
 		if (num_dirty_sprites > 0)
-			update_sprites(_allocator, _render_interface, _sprite_renderer_components, num_dirty_sprites);
+			update_sprites(*w.allocator, *w.render_interface, w.sprite_renderer_components, num_dirty_sprites);
 	
-		component::reset_dirty(_sprite_renderer_components.header);
+		component::reset_dirty(w.sprite_renderer_components.header);
 	}
 }
 
-void World::draw(const Rect& view)
+void draw(World& w, const Rect& view)
 {
-	auto render_world_command = _render_interface.create_command(RendererCommand::RenderWorld);
+	auto render_world_command = w.render_interface->create_command(RendererCommand::RenderWorld);
 
-	auto& rwd = *(RenderWorldData*)_allocator.allocate(sizeof(RenderWorldData));
+	auto& rwd = *(RenderWorldData*)w.allocator->allocate(sizeof(RenderWorldData));
 	rwd.view = view;
-	rwd.render_world = _render_handle;
+	rwd.render_world = w.render_handle;
 	render_world_command.data = &rwd;
 
-	_render_interface.dispatch(render_world_command);
+	w.render_interface->dispatch(render_world_command);
 }
+
+} // namespace world
 
 } // namespace bowtie

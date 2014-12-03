@@ -25,7 +25,7 @@ int create(lua_State* lua)
 	auto e = script_interface::to_entity(lua, 1);
 	
 	{
-		auto& transform = e.world->transform_components();
+		auto& transform = e.world->transform_components;
 		if (!component::has_entity(transform.header, e.entity))
 			transform_component::create(transform, e.entity, *s_allocator);
 	}
@@ -46,21 +46,21 @@ int create(lua_State* lua)
 		color = script_interface::to_color(lua, 4);
 
 	Rect rect(position, size);
-	sprite_renderer_component::create(e.world->sprite_renderer_components(), e.entity, *s_allocator, rect, color);
+	sprite_renderer_component::create(e.world->sprite_renderer_components, e.entity, *s_allocator, rect, color);
 	return 0;
 }
 
 int destroy(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	sprite_renderer_component::destroy(e.world->sprite_renderer_components(), e.entity);
+	sprite_renderer_component::destroy(e.world->sprite_renderer_components, e.entity);
 	return 0;
 }
 
 int rect(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	const auto& rect = sprite_renderer_component::rect(e.world->sprite_renderer_components(), e.entity);
+	const auto& rect = sprite_renderer_component::rect(e.world->sprite_renderer_components, e.entity);
 	script_interface::push_vector2(lua, rect.position);
 	script_interface::push_vector2(lua, rect.size);
 	return 2;
@@ -70,14 +70,14 @@ int set_rect(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	Rect rect(script_interface::to_vector2(lua, 2), script_interface::to_vector2(lua, 3));
-	sprite_renderer_component::set_rect(e.world->sprite_renderer_components(), e.entity, rect);
+	sprite_renderer_component::set_rect(e.world->sprite_renderer_components, e.entity, rect);
 	return 0;
 }
 
 int color(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	const auto& color = sprite_renderer_component::color(e.world->sprite_renderer_components(), e.entity);
+	const auto& color = sprite_renderer_component::color(e.world->sprite_renderer_components, e.entity);
 	script_interface::push_color(lua, color);
 	return 1;
 }
@@ -86,7 +86,7 @@ int set_color(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto color = script_interface::to_color(lua, 2);
-	sprite_renderer_component::set_color(e.world->sprite_renderer_components(), e.entity, color);
+	sprite_renderer_component::set_color(e.world->sprite_renderer_components, e.entity, color);
 	return 0;
 }
 
@@ -94,7 +94,7 @@ int set_material(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto& material = *(Material*)lua_touserdata(lua, 2);
-	sprite_renderer_component::set_material(e.world->sprite_renderer_components(), e.entity, material);
+	sprite_renderer_component::set_material(e.world->sprite_renderer_components, e.entity, material);
 	return 0;
 }
 
