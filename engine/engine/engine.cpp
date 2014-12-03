@@ -43,6 +43,7 @@ World* Engine::create_world()
 
 void Engine::destroy_world(World& world)
 {
+	world::deinit(world);
 	_allocator.destroy(&world);
 }
 
