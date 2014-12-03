@@ -59,67 +59,59 @@ void load_shared_libs(lua_State* lua)
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector4.lua"));
 }
 
-Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
+
+namespace game
 {
-	luaL_openlibs(_lua);
-	engine_script_interface::load(_lua, engine);
-	world_script_interface::load(_lua);
-	entity_script_interface::load(_lua, engine.entity_manager());
-	time_script_interface::load(_lua);
-	material_script_interface::load(_lua, render_interface);
-	
+
+void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface)
+{
+	g._lua = luaL_newstate();
+	luaL_openlibs(g._lua);
+	engine_script_interface::load(g._lua, engine);
+	world_script_interface::load(g._lua);
+	entity_script_interface::load(g._lua, engine.entity_manager());
+	time_script_interface::load(g._lua);
+	material_script_interface::load(g._lua, render_interface);
+
 	// Components
-	sprite_renderer_component_script_interface::load(_lua, allocator);
-	transform_component_script_interface::load(_lua, allocator);
+	sprite_renderer_component_script_interface::load(g._lua, allocator);
+	transform_component_script_interface::load(g._lua, allocator);
 
-	load_shared_libs(_lua);
-	load_main(_lua);
+	load_shared_libs(g._lua);
+	load_main(g._lua);
+	console::init(g._lua);
+	init_game(g._lua);
+	g.initialized = true;
 }
 
-Game::~Game()
+void deinit(Game& g)
 {
-	lua_close(_lua);
+	assert(g.initialized && "init() hasn't been called");
+
+	deinit_game(g._lua);
+	g.initialized = false;
+	lua_gc(g._lua, LUA_GCCOLLECT, 0);
+	lua_close(g._lua);
 }
 
-void Game::init()
+void update(Game& g, float dt)
 {
-	assert(!_initialized && "init() has already been called once");
-
-	console::init(_lua);
-	init_game(_lua);
-	_initialized = true;
-}
-
-void Game::update(float dt)
-{
-	if (!_initialized)
+	if (!g.initialized)
 		return;
 
-	update_game(_lua, dt);
+	update_game(g._lua, dt);
 	console::update(dt);
 }
 
-void Game::draw()
+void draw(Game& g)
 {
-	if (!_initialized)
+	if (!g.initialized)
 		return;
 
-	draw_game(_lua);
+	draw_game(g._lua);
 	console::draw();
 }
 
-void Game::deinit()
-{
-	assert(_initialized && "init() hasn't been called");
-
-	deinit_game(_lua);
-	_initialized = false;
-	lua_gc(_lua, LUA_GCCOLLECT, 0);
 }
 
-bool Game::initialized() const
-{
-	return _initialized;
 }
-
-};

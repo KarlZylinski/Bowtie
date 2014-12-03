@@ -17,9 +17,10 @@
 namespace bowtie
 {
 
-Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _game(allocator, *this, render_interface), _render_interface(render_interface),
+Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface),
 	_resource_manager(allocator, render_interface), _time_elapsed_previous_frame(0.0f)
 {
+	_game.initialized = false; // TODO: Remove hack when Engine is converted.
 	entity_manager::init(_entity_manager, _allocator);
 	memset(&_keyboard, 0, sizeof(Keyboard));
 	timer::start();
@@ -27,8 +28,8 @@ Engine::Engine(Allocator& allocator, RenderInterface& render_interface) : _alloc
 
 Engine::~Engine()
 {
-	if (_game.initialized())
-		_game.deinit();
+	if (_game.initialized)
+		game::deinit(_game);
 
 	entity_manager::deinit(_entity_manager);
 }
@@ -82,8 +83,8 @@ void Engine::update()
 	if (!_render_interface.is_setup())
 		return;
 
-	if (!_game.initialized())
-		_game.init();
+	if (!_game.initialized)
+		game::init(_game, _allocator, *this, _render_interface);
 				
 	float time_elapsed = timer::counter();
 	float dt = time_elapsed - _time_elapsed_previous_frame;
@@ -94,8 +95,8 @@ void Engine::update()
 	_render_interface.wait_for_fence(_render_interface.create_fence());
 	_render_interface.deallocate_processed_commands(_allocator);
 
-	_game.update(dt);
-	_game.draw();
+	game::update(_game, dt);
+	game::draw(_game);
 	
 	_render_interface.dispatch(_render_interface.create_command(RendererCommand::CombineRenderedWorlds));
 

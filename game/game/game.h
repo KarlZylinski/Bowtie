@@ -9,27 +9,19 @@ class Allocator;
 class Engine;
 class RenderInterface;
 
-class Game
+struct Game
 {
-public:
-	Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface);
-	~Game();
-
-	void init();
-	void update(float dt);
-	void draw();
-	void deinit();
-
-	bool initialized() const;
-
-private:
-	Allocator& _allocator;
-	Engine& _engine;
-	bool _initialized;
+	bool initialized;
 	lua_State* _lua;
-
-	Game(const Game&);
-	Game& operator=(const Game&);
 };
+
+namespace game
+{
+	void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface);
+	void deinit(Game& g);
+	void update(Game& g, float dt);
+	void draw(Game& g);
+	void deinit(Game& g);
+}
 
 } // namespace bowtie
