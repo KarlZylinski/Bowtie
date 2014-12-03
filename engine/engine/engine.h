@@ -12,7 +12,6 @@ namespace bowtie
 
 class Allocator;
 class RenderInterface;
-class Drawable;
 class World;
 
 class Engine

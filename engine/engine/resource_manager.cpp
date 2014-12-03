@@ -11,14 +11,12 @@
 #include <foundation/stream.h>
 #include <resource_path.h>
 
-#include "drawable.h"
 #include "font.h"
 #include "material.h"
 #include "png.h"
 #include "render_interface.h"
 #include "shader.h"
 #include "shader_utils.h"
-#include "sprite_geometry.h"
 #include "texture.h"
 
 static bowtie::Allocator* static_allocator;
@@ -38,7 +36,7 @@ namespace bowtie
 {
 
 
-const char* ResourceManager::resource_type_names[] = { "shader", "image", "sprite", "texture", "font", "drawable", "material" };
+const char* ResourceManager::resource_type_names[] = { "shader", "image", "texture", "font", "material" };
 
 ResourceManager::ResourceManager(Allocator& allocator, RenderInterface& render_interface) : _allocator(allocator), _render_interface(render_interface), _resources(hash::create<Resource>(allocator))
 {
@@ -57,7 +55,6 @@ ResourceManager::~ResourceManager()
 			case ResourceType::Material: _allocator.destroy((Material*)obj); break;
 			case ResourceType::Shader: _allocator.destroy((Shader*)obj); break;
 			case ResourceType::Image: _allocator.destroy((Image*)obj); break;
-			case ResourceType::Drawable: _allocator.destroy((Drawable*)obj); break;
 			case ResourceType::Texture: _allocator.destroy((Texture*)obj); break;
 			case ResourceType::Font: _allocator.destroy((Font*)obj); break;
 			default: assert(!"Some resource type isn't freed properly."); break;
@@ -100,7 +97,7 @@ uniform::Type get_uniform_type_from_str(const char* str)
 
 uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 {
-	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "drawable_texture", "view_resolution", "view_resolution_ratio", "resolution" };
+	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "view_resolution", "view_resolution_ratio", "resolution" };
 	
 	for (unsigned i = 0; i < uniform::NumAutomaticValues; ++i)
 	{
@@ -339,32 +336,6 @@ Font& ResourceManager::load_font(const char* filename)
 	return *font;
 }
 
-Drawable& ResourceManager::load_sprite_prototype(const char* filename)
-{
-	auto name = hash_name(filename);
-	auto existing = get<Drawable>(ResourceType::Drawable, name);
-
-	if (existing != nullptr)
-		return *existing;
-
-	auto sprite_option = file::load(filename, _allocator);
-	assert(sprite_option.is_some && "Failed loading sprite.");
-	auto file = sprite_option.value;
-	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
-	_allocator.deallocate(file.data);
-	assert(jzon_result.success && "Failed to parse font");
-	auto jzon = jzon_result.output;
-	auto texture_filename = jzon_get(jzon, "texture")->string_value;
-	auto material_filename = jzon_get(jzon, "material")->string_value;
-
-	auto sprite_geometry = _allocator.construct<SpriteGeometry>(load_texture(texture_filename));
-	auto& material = load_material(material_filename);
-	auto drawable =_allocator.construct<Drawable>(_allocator, *sprite_geometry, &material, 0);
-	add_resource(name, Resource(drawable));
-	jzon_free_custom_allocator(jzon, &jzon_allocator);
-	return *drawable;
-}
-
 uint64_t ResourceManager::get_name(uint64_t name, ResourceType type)
 {
 	char name_str[30];
@@ -391,7 +362,6 @@ Resource ResourceManager::load(ResourceType type, const char* filename)
 		case ResourceType::Material: return Resource(&load_material(filename));
 		case ResourceType::Image: return Resource(&load_image(filename));
 		case ResourceType::Shader: return Resource(&load_shader(filename));
-		case ResourceType::Sprite: return Resource(&load_sprite_prototype(filename));
 		case ResourceType::Texture: return Resource(&load_texture(filename));
 		case ResourceType::Font: return Resource(&load_font(filename));
 		default: assert(!"Unknown resource type"); return Resource();

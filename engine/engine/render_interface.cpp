@@ -6,7 +6,6 @@
 
 #include <foundation/memory.h>
 
-#include "drawable.h"
 #include "irenderer.h"
 #include "image.h"
 #include "material.h"
@@ -14,7 +13,6 @@
 #include "resource_manager.h"
 #include "texture.h"
 #include "world.h"
-#include "idrawable_geometry.h"
 
 namespace bowtie
 {
@@ -41,66 +39,6 @@ void RenderInterface::create_texture(Texture& texture)
 	texture_resource.data = &trd;
 	create_resource(texture_resource, image.data, image.data_size);
 	texture.render_handle = trd.handle;
-}
-
-RenderResourceHandle get_material_or_default(ResourceManager& resource_manager, Drawable& drawable)
-{
-	auto material = drawable.material();
-
-	if (material->render_handle != RenderResourceHandle::NotInitialized)
-		return material->render_handle;
-
-	return ((Material*)resource_manager.get_default(ResourceType::Material).object)->render_handle;
-}
-
-void RenderInterface::spawn(World& world, Drawable& drawable, ResourceManager& resource_manager)
-{
-	assert(drawable.render_handle() == RenderResourceHandle::NotInitialized && "Trying to spawn already spawned drawable");
-
-	auto drawable_rrd = create_render_resource_data(RenderResourceData::Drawable);
-	DrawableResourceData drawable_resource_data;
-
-	auto texture = drawable.geometry().texture();
-	drawable_resource_data.handle = create_handle();
-	drawable_resource_data.texture = texture != nullptr ? texture->render_handle : RenderResourceHandle();
-	drawable_resource_data.render_world = world.render_handle();
-	drawable_resource_data.model = drawable.model_matrix();
-	drawable_resource_data.material = get_material_or_default(resource_manager, drawable);
-	drawable_resource_data.depth = drawable.depth();
-	auto geometry_handle = drawable.geometry_handle();
-
-	if (geometry_handle == RenderResourceHandle::NotInitialized)
-	{
-		auto geometry_rrd = create_render_resource_data(RenderResourceData::Geometry);
-		GeometryResourceData geometry_data;
-		geometry_data.handle = create_handle();
-		geometry_data.size = drawable.geometry().data_size();
-		geometry_rrd.data = &geometry_data;
-		auto geometry_dynamic_data = (float*)_allocator.allocate(geometry_data.size);
-		memcpy(geometry_dynamic_data, drawable.geometry().data(), geometry_data.size);
-		create_resource(geometry_rrd, (void*)geometry_dynamic_data, geometry_data.size);
-		drawable_resource_data.geometry = geometry_data.handle;
-		drawable.set_geometry_handle(geometry_data.handle);
-	}
-	else
-		drawable_resource_data.geometry = geometry_handle;
-
-	drawable_resource_data.num_vertices = drawable.geometry().data_size() / (sizeof(float) * 5);
-	drawable_rrd.data = &drawable_resource_data;
-	create_resource(drawable_rrd);
-	drawable.set_render_handle(drawable_resource_data.handle);
-}
-
-void RenderInterface::unspawn(World& world, Drawable& drawable)
-{
-	auto command = create_command(RendererCommand::Unspawn);	
-	auto& data = *(UnspawnData*)_allocator.allocate(sizeof(UnspawnData));
-	data.world = world.render_handle();
-	data.drawable = drawable.render_handle();
-	command.data = &data;
-	dispatch(command);
-	_renderer.free_handle(drawable.render_handle());
-	_renderer.free_handle(drawable.geometry_handle());
 }
 
 void RenderInterface::create_render_world(World& world)
@@ -189,14 +127,6 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 		case RenderResourceData::Texture:
 			copied_resource->data = allocator.allocate(sizeof(TextureResourceData));
 			memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
-			break;
-		case RenderResourceData::Drawable:
-			copied_resource->data = allocator.allocate(sizeof(DrawableResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(DrawableResourceData));
-			break;
-		case RenderResourceData::Geometry:
-			copied_resource->data = allocator.allocate(sizeof(GeometryResourceData));
-			memcpy(copied_resource->data, resource.data, sizeof(GeometryResourceData));
 			break;
 		case RenderResourceData::SpriteRenderer:
 			copied_resource->data = allocator.allocate(sizeof(CreateSpriteRendererData));

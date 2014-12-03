@@ -43,5 +43,5 @@ void load(lua_State* lua, RenderInterface& render_interface)
 	script_interface::register_interface(lua, "Material", functions, 1);
 }
 
-} // namespace drawable_script_interface
+} // namespace material_script_interface
 } // namespace bowtie

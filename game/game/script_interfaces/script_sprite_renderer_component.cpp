@@ -115,5 +115,5 @@ void load(lua_State* lua, Allocator& allocator)
 	script_interface::register_interface(lua, "SpriteRenderer", functions, 7);
 }
 
-} // namespace drawable_script_interface
+} // namespace sprite_renderer_component_script_interface
 } // namespace bowtie

@@ -19,7 +19,6 @@ namespace bowtie
 {
 
 struct ConcreteRenderer;
-struct RenderDrawable;
 struct RenderTarget;
 
 struct RendererResourceObject

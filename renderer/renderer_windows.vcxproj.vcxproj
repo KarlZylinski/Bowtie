@@ -24,7 +24,6 @@
     <ClInclude Include="renderer\render_component.h" />
     <ClInclude Include="renderer\render_material.h" />
     <ClInclude Include="renderer\renderer.h" />
-    <ClInclude Include="renderer\render_drawable.h" />
     <ClInclude Include="renderer\render_resource_table.h" />
     <ClInclude Include="renderer\render_target.h" />
     <ClInclude Include="renderer\render_texture.h" />

@@ -6,9 +6,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="game\script_interfaces\script_sprite.cpp">
-      <Filter>script_interfaces</Filter>
-    </ClCompile>
     <ClCompile Include="game\game.cpp" />
     <ClCompile Include="game\script_interfaces\script_world.cpp">
       <Filter>script_interfaces</Filter>
@@ -22,16 +19,7 @@
     <ClCompile Include="game\script_interfaces\script_time.cpp">
       <Filter>script_interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="game\script_interfaces\script_drawable.cpp">
-      <Filter>script_interfaces</Filter>
-    </ClCompile>
     <ClCompile Include="game\script_interfaces\script_console.cpp">
-      <Filter>script_interfaces</Filter>
-    </ClCompile>
-    <ClCompile Include="game\script_interfaces\script_rectangle.cpp">
-      <Filter>script_interfaces</Filter>
-    </ClCompile>
-    <ClCompile Include="game\script_interfaces\script_text.cpp">
       <Filter>script_interfaces</Filter>
     </ClCompile>
     <ClCompile Include="game\script_interfaces\script_material.cpp">
@@ -48,9 +36,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="game\script_interfaces\script_sprite.h">
-      <Filter>script_interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="game\game.h" />
     <ClInclude Include="game\script_interfaces\script_world.h">
       <Filter>script_interfaces</Filter>
@@ -64,16 +49,7 @@
     <ClInclude Include="game\script_interfaces\script_time.h">
       <Filter>script_interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="game\script_interfaces\script_drawable.h">
-      <Filter>script_interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="game\script_interfaces\script_console.h">
-      <Filter>script_interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="game\script_interfaces\script_rectangle.h">
-      <Filter>script_interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="game\script_interfaces\script_text.h">
       <Filter>script_interfaces</Filter>
     </ClInclude>
     <ClInclude Include="game\script_interfaces\script_material.h">

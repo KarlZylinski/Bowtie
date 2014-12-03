@@ -13,8 +13,7 @@ namespace bowtie
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, UpdateResource, Unspawn, Resize, DrawableStateReflection, DrawableGeometryReflection, CombineRenderedWorlds, SetUniformValue,
-		CreateRectangleRenderer };
+	enum Type { Fence, RenderWorld, LoadResource, UpdateResource, Resize, CombineRenderedWorlds, SetUniformValue };
 	Type type;
 	void* data;
 	unsigned dynamic_data_size;
@@ -30,26 +29,6 @@ struct RenderWorldData
 struct ResizeData
 {
 	Vector2u resolution;
-};
-
-struct DrawableStateReflectionData
-{
-	RenderResourceHandle drawble;
-	RenderResourceHandle material;
-	Matrix4 model;
-	int depth;
-};
-
-struct DrawableGeometryReflectionData
-{
-	RenderResourceHandle drawable;
-	unsigned size;
-};
-
-struct UnspawnData
-{
-	RenderResourceHandle world;
-	RenderResourceHandle drawable;
 };
 
 struct SetUniformValueData

@@ -4,14 +4,10 @@
 #include <lua.hpp>
 #include "script_interfaces/script_console.h"
 #include "script_interfaces/script_interface_helpers.h"
-#include "script_interfaces/script_drawable.h"
-#include "script_interfaces/script_sprite.h"
 #include "script_interfaces/script_entity.h"
 #include "script_interfaces/script_world.h"
 #include "script_interfaces/script_engine.h"
-#include "script_interfaces/script_rectangle.h"
 #include "script_interfaces/script_time.h"
-#include "script_interfaces/script_text.h"
 #include "script_interfaces/script_material.h"
 #include "script_interfaces/script_sprite_renderer_component.h"
 #include "script_interfaces/script_transform_component.h"
@@ -61,7 +57,6 @@ void load_shared_libs(lua_State* lua)
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/class.lua"));
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector2.lua"));
 	script_interface::check_errors(lua, luaL_dofile(lua, "shared/vector4.lua"));
-	script_interface::check_errors(lua, luaL_dofile(lua, "shared/console.lua"));
 }
 
 Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interface) : _allocator(allocator), _lua(luaL_newstate()), _engine(engine), _initialized(false)
@@ -71,10 +66,6 @@ Game::Game(Allocator& allocator, Engine& engine, RenderInterface& render_interfa
 	world_script_interface::load(_lua);
 	entity_script_interface::load(_lua, engine.entity_manager());
 	time_script_interface::load(_lua);
-	drawable_script_interface::load(_lua);
-	sprite_script_interface::load(_lua);
-	text_script_interface::load(_lua);
-	rectangle_script_interface::load(_lua);
 	material_script_interface::load(_lua, render_interface);
 	
 	// Components

@@ -13,7 +13,7 @@ struct RenderResourceData
 {
 	enum Type
 	{
-		Drawable, Geometry, RenderTarget, Shader, Texture, World, RenderMaterial, SpriteRenderer
+		RenderTarget, Shader, Texture, World, RenderMaterial, SpriteRenderer
 	};
 
 	Type type;
@@ -43,30 +43,12 @@ struct TextureResourceData
 	Vector2u resolution;
 };
 
-struct DrawableResourceData
-{
-	RenderResourceHandle handle;
-	RenderResourceHandle render_world;
-	RenderResourceHandle texture;
-	RenderResourceHandle material;
-	RenderResourceHandle geometry;
-	unsigned num_vertices;
-	Matrix4 model;
-	int depth;
-};
-
 struct UniformResourceData
 {
 	uniform::AutomaticValue automatic_value;
 	uniform::Type type;
 	unsigned name_offset;
 	unsigned value_offset;
-};
-
-struct GeometryResourceData
-{
-	RenderResourceHandle handle;
-	unsigned size;
 };
 
 struct CreateSpriteRendererData

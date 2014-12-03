@@ -13,7 +13,6 @@
 
 namespace bowtie
 {
-class Drawable;
 struct Material;
 class RenderInterface;
 struct Texture;
@@ -67,7 +66,6 @@ private:
 	Material& load_material(const char* filename);
 	Shader& load_shader(const char* filename);
 	Image& load_image(const char* filename);
-	Drawable& load_sprite_prototype(const char* filename);
 	Texture& load_texture(const char* filename);
 	Font& load_font(const char* filename);
 

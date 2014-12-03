@@ -7,7 +7,6 @@
 #include <engine/timer.h>
 #include <renderer/render_component.h>
 #include <renderer/render_material.h>
-#include <renderer/render_drawable.h>
 #include <renderer/render_target.h>
 #include <renderer/render_texture.h>
 #include <renderer/render_world.h>
@@ -53,11 +52,34 @@ void clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void combine_rendered_worlds(RenderResource fullscreen_rendering_quad, RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds)
+GLuint create_geometry_internal(void* data, unsigned data_size)
+{
+	GLuint geometry_buffer;
+	glGenBuffers(1, &geometry_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
+	glBufferData(GL_ARRAY_BUFFER, data_size, data, GL_STATIC_DRAW);
+	return geometry_buffer;
+}
+
+void destroy_geometry_internal(GLuint handle)
+{
+	glDeleteBuffers(1, &handle);
+}
+
+void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds)
 {
 	auto shader = rendered_worlds_combining_shader.handle;
-	auto quad = fullscreen_rendering_quad.handle;
 
+	static const float fullscreen_quad_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+	};
+
+	auto quad = create_geometry_internal((void*)fullscreen_quad_data, sizeof(fullscreen_quad_data));
 	glUseProgram(shader);
 	assert(array::size(rendered_worlds) <= 16);
 	GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_samplers");
@@ -88,15 +110,7 @@ void combine_rendered_worlds(RenderResource fullscreen_rendering_quad, RenderRes
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
-}
-
-GLuint create_geometry_internal(void* data, unsigned data_size)
-{
-	GLuint geometry_buffer;
-	glGenBuffers(1, &geometry_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
-	glBufferData(GL_ARRAY_BUFFER, data_size, data, GL_STATIC_DRAW);
-	return geometry_buffer;
+	destroy_geometry_internal(quad);
 }
 
 RenderResource create_geometry(void* data, unsigned data_size)
@@ -203,11 +217,6 @@ RenderResource create_texture(PixelFormat pf, const Vector2u& resolution, void* 
 	return RenderResource(create_texture_internal(pf, resolution, data));
 }
 
-void destroy_geometry_internal(GLuint handle)
-{
-	glDeleteBuffers(1, &handle);
-}
-
 void destroy_geometry(RenderResource handle)
 {
 	destroy_geometry_internal(handle.handle);
@@ -228,110 +237,6 @@ void destroy_render_target_internal(const RenderTarget& render_target)
 void destroy_render_target(RenderResource render_target)
 {
 	destroy_render_target_internal(*(RenderTarget*)render_target.object);
-}
-
-void draw_drawable(const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderDrawable& drawable, const RenderResource* resource_table)
-{
-	auto model_view_projection_matrix = drawable.model * view_projection_matrix;
-	auto model_view_matrix = drawable.model * view_matrix;
-	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, drawable.material).object;
-	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
-	assert(glIsProgram(shader) && "Invalid shader program");
-	glUseProgram(shader);
-	auto time = timer::counter();
-	auto view_resolution_ratio = view.size.y / resolution.y;
-	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
-
-	auto uniforms = material.uniforms;
-	for (unsigned i = 0; i < array::size(uniforms); ++i)
-	{
-		const auto& uniform = uniforms[i];
-		auto value = uniform.value;
-
-		switch (uniform.automatic_value)
-		{
-		case uniform::ModelViewProjectionMatrix:
-			value = (void*)&model_view_projection_matrix[0][0];
-			break;
-		case uniform::ModelViewMatrix:
-			value = (void*)&model_view_matrix[0][0];
-			break;
-		case uniform::ModelMatrix:
-			value = (void*)&drawable.model[0][0];
-			break;
-		case uniform::Time:
-			value = &time;
-			break;
-		case uniform::DrawableTexture:
-			value = (void*)&drawable.texture;
-			break;
-		case uniform::ViewResolution:
-			value = (void*)&view.size;
-			break;
-		case uniform::ViewResolutionRatio:
-			value = (void*)&view_resolution_ratio;
-			break;
-		case uniform::Resolution:
-			value = (void*)&resoultion_float;
-			break;
-		}
-
-		switch (uniform.type)
-		{
-		case uniform::Float: glUniform1fv(uniform.location, 1, (GLfloat*)value); break;
-		case uniform::Vec2: glUniform2fv(uniform.location, 1, (GLfloat*)value); break;
-		case uniform::Vec3: glUniform3fv(uniform.location, 1, (GLfloat*)value); break;
-		case uniform::Vec4: glUniform4fv(uniform.location, 1, (GLfloat*)value); break;
-		case uniform::Mat3: glUniformMatrix3fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
-		case uniform::Mat4: glUniformMatrix4fv(uniform.location, 1, GL_FALSE, (GLfloat*)value); break;
-		case uniform::Texture1:
-		{
-			glActiveTexture(GL_TEXTURE0);
-			auto texture_handle = *(RenderResourceHandle*)value;
-			auto texture = *(RenderTexture*)render_resource_table::lookup(resource_table, texture_handle).object;
-			glBindTexture(GL_TEXTURE_2D, value == nullptr ? 0 : texture.render_handle.handle);
-			glUniform1i(uniform.location, 0);
-		} break;
-		default:
-			assert(!"Unknown uniform type");
-		}
-	}
-
-	auto geometry = drawable.geometry.handle;
-
-	glBindBuffer(GL_ARRAY_BUFFER, geometry);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)0
-		);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(
-		1,
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(3 * sizeof(float))
-		);
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(
-		2,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(5 * sizeof(float))
-		);
-
-	glDrawArrays(GL_TRIANGLES, 0, drawable.num_vertices);
-	glDisableVertexAttribArray(0);
 }
 
 void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
@@ -366,9 +271,6 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 			break;
 		case uniform::Time:
 			value = &time;
-			break;
-		case uniform::DrawableTexture:
-			value = nullptr;
 			break;
 		case uniform::ViewResolution:
 			value = (void*)&view.size;
@@ -513,9 +415,6 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 
 	// Draw last batch.
 	draw_batch(batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
-
-	/*for (unsigned i = 0; i < array::size(render_world.drawables); ++i)
-		draw_drawable(resolution, view, view_matrix, view_projection_matrix, *render_world.drawables[i], resource_table);*/
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)
@@ -568,13 +467,6 @@ void unset_render_target(const Vector2u& resolution)
 	set_render_target(resolution, RenderResource(0u));
 }
 
-void update_geometry(RenderDrawable& drawable, void* data, unsigned data_size)
-{
-	auto geometry_handle = drawable.geometry.handle;
-	glBindBuffer(GL_ARRAY_BUFFER, geometry_handle);
-	glBufferData(GL_ARRAY_BUFFER, data_size, data, GL_STATIC_DRAW);
-}
-
 RenderResource update_shader(const RenderResource& shader, const char* vertex_source, const char* fragment_source)
 {
 	glDeleteProgram(shader.handle);
@@ -591,11 +483,9 @@ ConcreteRenderer create()
 	ConcreteRenderer renderer;
 	renderer.clear = &clear;
 	renderer.combine_rendered_worlds = &combine_rendered_worlds;
-	renderer.create_geometry = &create_geometry;
 	renderer.create_render_target = &create_render_target;
 	renderer.create_shader = &create_shader;
 	renderer.create_texture = &create_texture;
-	renderer.destroy_geometry = &destroy_geometry;
 	renderer.destroy_texture = &destroy_texture;
 	renderer.destroy_render_target = &destroy_render_target;
 	renderer.destroy_shader = &destroy_shader;
@@ -605,7 +495,6 @@ ConcreteRenderer create()
 	renderer.resize = &resize;
 	renderer.set_render_target = &set_render_target;
 	renderer.unset_render_target = &unset_render_target;
-	renderer.update_geometry = &update_geometry;
 	renderer.update_shader = &update_shader;
 	return renderer;
 }

@@ -113,5 +113,5 @@ void load(lua_State* lua, Allocator& allocator)
 	script_interface::register_interface(lua, "Transform", functions, 10);
 }
 
-} // namespace drawable_script_interface
+} // namespace transform_component_script_interface
 } // namespace bowtie

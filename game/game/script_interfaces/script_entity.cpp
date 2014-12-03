@@ -45,5 +45,5 @@ void load(lua_State* lua, EntityManager& manager)
 	script_interface::register_interface(lua, "Entity", functions, 2);
 }
 
-} // namespace drawable_script_interface
+} // namespace entity_script_interface
 } // namespace bowtie

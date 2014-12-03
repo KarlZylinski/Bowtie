@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\drawable.h" />
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\entity\components\component_header.h" />
     <ClInclude Include="engine\entity\components\sprite_renderer_component.h" />
@@ -27,14 +26,12 @@
     <ClInclude Include="engine\entity\entity.h" />
     <ClInclude Include="engine\entity\entity_manager.h" />
     <ClInclude Include="engine\font.h" />
-    <ClInclude Include="engine\idrawable_geometry.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\irenderer.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\material.h" />
     <ClInclude Include="engine\png.h" />
     <ClInclude Include="engine\rect.h" />
-    <ClInclude Include="engine\rectangle_geometry.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_interface.h" />
@@ -45,8 +42,6 @@
     <ClInclude Include="engine\resource_type.h" />
     <ClInclude Include="engine\shader.h" />
     <ClInclude Include="engine\shader_utils.h" />
-    <ClInclude Include="engine\sprite_geometry.h" />
-    <ClInclude Include="engine\text_geometry.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\timer.h" />
     <ClInclude Include="engine\uniform.h" />
@@ -54,7 +49,6 @@
     <ClInclude Include="engine\world.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="engine\drawable.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\entity\components\component_header.cpp" />
     <ClCompile Include="engine\entity\components\sprite_renderer_component.cpp" />
@@ -63,12 +57,9 @@
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
-    <ClCompile Include="engine\rectangle_geometry.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
-    <ClCompile Include="engine\sprite_geometry.cpp" />
-    <ClCompile Include="engine\text_geometry.cpp" />
     <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\world.cpp" />
