@@ -64,7 +64,7 @@ void write(ConcurrentRingBuffer& b, const void* data, unsigned size)
 	internal::write(&b.write_head, data_read_head, size);
 }
 
-char* consume(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size)
+void* consume(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size)
 {
 	auto consumed = (char*)allocator.allocate(size);
 	auto consumed_write_head = consumed;
@@ -86,9 +86,13 @@ char* consume(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size)
 	return consumed;
 }
 
-char* consume_all(ConcurrentRingBuffer& b, Allocator& allocator)
+ConsumedRingBufferData consume_all(ConcurrentRingBuffer& b, Allocator& allocator)
 {
-	return consume(b, allocator, internal::used(b));
+	unsigned size = internal::used(b);
+	ConsumedRingBufferData consumed;
+	consumed.data = consume(b, allocator, size);
+	consumed.size = size;
+	return consumed;
 }
 
 bool will_fit(ConcurrentRingBuffer& b, unsigned size)

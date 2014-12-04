@@ -13,12 +13,12 @@ struct World;
 struct Texture;
 struct RenderFence;
 class ResourceManager;
+struct ConcurrentRingBuffer;
 
 struct RenderInterface
 {
 	Allocator* allocator;
-	Array<RendererCommand>* _unprocessed_commands;
-	std::mutex* _unprocessed_commands_mutex;
+	ConcurrentRingBuffer* _unprocessed_commands;
 	bool* _unprocessed_commands_exist;
 	std::mutex* _unprocessed_commands_exist_mutex;
 	std::condition_variable* _wait_for_unprocessed_commands_to_exist;
@@ -27,8 +27,8 @@ struct RenderInterface
 
 namespace render_interface
 {
-	void init(RenderInterface& ri, Allocator& allocator, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex,
-		bool& unprocessed_commands_exist, std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist);
+	void init(RenderInterface& ri, Allocator& allocator, ConcurrentRingBuffer& unprocessed_commands, bool& unprocessed_commands_exist,
+			  std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist);
 	void deinit(RenderInterface& ri);
 	RenderResourceHandle create_handle(RenderInterface& ri);
 	void free_handle(RenderInterface& ri, RenderResourceHandle handle);

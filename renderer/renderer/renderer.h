@@ -8,7 +8,7 @@
 #include <engine/render_interface.h>
 #include <engine/render_resource_types.h>
 #include <foundation/collection_types.h>
-
+#include <foundation/concurrent_ring_buffer.h>
 #include "render_resource_table.h"
 #include "render_resource.h"
 #include "irenderer_context.h"
@@ -45,6 +45,8 @@ struct UpdatedResources {
 class Renderer
 {
 public:
+	static const unsigned unprocessed_commands_size = 2048000; // 2 megabytes
+
 	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
 	~Renderer();
 
@@ -83,8 +85,7 @@ private:
 	RenderResource _rendered_worlds_combining_shader;
 	bool _shut_down;
 	std::thread _thread;
-	Array<RendererCommand> _unprocessed_commands;
-	std::mutex _unprocessed_commands_mutex;
+	ConcurrentRingBuffer _unprocessed_commands;
 	std::mutex _unprocessed_commands_exist_mutex;
 	std::condition_variable _wait_for_unprocessed_commands_to_exist;
 	bool _unprocessed_commands_exist;

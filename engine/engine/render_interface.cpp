@@ -12,6 +12,7 @@
 #include "resource_manager.h"
 #include "texture.h"
 #include "world.h"
+#include <foundation/concurrent_ring_buffer.h>
 
 namespace bowtie
 {
@@ -79,8 +80,10 @@ RendererCommand create_command(Allocator& allocator, RendererCommand::Type type)
 
 void dispatch(RenderInterface& ri, const RendererCommand& command)
 {
-	std::lock_guard<std::mutex> queue_lock(*ri._unprocessed_commands_mutex);
-	array::push_back(*ri._unprocessed_commands, command);
+	if (!concurrent_ring_buffer::will_fit(*ri._unprocessed_commands, sizeof(RendererCommand)))
+		render_interface::wait_until_idle(ri);
+	
+	concurrent_ring_buffer::write(*ri._unprocessed_commands, &command, sizeof(RendererCommand));
 
 	{
 		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(*ri._unprocessed_commands_exist_mutex);
@@ -113,12 +116,11 @@ RenderResourceHandle create_handle(Array<RenderResourceHandle>& free_handles)
 namespace render_interface
 {
 
-void init(RenderInterface& ri, Allocator& allocator, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex,
-		  bool& unprocessed_commands_exist, std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist)
+void init(RenderInterface& ri, Allocator& allocator, ConcurrentRingBuffer& unprocessed_commands, bool& unprocessed_commands_exist,
+		  std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist)
 {
 	ri.allocator = &allocator;
 	ri._unprocessed_commands = &unprocessed_commands;
-	ri._unprocessed_commands_mutex = &unprocessed_commands_mutex;
 	ri._unprocessed_commands_exist = &unprocessed_commands_exist;
 	ri._unprocessed_commands_exist_mutex = &unprocessed_commands_exist_mutex;
 	ri._wait_for_unprocessed_commands_to_exist = &wait_for_unprocessed_commands_to_exist;
