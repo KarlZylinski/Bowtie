@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="foundation\array.h" />
     <ClInclude Include="foundation\collection_types.h" />
+    <ClInclude Include="foundation\concurrent_ring_buffer.h" />
     <ClInclude Include="foundation\file.h" />
     <ClInclude Include="foundation\hash.h" />
     <ClInclude Include="foundation\icallstack_capturer.h" />
@@ -44,6 +45,7 @@
     <ClInclude Include="resource_path.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="foundation\concurrent_ring_buffer.cpp" />
     <ClCompile Include="foundation\file.cpp" />
     <ClCompile Include="foundation\jzon.c" />
     <ClCompile Include="foundation\memory.cpp" />

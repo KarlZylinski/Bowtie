@@ -108,7 +108,7 @@ RenderResourceHandle create_handle(Array<RenderResourceHandle>& free_handles)
 	return handle;
 }
 
-} // anonymous namespace
+} // namespace internal
 
 namespace render_interface
 {
