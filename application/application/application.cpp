@@ -64,6 +64,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				window.dispatch_messages();
 				engine.update();
+				renderer.deallocate_processed_commands(allocator);
 			}
 		}
 		

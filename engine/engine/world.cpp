@@ -5,7 +5,6 @@
 #include <foundation/quad.h>
 #include "material.h"
 #include "render_interface.h"
-#include "irenderer.h"
 #include "resource_manager.h"
 
 namespace bowtie
@@ -78,7 +77,7 @@ void create_sprites(Allocator& allocator, RenderInterface& ri, RenderResourceHan
 
 	for (unsigned i = sprite_renderer.header.first_new; i < sprite_renderer.header.num; ++i)
 	{
-		sprite_renderer.data.render_handle[i] = ri.renderer->create_handle();
+		sprite_renderer.data.render_handle[i] = render_interface::create_handle(ri);
 
 		if (sprite_renderer.data.material[i].render_handle == (unsigned)-1)
 			sprite_renderer.data.material[i].render_handle = default_material;

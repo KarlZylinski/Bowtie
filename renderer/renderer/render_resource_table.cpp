@@ -1,5 +1,6 @@
 #include "render_resource_table.h"
 #include "render_resource.h"
+#include <engine/render_resource_handle.h>
 #include <cassert>
 
 namespace bowtie
@@ -10,13 +11,13 @@ namespace render_resource_table
 
 void free(RenderResource* table, RenderResourceHandle handle)
 {
-	assert(handle < size && "Handle is out of range");
+	assert(handle < render_resource_handle::num && "Handle is out of range");
 	table[handle.handle] = RenderResource();
 }
 
 const RenderResource& lookup(const RenderResource* table, RenderResourceHandle handle)
 {
-	assert(handle < size && "Handle is out of range");
+	assert(handle < render_resource_handle::num && "Handle is out of range");
 	auto& resource = table[handle.handle];
 	assert(resource.type != RenderResource::NotInitialized && "Trying to lookup unused render resource.");
 	return resource;

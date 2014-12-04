@@ -4,7 +4,6 @@
 #include <mutex>
 #include <thread>
 
-#include <engine/irenderer.h>
 #include <engine/renderer_command.h>
 #include <engine/render_interface.h>
 #include <engine/render_resource_types.h>
@@ -43,7 +42,7 @@ struct UpdatedResources {
 	RenderResource* new_resources;
 };
 
-class Renderer : public IRenderer
+class Renderer
 {
 public:
 	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
@@ -52,11 +51,7 @@ public:
 	typedef std::function<RenderResource(RenderResourceHandle)> LookupResourceFunction;
 	
 	void add_renderer_command(const RendererCommand& command);
-	RenderResourceHandle create_handle();
 	void deallocate_processed_commands(Allocator& render_interface_allocator);
-	void free_handle(RenderResourceHandle handle);
-	bool is_active() const;
-	bool is_setup() const;
 	RenderInterface& render_interface();
 	const Vector2u& resolution() const;
 	void run(IRendererContext* context, const Vector2u& resolution);
@@ -74,27 +69,25 @@ private:
 	bool _active;
 	Allocator& _allocator;
 	Array<RendererCommand> _command_queue;
-	bool _unprocessed_commands_exists;
-	std::mutex _unprocessed_commands_exists_mutex;
 	ConcreteRenderer& _concrete_renderer;
 	IRendererContext* _context;
-	Array<RenderResourceHandle> _free_handles;
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
 	RenderInterface _render_interface;
 	Vector2u _resolution;
-	RenderResource _resource_table[render_resource_table::size];
+	RenderResource _resource_table[render_resource_handle::num];
 	Array<RenderTarget> _render_targets;
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
 	Array<RendererResourceObject> _resource_objects;
 	RenderResource _fullscreen_rendering_quad;
 	RenderResource _rendered_worlds_combining_shader;
-	bool _setup;
 	bool _shut_down;
 	std::thread _thread;
 	Array<RendererCommand> _unprocessed_commands;
 	std::mutex _unprocessed_commands_mutex;
+	std::mutex _unprocessed_commands_exist_mutex;
 	std::condition_variable _wait_for_unprocessed_commands_to_exist;
+	bool _unprocessed_commands_exist;
 };
 
 }

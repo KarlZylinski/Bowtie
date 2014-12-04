@@ -15,7 +15,6 @@
 #include "material.h"
 #include "png.h"
 #include "render_interface.h"
-#include "irenderer.h"
 #include "shader.h"
 #include "shader_utils.h"
 #include "texture.h"
@@ -191,7 +190,7 @@ Material& ResourceManager::load_material(const char* filename)
 	_allocator.deallocate(dynamic_uniform_data.start);
 	
 	MaterialResourceData mrd;
-	mrd.handle = _render_interface.renderer->create_handle();
+	mrd.handle = render_interface::create_handle(_render_interface);
 	mrd.num_uniforms = uniforms_jzon->size;
 	mrd.shader = shader.render_handle;
 	RenderResourceData material_resource_data = render_resource_data::create(RenderResourceData::RenderMaterial);
@@ -264,7 +263,7 @@ Shader& ResourceManager::load_shader(const char* filename)
 		return *(Shader*)existing.object;
 
 	auto resource_package = get_shader_resource_data(_allocator, filename);
-	resource_package.data.handle = _render_interface.renderer->create_handle();
+	resource_package.data.handle = render_interface::create_handle(_render_interface);
 	auto create_resource_data = get_create_render_resource_data(RenderResourceData::Shader, &resource_package.data);
 	render_interface::create_resource(_render_interface, create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
 	auto shader = (Shader*)_allocator.allocate(sizeof(Shader));

@@ -43,4 +43,9 @@ struct RenderResourceHandle
 	unsigned handle;
 };
 
+namespace render_resource_handle
+{
+	const unsigned num = 4000;
+}
+
 } // namespace bowtie

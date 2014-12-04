@@ -27,7 +27,6 @@
     <ClInclude Include="engine\entity\entity_manager.h" />
     <ClInclude Include="engine\font.h" />
     <ClInclude Include="engine\image.h" />
-    <ClInclude Include="engine\irenderer.h" />
     <ClInclude Include="engine\keyboard.h" />
     <ClInclude Include="engine\material.h" />
     <ClInclude Include="engine\png.h" />

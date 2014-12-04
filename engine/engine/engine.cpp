@@ -9,7 +9,6 @@
 #include <foundation/string_utils.h>
 
 #include "render_interface.h"
-#include "irenderer.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"
 #include "timer.h"
@@ -81,8 +80,7 @@ ResourceManager& Engine::resource_manager()
 
 void Engine::update()
 {
-	if (!_render_interface.renderer->is_setup())
-		return;
+	render_interface::wait_until_idle(_render_interface);
 
 	if (!_game.initialized)
 		game::init(_game, _allocator, *this, _render_interface);
@@ -92,10 +90,7 @@ void Engine::update()
 	_time_elapsed_previous_frame = time_elapsed;
 
 	_time_since_start += dt;
-
-	render_interface::wait_until_idle(_render_interface);
-	_render_interface.renderer->deallocate_processed_commands(_allocator);
-
+	
 	game::update(_game, dt);
 	game::draw(_game);
 	

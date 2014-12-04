@@ -39,7 +39,6 @@
     <ClInclude Include="engine\resource_type.h" />
     <ClInclude Include="engine\shader_utils.h" />
     <ClInclude Include="engine\render_resource_types.h" />
-    <ClInclude Include="engine\irenderer.h" />
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\renderer_command.h" />

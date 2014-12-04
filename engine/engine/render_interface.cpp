@@ -6,7 +6,6 @@
 
 #include <foundation/memory.h>
 
-#include "irenderer.h"
 #include "image.h"
 #include "material.h"
 #include "render_fence.h"
@@ -17,7 +16,7 @@
 namespace bowtie
 {
 
-namespace
+namespace internal
 {
 
 RendererCommand create_or_update_resource_renderer_command(Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
@@ -62,7 +61,7 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 	return rc;
 }
 
-RendererCommand create_command_internal(Allocator& allocator, RendererCommand::Type type)
+RendererCommand create_command(Allocator& allocator, RendererCommand::Type type)
 {
 	RendererCommand command;
 	memset(&command, 0, sizeof(RendererCommand));
@@ -78,19 +77,35 @@ RendererCommand create_command_internal(Allocator& allocator, RendererCommand::T
 	return command;
 }
 
-void dispatch_internal(IRenderer& renderer, const RendererCommand& command)
+void dispatch(RenderInterface& ri, const RendererCommand& command)
 {
-	renderer.add_renderer_command(command);
+	std::lock_guard<std::mutex> queue_lock(*ri._unprocessed_commands_mutex);
+	array::push_back(*ri._unprocessed_commands, command);
+
+	{
+		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(*ri._unprocessed_commands_exist_mutex);
+		*ri._unprocessed_commands_exist = true;
+	}
+
+	ri._wait_for_unprocessed_commands_to_exist->notify_all();
 }
 
-void create_resource_internal(IRenderer& renderer, Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+void create_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	dispatch_internal(renderer, create_or_update_resource_renderer_command(allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource));
+	dispatch(ri, create_or_update_resource_renderer_command(*ri.allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource));
 }
 
-void update_resource_internal(IRenderer& renderer, Allocator& allocator, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
+void update_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	dispatch_internal(renderer, create_or_update_resource_renderer_command(allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
+	dispatch(ri, create_or_update_resource_renderer_command(*ri.allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
+}
+
+RenderResourceHandle create_handle(Array<RenderResourceHandle>& free_handles)
+{
+	assert(array::any(free_handles) && "Out of render resource handles!");
+	RenderResourceHandle handle = array::back(free_handles);
+	array::pop_back(free_handles);
+	return handle;
 }
 
 } // anonymous namespace
@@ -98,10 +113,37 @@ void update_resource_internal(IRenderer& renderer, Allocator& allocator, RenderR
 namespace render_interface
 {
 
-void init(RenderInterface& ri, Allocator& allocator, IRenderer& renderer)
+void init(RenderInterface& ri, Allocator& allocator, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex,
+		  bool& unprocessed_commands_exist, std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist)
 {
 	ri.allocator = &allocator;
-	ri.renderer = &renderer;
+	ri._unprocessed_commands = &unprocessed_commands;
+	ri._unprocessed_commands_mutex = &unprocessed_commands_mutex;
+	ri._unprocessed_commands_exist = &unprocessed_commands_exist;
+	ri._unprocessed_commands_exist_mutex = &unprocessed_commands_exist_mutex;
+	ri._wait_for_unprocessed_commands_to_exist = &wait_for_unprocessed_commands_to_exist;
+	array::init(ri._free_handles, allocator);
+	auto num_handles = render_resource_handle::num;
+	array::set_capacity(ri._free_handles, num_handles);
+
+	for (unsigned handle = num_handles; handle > 0; --handle)
+		array::push_back(ri._free_handles, RenderResourceHandle(handle));
+}
+
+void deinit(RenderInterface& ri)
+{
+	array::deinit(ri._free_handles);
+}
+
+RenderResourceHandle create_handle(RenderInterface& ri)
+{
+	return internal::create_handle(ri._free_handles);
+}
+
+void free_handle(RenderInterface& ri, RenderResourceHandle handle)
+{
+	assert(handle < render_resource_handle::num && "Trying to free render resource handle with a higher value than render_resource_handle::num.");
+	array::push_back(ri._free_handles, handle);
 }
 
 void create_texture(RenderInterface& ri, Texture& texture)
@@ -113,35 +155,35 @@ void create_texture(RenderInterface& ri, Texture& texture)
 	auto texture_resource = render_resource_data::create(RenderResourceData::Texture);
 
 	auto trd = TextureResourceData();
-	trd.handle = ri.renderer->create_handle();
+	trd.handle = internal::create_handle(ri._free_handles);
 	trd.resolution = image.resolution;
 	trd.texture_data_dynamic_data_offset = 0;
 	trd.texture_data_size = image.data_size;
 	trd.pixel_format = image.pixel_format;
 
 	texture_resource.data = &trd;
-	create_resource_internal(*ri.renderer, *ri.allocator, texture_resource, image.data, image.data_size);
+	internal::create_resource(ri, texture_resource, image.data, image.data_size);
 	texture.render_handle = trd.handle;
 }
 
 void create_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	create_resource_internal(*ri.renderer, *ri.allocator, resource, dynamic_data, dynamic_data_size);
+	internal::create_resource(ri, resource, dynamic_data, dynamic_data_size);
 }
 
 void update_resource(RenderInterface& ri, RenderResourceData& resource, void* dynamic_data, unsigned dynamic_data_size)
 {
-	update_resource_internal(*ri.renderer, *ri.allocator, resource, dynamic_data, dynamic_data_size);
+	internal::update_resource(ri, resource, dynamic_data, dynamic_data_size);
 }
 
 void create_resource(RenderInterface& ri, RenderResourceData& resource)
 {
-	create_resource_internal(*ri.renderer, *ri.allocator, resource, nullptr, 0);
+	internal::create_resource(ri, resource, nullptr, 0);
 }
 
 void update_resource(RenderInterface& ri, RenderResourceData& resource)
 {
-	update_resource_internal(*ri.renderer, *ri.allocator, resource, nullptr, 0);
+	internal::update_resource(ri, resource, nullptr, 0);
 }
 
 void create_render_world(RenderInterface& ri, World& world)
@@ -149,20 +191,20 @@ void create_render_world(RenderInterface& ri, World& world)
 	assert(world.render_handle == RenderResourceHandle::NotInitialized);
 	auto render_world_data = render_resource_data::create(RenderResourceData::World);
 	RenderWorldResourceData rwrd;
-	rwrd.handle = ri.renderer->create_handle();
+	rwrd.handle = internal::create_handle(ri._free_handles);
 	render_world_data.data = &rwrd;
 	world.render_handle = rwrd.handle;
-	create_resource_internal(*ri.renderer, *ri.allocator, render_world_data, nullptr, 0);
+	internal::create_resource(ri, render_world_data, nullptr, 0);
 }
 
 RendererCommand create_command(RenderInterface& ri, RendererCommand::Type type)
 {
-	return create_command_internal(*ri.allocator, type);
+	return internal::create_command(*ri.allocator, type);
 }
 
 void dispatch(RenderInterface& ri, const RendererCommand& command)
 {
-	dispatch_internal(*ri.renderer, command);
+	internal::dispatch(ri, command);
 }
 
 void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size)
@@ -171,14 +213,14 @@ void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic
 	command_with_dynamic_data.dynamic_data = ri.allocator->allocate(dynamic_data_size);
 	command_with_dynamic_data.dynamic_data_size = dynamic_data_size;
 	memcpy(command_with_dynamic_data.dynamic_data, dynamic_data, dynamic_data_size);
-	dispatch_internal(*ri.renderer, command_with_dynamic_data);
+	internal::dispatch(ri, command_with_dynamic_data);
 }
 
 RenderFence& create_fence(RenderInterface& ri)
 {
-	auto fence_command = create_command_internal(*ri.allocator, RendererCommand::Fence);
+	auto fence_command = internal::create_command(*ri.allocator, RendererCommand::Fence);
 	fence_command.data = ri.allocator->construct<RenderFence>();
-	dispatch_internal(*ri.renderer, fence_command);
+	internal::dispatch(ri, fence_command);
 	return *(RenderFence*)fence_command.data;
 }
 
@@ -201,7 +243,7 @@ void resize(RenderInterface& ri, const Vector2u& resolution)
 {
 	ResizeData& rd = *(ResizeData*)ri.allocator->allocate(sizeof(ResizeData));
 	rd.resolution = resolution;
-	auto resize_command = create_command_internal(*ri.allocator, RendererCommand::Resize);
+	auto resize_command = internal::create_command(*ri.allocator, RendererCommand::Resize);
 	resize_command.data = &rd;
 	dispatch(ri, resize_command);
 }

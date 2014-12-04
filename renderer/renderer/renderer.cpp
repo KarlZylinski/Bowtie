@@ -49,7 +49,7 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target);
 void flip(IRendererContext& context);
 void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
-void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex);
+void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex, bool& unprocessed_commands_exists);
 void raise_fence(RenderFence& fence);
 void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view);
 SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource* resource_table, void* dynamic_data, const ShaderResourceData& data);
@@ -60,16 +60,11 @@ SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const R
 // Public interface.
 
 Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator) :
-	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _command_queue(array::create<RendererCommand>(_allocator)), _free_handles(array::create<RenderResourceHandle>(_allocator)),
-	_unprocessed_commands(array::create<RendererCommand>(_allocator)), _processed_memory(array::create<void*>(_allocator)), _context(nullptr), _setup(false), _shut_down(false),
+	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _command_queue(array::create<RendererCommand>(_allocator)),
+	_unprocessed_commands(array::create<RendererCommand>(_allocator)), _processed_memory(array::create<void*>(_allocator)), _context(nullptr), _shut_down(false), _unprocessed_commands_exist(false),
 	_resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
 {
-	render_interface::init(_render_interface, render_interface_allocator, *this);
-	auto num_handles = render_resource_table::size;
-	array::set_capacity(_free_handles, num_handles);
-	
-	for(unsigned handle = num_handles; handle > 0; --handle)
-		array::push_back(_free_handles, RenderResourceHandle(handle));
+	render_interface::init(_render_interface, render_interface_allocator, _unprocessed_commands, _unprocessed_commands_mutex, _unprocessed_commands_exist, _unprocessed_commands_exist_mutex, _wait_for_unprocessed_commands_to_exist);
 }
 
 Renderer::~Renderer()
@@ -95,35 +90,12 @@ Renderer::~Renderer()
 		_allocator.deallocate(object);
 	}
 	
-	array::deinit(_free_handles);
 	array::deinit(_command_queue);
 	array::deinit(_unprocessed_commands);
 	array::deinit(_processed_memory);
 	array::deinit(_resource_objects);
 	array::deinit(_render_targets);
 	array::deinit(_rendered_worlds);
-}
-
-void Renderer::add_renderer_command(const RendererCommand& command)
-{
-	{
-		std::lock_guard<std::mutex> queue_lock(_unprocessed_commands_mutex);
-		array::push_back(_unprocessed_commands, command);
-	}
-
-	if (_shut_down) { // Move to trash, right away!
-		move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
-		array::clear(_unprocessed_commands);
-	} else 
-		notify_unprocessed_commands_exists();
-}
-
-RenderResourceHandle Renderer::create_handle()
-{
-	assert(array::any(_free_handles) && "Out of render resource handles!");
-	RenderResourceHandle handle = array::back(_free_handles);
-	array::pop_back(_free_handles);
-	return handle;
 }
 
 void Renderer::deallocate_processed_commands(Allocator& render_interface_allocator)
@@ -137,22 +109,6 @@ void Renderer::deallocate_processed_commands(Allocator& render_interface_allocat
 	}
 
 	array::clear(_processed_memory);
-}
-
-void Renderer::free_handle(RenderResourceHandle handle)
-{
-	assert(handle < render_resource_table::size && "Trying to free render resource handle with a higher value than render_resource_table::size.");
-	array::push_back(_free_handles, handle);
-}
-
-bool Renderer::is_active() const
-{
-	return _active;
-}
-
-bool Renderer::is_setup() const
-{
-	return _setup;
 }
 
 RenderInterface& Renderer::render_interface()
@@ -173,16 +129,21 @@ void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 
 	// Do stuff here which should happen before anything else.
 	render_interface::resize(_render_interface, resolution);
-	_setup = true;
 }
 
 void Renderer::stop(Allocator& render_interface_allocator)
 {
-	_active = false;
-	_setup = false;
 	_shut_down = true;
-	notify_unprocessed_commands_exists();
+	_active = false;
+
+	{
+		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_mutex);
+		_unprocessed_commands_exist = true;
+	}
+	_wait_for_unprocessed_commands_to_exist.notify_all();
+
 	_thread.join();
+	render_interface::deinit(_render_interface);
 	move_processed_commads(_unprocessed_commands, _processed_memory, _processed_memory_mutex);
 	array::clear(_unprocessed_commands);
 	move_processed_commads(_command_queue, _processed_memory, _processed_memory_mutex);
@@ -196,15 +157,11 @@ void Renderer::stop(Allocator& render_interface_allocator)
 
 void Renderer::consume_command_queue()
 {
-	{
-		std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
-		move_unprocessed_commands(_command_queue, _unprocessed_commands, _unprocessed_commands_mutex);
-		_unprocessed_commands_exists = false;
-	}
+	move_unprocessed_commands(_command_queue, _unprocessed_commands, _unprocessed_commands_mutex, _unprocessed_commands_exist);
 
 	for (unsigned i = 0; i < array::size(_command_queue); ++i)
 		execute_command(_command_queue[i]);
-	
+		
 	move_processed_commads(_command_queue, _processed_memory, _processed_memory_mutex);
 	array::clear(_command_queue);
 }
@@ -395,13 +352,6 @@ void Renderer::execute_command(const RendererCommand& command)
 	}
 }
 
-void Renderer::notify_unprocessed_commands_exists()
-{
-	std::lock_guard<std::mutex>	unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
-	_unprocessed_commands_exists = true;
-	_wait_for_unprocessed_commands_to_exist.notify_all();
-}
-
 void Renderer::thread()
 {
 	_context->make_current_for_calling_thread();
@@ -475,8 +425,8 @@ UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void*
 
 void Renderer::wait_for_unprocessed_commands_to_exist()
 {	
-	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exists_mutex);
-	_wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return _unprocessed_commands_exists;});
+	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exist_mutex);
+	_wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return _unprocessed_commands_exist;});
 }
 
 namespace
@@ -604,7 +554,7 @@ void move_processed_commads(Array<RendererCommand>& command_queue, Array<void*>&
 	}
 }
 
-void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex)
+void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<RendererCommand>& unprocessed_commands, std::mutex& unprocessed_commands_mutex, bool& unprocessed_commands_exists)
 {
 	std::lock_guard<std::mutex> queue_lock(unprocessed_commands_mutex);
 
@@ -612,6 +562,10 @@ void move_unprocessed_commands(Array<RendererCommand>& command_queue, Array<Rend
 		array::push_back(command_queue, unprocessed_commands[i]);
 		
 	array::clear(unprocessed_commands);
+
+	{
+		unprocessed_commands_exists = false;
+	}
 }
 
 void raise_fence(RenderFence& fence)
