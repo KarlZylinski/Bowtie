@@ -70,7 +70,8 @@ private:
 	
 	bool _active;
 	Allocator& _allocator;
-	Array<RendererCommand> _command_queue;
+	RendererCommand* _command_queue;
+	unsigned _command_queue_size;
 	ConcreteRenderer& _concrete_renderer;
 	IRendererContext* _context;
 	Array<void*> _processed_memory;
