@@ -84,7 +84,6 @@ private:
 	Array<RendererResourceObject> _resource_objects;
 	RenderResource _fullscreen_rendering_quad;
 	RenderResource _rendered_worlds_combining_shader;
-	bool _shut_down;
 	std::thread _thread;
 	ConcurrentRingBuffer _unprocessed_commands;
 	std::mutex _unprocessed_commands_exist_mutex;

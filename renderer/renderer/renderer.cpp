@@ -61,7 +61,7 @@ SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const R
 
 Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator) :
 	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _command_queue(nullptr), _command_queue_size(0), _processed_memory(array::create<void*>(_allocator)), _context(nullptr),
-	_shut_down(false), _unprocessed_commands_exist(false), _resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
+	_unprocessed_commands_exist(false), _resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
 {
 	concurrent_ring_buffer::init(_unprocessed_commands, _allocator, unprocessed_commands_size);
 	render_interface::init(_render_interface, render_interface_allocator, _unprocessed_commands, _unprocessed_commands_exist, _unprocessed_commands_exist_mutex, _wait_for_unprocessed_commands_to_exist);
@@ -132,7 +132,6 @@ void Renderer::run(IRendererContext* context, const Vector2u& resolution)
 
 void Renderer::stop(Allocator& render_interface_allocator)
 {
-	_shut_down = true;
 	_active = false;
 
 	{
