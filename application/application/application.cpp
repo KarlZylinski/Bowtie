@@ -44,7 +44,27 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	auto callstack_capturer = new CallstackCapturer();
 	memory_globals::init(*callstack_capturer);
 	Allocator& allocator = memory_globals::default_allocator();
-	s_allocator = &allocator;	
+
+	ConcurrentRingBuffer b;
+	concurrent_ring_buffer::init(b, allocator, 8, sizeof(unsigned char));
+
+	while (true)
+	{
+		auto r = rand()%255;
+
+		if (concurrent_ring_buffer::fits_one(b))
+		{
+			concurrent_ring_buffer::write_one(b, &r);
+		}
+		else
+		{
+			while (concurrent_ring_buffer::peek(b) != nullptr)
+				concurrent_ring_buffer::consume_one(b);
+		}
+	}
+
+
+	/*s_allocator = &allocator;	
 	Allocator* renderer_allocator = memory_globals::new_allocator(*callstack_capturer, "renderer allocator");
 
 	{
@@ -71,7 +91,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		renderer.stop(allocator);
 	}
 
-	memory_globals::destroy_allocator(renderer_allocator);
+	memory_globals::destroy_allocator(renderer_allocator);*/
 	memory_globals::shutdown();
 	delete callstack_capturer;
 }

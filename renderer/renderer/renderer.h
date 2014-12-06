@@ -45,7 +45,7 @@ struct UpdatedResources {
 class Renderer
 {
 public:
-	static const unsigned unprocessed_commands_size = 2048000; // 2 megabytes
+	static const unsigned unprocessed_commands_num = 64000;
 
 	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
 	~Renderer();
@@ -70,8 +70,6 @@ private:
 	
 	bool _active;
 	Allocator& _allocator;
-	RendererCommand* _command_queue;
-	unsigned _command_queue_size;
 	ConcreteRenderer& _concrete_renderer;
 	IRendererContext* _context;
 	Array<void*> _processed_memory;
