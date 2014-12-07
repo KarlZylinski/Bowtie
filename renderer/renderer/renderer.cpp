@@ -152,28 +152,16 @@ void Renderer::stop(Allocator& render_interface_allocator)
 ////////////////////////////////
 // Implementation.
 
-
-/*
-
-	std::lock_guard<std::mutex> lock(unprocessed_commands_exist_mutex);
-	auto consumed = concurrent_ring_buffer::consume_all(unprocessed_commands, allocator);
-	unprocessed_commands_exist = false;
-	*command_queue = (RendererCommand*)consumed.data;
-	command_queue_size = consumed.size / sizeof(RendererCommand);
-
-*/
-
 void Renderer::consume_command_queue()
 {
 	{
 		std::lock_guard<std::mutex> lock(_unprocessed_commands_exist_mutex);
 		_unprocessed_commands_exist = false;
 	}
-
-	//move_unprocessed_commands(&_command_queue, _command_queue_size, _unprocessed_commands, _allocator, _unprocessed_commands_exist, _unprocessed_commands_exist_mutex);
-
+		
 	auto command = (RendererCommand*)concurrent_ring_buffer::peek(_unprocessed_commands);
-	do
+	
+	while (command != nullptr)
 	{
 		execute_command(*command);
 		
@@ -181,16 +169,16 @@ void Renderer::consume_command_queue()
 			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
 			auto dont_free = command->type == RendererCommand::Fence;
 
-			if (dont_free)
-				continue;
-
-			array::push_back(_processed_memory, command->data);
-			array::push_back(_processed_memory, command->dynamic_data);
+			if (!dont_free)
+			{
+				array::push_back(_processed_memory, command->data);
+				array::push_back(_processed_memory, command->dynamic_data);
+			}
 		}
 
 		concurrent_ring_buffer::consume_one(_unprocessed_commands);
 		command = (RendererCommand*)concurrent_ring_buffer::peek(_unprocessed_commands);
-	} while (command != nullptr);
+	}
 }
 
 SingleCreatedResource single_resource(RenderResourceHandle handle, RenderResource resource)
