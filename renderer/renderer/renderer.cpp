@@ -48,8 +48,6 @@ RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allo
 RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data);
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target);
 void flip(IRendererContext& context);
-void move_processed_commads(RendererCommand* command_queue, unsigned command_queue_size, Array<void*>& processed_memory, std::mutex& processed_memory_mutex);
-void move_unprocessed_commands(RendererCommand** command_queue, unsigned& command_queue_size, ConcurrentRingBuffer& unprocessed_commands, Allocator& allocator, bool& unprocessed_commands_exist, std::mutex& unprocessed_commands_exist_mutex);
 void raise_fence(RenderFence& fence);
 void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view);
 SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource* resource_table, void* dynamic_data, const ShaderResourceData& data);
@@ -142,9 +140,6 @@ void Renderer::stop(Allocator& render_interface_allocator)
 	_wait_for_unprocessed_commands_to_exist.notify_all();
 	_thread.join();
 	render_interface::deinit(_render_interface);
-	//move_unprocessed_commands(&_command_queue, _command_queue_size, _unprocessed_commands, _allocator, _unprocessed_commands_exist, _unprocessed_commands_exist_mutex);
-	//move_processed_commads(_command_queue, _command_queue_size, _processed_memory, _processed_memory_mutex);
-	//_allocator.deallocate(_command_queue);
 	deallocate_processed_commands(render_interface_allocator);
 }
 
@@ -551,22 +546,6 @@ SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResour
 void flip(IRendererContext& context)
 {
 	context.flip();
-}
-
-void move_processed_commads(RendererCommand* command_queue, unsigned command_queue_size, Array<void*>& processed_memory, std::mutex& processed_memory_mutex)
-{
-	std::lock_guard<std::mutex> queue_lock(processed_memory_mutex);
-
-	for (unsigned i = 0; i < command_queue_size; ++i) {
-		const auto& command = command_queue[i];
-		auto dont_free = command.type == RendererCommand::Fence;
-
-		if (dont_free)
-			continue;
-
-		array::push_back(processed_memory, command.data);
-		array::push_back(processed_memory, command.dynamic_data);
-	}
 }
 
 void raise_fence(RenderFence& fence)
