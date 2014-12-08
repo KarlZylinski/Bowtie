@@ -66,13 +66,16 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			engine::init(engine, allocator, render_interface);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
-			Window window(instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);		
-			while(window.is_open())
+			Window window;
+			window::init(window, instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);	
+				
+			while(window.is_open)
 			{
-				window.dispatch_messages();
+				window::dispatch_messages(window);
 				engine::update(engine);
 				renderer.deallocate_processed_commands(allocator);
 			}
+
 			engine::deinit(engine);
 		}
 		

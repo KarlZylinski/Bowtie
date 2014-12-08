@@ -17,7 +17,6 @@ struct RenderInterface;
 struct Texture;
 struct Image;
 struct Shader;
-class Sprite;
 struct Font;
 
 struct ResourceManager
