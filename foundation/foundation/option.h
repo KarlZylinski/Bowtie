@@ -36,6 +36,13 @@ template<typename T> T get(Option<T> o)
 	return o.value;
 }
 
+template<typename T> T get_value_or_null(Option<T> o)
+{
+	return o.is_some
+		? o.value
+		: nullptr;
+}
+
 template<typename T> T get_or_default(Option<T> o, std::function<T()>& default_creator)
 {
 	return o.is_some

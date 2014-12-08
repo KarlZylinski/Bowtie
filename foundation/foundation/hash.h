@@ -2,6 +2,7 @@
 
 #include "array.h"
 #include "collection_types.h"
+#include "option.h"
 
 namespace bowtie {
 
@@ -23,7 +24,7 @@ namespace bowtie {
 
 		/// Returns the value stored for the specified key, or deffault if the key
 		/// does not exist in the hash.
-		template<typename T> const T &get(const Hash<T> &h, uint64_t key, const T &deffault);
+		template<typename T> const T &get(const Hash<T> &h, uint64_t key, const T &default);
 
 		/// Sets the value for the key.
 		template<typename T> void set(Hash<T> &h, uint64_t key, const T &value);
@@ -262,6 +263,12 @@ namespace bowtie {
 		{
 			const uint32_t i = hash_internal::find_or_fail(h, key);
 			return i == hash_internal::END_OF_LIST ? default : h._data[i].value;
+		}
+
+		template<typename T> Option<T> try_get(const Hash<T> h, uint64_t key)
+		{
+			const uint32_t i = hash_internal::find_or_fail(h, key);
+			return i == hash_internal::END_OF_LIST ? option::none<T>() : option::some(h._data[i].value);
 		}
 
 		template<typename T> const T &get(const Hash<T> &h, uint64_t key)

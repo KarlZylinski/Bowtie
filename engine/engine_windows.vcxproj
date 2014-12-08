@@ -35,7 +35,6 @@
     <ClInclude Include="engine\render_fence.h" />
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_types.h" />
-    <ClInclude Include="engine\resource.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\resource_type.h" />

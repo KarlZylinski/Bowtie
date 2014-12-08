@@ -52,14 +52,14 @@ uint64_t get_name(uint64_t name, ResourceType type)
 	return name_with_type;
 }
 
-Resource get(const Hash<Resource>& resources, ResourceType type, uint64_t name)
+Option<void*> get(const Hash<void*>& resources, ResourceType type, uint64_t name)
 {
-	return hash::get(resources, get_name(name, type), Resource());
+	return hash::try_get<void*>(resources, get_name(name, type));
 }
 
-void add(Hash<Resource>& resources, uint64_t name, Resource resource)
+void add(Hash<void*>& resources, uint64_t name, ResourceType type, void* resource)
 {
-	hash::set(resources, get_name(name, resource.type), resource);
+	hash::set(resources, get_name(name, type), resource);
 }
 
 uniform::Type get_uniform_type_from_str(const char* str)
@@ -138,13 +138,13 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& al
 	return RenderResourcePackage<ShaderResourceData>(srd, shader_resource_dynamic_data, shader_dynamic_data_size);
 }
 
-Shader& load_shader(ResourceManager& rm, const char* filename)
+Shader* load_shader(ResourceManager& rm, const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(rm._resources, ResourceType::Shader, name);
 
-	if (existing.object != nullptr)
-		return *(Shader*)existing.object;
+	if (existing.is_some)
+		return (Shader*)existing.value;
 
 	auto resource_package = get_shader_resource_data(*rm.allocator, filename);
 	resource_package.data.handle = render_interface::create_handle(*rm.render_interface);
@@ -152,55 +152,52 @@ Shader& load_shader(ResourceManager& rm, const char* filename)
 	render_interface::create_resource(*rm.render_interface, create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
 	auto shader = (Shader*)rm.allocator->allocate(sizeof(Shader));
 	shader->render_handle = resource_package.data.handle;
-	add(rm._resources, name, Resource(shader));
-	return *shader;
+	add(rm._resources, name, ResourceType::Shader, shader);
+	return shader;
 }
 
-Image& load_image(ResourceManager& rm, const char* filename)
+Image* load_image(ResourceManager& rm, const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(rm._resources, ResourceType::Image, name);
 
-	if (existing.object != nullptr)
-		return *(Image*)existing.object;
+	if (existing.is_some)
+		return (Image*)existing.value;
 
 	UncompressedTexture tex = png::load(filename, *rm.allocator);
-
 	auto image = (Image*)rm.allocator->init(sizeof(Image));
 	image->resolution = Vector2u(tex.width, tex.height);
 	image->data = tex.data;
 	image->data_size = tex.data_size;
 	image->pixel_format = PixelFormat::RGBA;
-
-	add(rm._resources, name, Resource(image));
-
-	return *image;
+	add(rm._resources, name, ResourceType::Shader, image);
+	return image;
 }
 
-Texture& load_texture(ResourceManager& rm, const char* filename)
+Texture* load_texture(ResourceManager& rm, const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(rm._resources, ResourceType::Texture, name);
 
-	if (existing.object != nullptr)
-		return *(Texture*)existing.object;
+	if (existing.is_some)
+		return (Texture*)existing.value;
 
-	auto& image = load_image(rm, filename);
+	auto image = load_image(rm, filename);
 	auto texture = (Texture*)rm.allocator->init(sizeof(Texture));
-	texture->image = &image;
+	texture->image = image;
 	texture->render_handle = RenderResourceHandle();
 	render_interface::create_texture(*rm.render_interface, *texture);
-	add(rm._resources, name, Resource(texture));
-	return *texture;
+	add(rm._resources, name, ResourceType::Texture, texture);
+	return texture;
 }
 
-Material& load_material(ResourceManager& rm, const char* filename)
+Material* load_material(ResourceManager& rm, const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(rm._resources, ResourceType::Material, name);
 
-	if (existing.object != nullptr)
-		return *(Material*)existing.object;
+	if (existing.is_some)
+		return (Material*)existing.value;
 
 	auto material_file_option = file::load(filename, *rm.allocator);
 	assert(material_file_option.is_some && "Failed loading material.");
@@ -211,7 +208,7 @@ Material& load_material(ResourceManager& rm, const char* filename)
 
 	auto jzon = jzon_result.output;
 	auto shader_filename = jzon_get(jzon, "shader")->string_value;
-	auto& shader = load_shader(rm, shader_filename);
+	auto shader = load_shader(rm, shader_filename);
 	auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
 	unsigned uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
@@ -256,7 +253,7 @@ Material& load_material(ResourceManager& rm, const char* filename)
 				case uniform::Texture3:
 				{
 					auto texture = load_texture(rm, value_str);
-					stream::write(dynamic_uniform_data, &texture.render_handle.handle, sizeof(unsigned), *rm.allocator);
+					stream::write(dynamic_uniform_data, &texture->render_handle.handle, sizeof(unsigned), *rm.allocator);
 				}
 					break;
 				}
@@ -278,26 +275,26 @@ Material& load_material(ResourceManager& rm, const char* filename)
 	MaterialResourceData mrd;
 	mrd.handle = render_interface::create_handle(*rm.render_interface);
 	mrd.num_uniforms = uniforms_jzon->size;
-	mrd.shader = shader.render_handle;
+	mrd.shader = shader->render_handle;
 	RenderResourceData material_resource_data = render_resource_data::create(RenderResourceData::RenderMaterial);
 	material_resource_data.data = &mrd;
 	render_interface::create_resource(*rm.render_interface, material_resource_data, uniforms_data, uniform_data_size);
 
 	auto material = (Material*)rm.allocator->init(sizeof(Material));
 	material->render_handle = mrd.handle;
-	material->shader = &shader;
-	add(rm._resources, name, Resource(material));
+	material->shader = shader;
+	add(rm._resources, name, ResourceType::Material, material);
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
-	return *material;
+	return material;
 }
 
-Font& load_font(ResourceManager& rm, const char* filename)
+Font* load_font(ResourceManager& rm, const char* filename)
 {
 	auto name = hash_name(filename);
 	auto existing = get(rm._resources, ResourceType::Font, name);
-
-	if (existing.object != nullptr)
-		return *(Font*)existing.object;
+	
+	if (existing.is_some)
+		return (Font*)existing.value;
 
 	auto font_option = file::load(filename, *rm.allocator);
 	assert(font_option.is_some && "Failed loading font");
@@ -313,10 +310,10 @@ Font& load_font(ResourceManager& rm, const char* filename)
 	auto font = (Font*)rm.allocator->init(sizeof(Font));
 	font->columns = columns;
 	font->rows = rows;
-	font->texture = &load_texture(rm, texture_filename);
-	add(rm._resources, name, Resource(font));
+	font->texture = load_texture(rm, texture_filename);
+	add(rm._resources, name, ResourceType::Font, font);
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
-	return *font;
+	return font;
 }
 
 
@@ -341,7 +338,8 @@ void init(ResourceManager& rm, Allocator& allocator, RenderInterface& render_int
 {
 	rm.allocator = &allocator;
 	rm.render_interface = &render_interface;
-	hash::init<Resource>(rm._resources, *rm.allocator);
+	memset(rm._default_resources, 0, sizeof(Option<void*>) * (unsigned)ResourceType::NumResourceTypes);
+	hash::init<void*>(rm._resources, *rm.allocator);
 	static_allocator = &allocator;
 	jzon_allocator.allocate = jzon_static_allocate;
 	jzon_allocator.deallocate = jzon_static_deallocate;
@@ -350,42 +348,26 @@ void init(ResourceManager& rm, Allocator& allocator, RenderInterface& render_int
 void deinit(ResourceManager& rm)
 {
 	for(auto resource_iter = hash::begin(rm._resources); resource_iter != hash::end(rm._resources); ++resource_iter)
-	{
-		auto obj = resource_iter->value.object;
-		switch(resource_iter->value.type)
-		{
-			case ResourceType::Material: rm.allocator->deallocate((Material*)obj); break;
-			case ResourceType::Shader: rm.allocator->deallocate((Shader*)obj); break;
-			case ResourceType::Image: rm.allocator->deallocate((Image*)obj); break;
-			case ResourceType::Texture: rm.allocator->deallocate((Texture*)obj); break;
-			case ResourceType::Font: rm.allocator->deallocate((Font*)obj); break;
-			default: assert(!"Some resource type isn't freed properly."); break;
-		}
-	}
+		rm.allocator->deallocate(resource_iter->value);
 
 	hash::deinit(rm._resources);
 }
 
-void add(ResourceManager& rm, uint64_t name, Resource resource)
-{
-	internal::add(rm._resources, name, resource);
-}
-
-Resource get(const ResourceManager& rm, ResourceType type, uint64_t name)
+Option<void*> get(const ResourceManager& rm, ResourceType type, uint64_t name)
 {
 	return internal::get(rm._resources, type, name);
 }
 
-Resource load(ResourceManager& rm, ResourceType type, const char* filename)
+Option<void*> load(ResourceManager& rm, ResourceType type, const char* filename)
 {
 	switch(type)
 	{
-		case ResourceType::Material: return Resource(&internal::load_material(rm, filename));
-		case ResourceType::Image: return Resource(&internal::load_image(rm, filename));
-		case ResourceType::Shader: return Resource(&internal::load_shader(rm, filename));
-		case ResourceType::Texture: return Resource(&internal::load_texture(rm, filename));
-		case ResourceType::Font: return Resource(&internal::load_font(rm, filename));
-		default: assert(!"Unknown resource type"); return Resource();
+		case ResourceType::Material: return option::some<void*>(internal::load_material(rm, filename));
+		case ResourceType::Image: return option::some<void*>(internal::load_image(rm, filename));
+		case ResourceType::Shader: return option::some<void*>(internal::load_shader(rm, filename));
+		case ResourceType::Texture: return option::some<void*>(internal::load_texture(rm, filename));
+		case ResourceType::Font: return option::some<void*>(internal::load_font(rm, filename));
+		default: return option::none<void*>();
 	}
 }
 
@@ -397,9 +379,9 @@ void reload(ResourceManager& rm, ResourceType type, const char* filename)
 	{
 		case ResourceType::Shader:
 			{
-				auto& shader = *(Shader*)get(rm, type, name).object;
+				auto shader = (Shader*)option::get(get(rm, type, name));
 				auto shader_data = internal::get_shader_resource_data(*rm.allocator, filename);
-				shader_data.data.handle = shader.render_handle;
+				shader_data.data.handle = shader->render_handle;
 				auto update_command_data = internal::get_update_render_resource_data(RenderResourceData::Shader, &shader_data.data);
 				render_interface::update_resource(*rm.render_interface, update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);
 			}
@@ -415,17 +397,14 @@ void reload_all(ResourceManager&)
 	// TODO: Find all resources through FS thingy and send them off to reload.
 }
 
-void set_default(ResourceManager& rm, ResourceType type, Resource resource)
+void set_default(ResourceManager& rm, ResourceType type, void* resource)
 {
-	assert(rm._default_resources[(unsigned)type].object == 0 && "Trying to resassign already assigned default resource.");
-	rm._default_resources[(unsigned)type] = resource;
+	rm._default_resources[(unsigned)type] = option::some(resource);
 }
 
-Resource get_default(const ResourceManager& rm, ResourceType type)
+Option<void*> get_default(const ResourceManager& rm, ResourceType type)
 {
-	auto resource = rm._default_resources[(unsigned)type];
-	assert(resource.object != 0 && "No default resource set for this type.");
-	return resource;
+	return rm._default_resources[(unsigned)type];
 }
 
 } // namespace resource_manager

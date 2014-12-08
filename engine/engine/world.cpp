@@ -109,7 +109,9 @@ void init(World& w, Allocator& allocator, RenderInterface& render_interface, Res
 	w.allocator = &allocator;
 	w.render_interface = &render_interface;
 	w.render_handle = RenderResourceHandle::NotInitialized;
-	w.default_material = ((Material*)resource_manager::load(resource_manager, ResourceType::Material, "default.material").object)->render_handle;
+	auto default_material = resource_manager::load(resource_manager, ResourceType::Material, "default.material");
+	assert(default_material.is_some && "Default material default.material is missing.");
+	w.default_material = ((Material*)default_material.value)->render_handle;
 	sprite_renderer_component::init(w.sprite_renderer_components, allocator);
 	transform_component::init(w.transform_components, allocator);
 }

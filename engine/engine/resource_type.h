@@ -5,7 +5,7 @@ namespace bowtie
 
 enum class ResourceType
 {
-	Shader, Image, Texture, Font, Material, NotInitialized, NumResourceTypes
+	NotInitialized, Shader, Image, Texture, Font, Material, NumResourceTypes
 };
 
 }
