@@ -65,6 +65,7 @@ namespace game
 
 void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface)
 {
+	g.started = false;
 	g._lua = luaL_newstate();
 	luaL_openlibs(g._lua);
 	engine_script_interface::load(g._lua, engine);
@@ -79,24 +80,26 @@ void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render
 
 	load_shared_libs(g._lua);
 	load_main(g._lua);
+}
+
+void start(Game& g)
+{
 	console::init(g._lua);
 	init_game(g._lua);
-	g.initialized = true;
+	g.started = true;
 }
 
 void deinit(Game& g)
 {
-	assert(g.initialized && "init() hasn't been called");
-
 	deinit_game(g._lua);
-	g.initialized = false;
+	g.started = false;
 	lua_gc(g._lua, LUA_GCCOLLECT, 0);
 	lua_close(g._lua);
 }
 
 void update(Game& g, float dt)
 {
-	if (!g.initialized)
+	if (!g.started)
 		return;
 
 	update_game(g._lua, dt);
@@ -105,7 +108,7 @@ void update(Game& g, float dt)
 
 void draw(Game& g)
 {
-	if (!g.initialized)
+	if (!g.started)
 		return;
 
 	draw_game(g._lua);

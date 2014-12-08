@@ -11,13 +11,14 @@ struct RenderInterface;
 
 struct Game
 {
-	bool initialized;
+	bool started;
 	lua_State* _lua;
 };
 
 namespace game
 {
 	void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface);
+	void start(Game& g);
 	void deinit(Game& g);
 	void update(Game& g, float dt);
 	void draw(Game& g);

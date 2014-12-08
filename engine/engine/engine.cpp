@@ -24,18 +24,16 @@ void init(Engine& e, Allocator& allocator, RenderInterface& render_interface)
 {
 	e.allocator = &allocator;
 	e.render_interface = &render_interface;
-	e._game.initialized = false; // TODO: Remove hack when Engine is converted.
 	resource_manager::init(e.resource_manager, allocator, render_interface);
 	entity_manager::init(e.entity_manager, allocator);
 	memset(&e.keyboard, 0, sizeof(Keyboard));
 	timer::start();
+	game::init(e._game, allocator, e, render_interface);
 }
 
 void deinit(Engine& e)
 {
-	if (e._game.initialized)
-		game::deinit(e._game);
-
+	game::deinit(e._game);
 	entity_manager::deinit(e.entity_manager);
 	resource_manager::deinit(e.resource_manager);
 }
@@ -73,8 +71,8 @@ void update(Engine& e)
 {
 	render_interface::wait_until_idle(*e.render_interface);
 
-	if (!e._game.initialized)
-		game::init(e._game, *e.allocator, e, *e.render_interface);
+	if (!e._game.started)
+		game::start(e._game);
 
 	float time_elapsed = timer::counter();
 	float dt = time_elapsed - e._time_elapsed_previous_frame;
