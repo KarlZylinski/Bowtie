@@ -260,27 +260,27 @@ UpdatedResources update_resources(Renderer& r, RenderResourceData::Type type, vo
 {
 	switch (type)
 	{
-	case RenderResourceData::Shader: return single_update(update_shader(r._concrete_renderer, r.resource_table, dynamic_data, *(ShaderResourceData*)data), *r.allocator);
-	case RenderResourceData::SpriteRenderer: {
-		auto sprite_data = (UpdateSpriteRendererData*)data;
-		UpdatedResources ur = create_updated_resources(sprite_data->num, *r.allocator);
+		case RenderResourceData::Shader: return single_update(update_shader(r._concrete_renderer, r.resource_table, dynamic_data, *(ShaderResourceData*)data), *r.allocator);
+		case RenderResourceData::SpriteRenderer: {
+			auto sprite_data = (UpdateSpriteRendererData*)data;
+			UpdatedResources ur = create_updated_resources(sprite_data->num, *r.allocator);
 
-		for (unsigned i = 0; i < sprite_data->num; ++i)
-		{
-			auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
-			auto component = (RenderComponent*)render_resource_table::lookup(r.resource_table, sprite.render_handle[i]).object;
-			component->color = sprite.color[i];
-			component->material = sprite.material[i].render_handle;
-			component->geometry = sprite.geometry[i];
+			for (unsigned i = 0; i < sprite_data->num; ++i)
+			{
+				auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
+				auto component = (RenderComponent*)render_resource_table::lookup(r.resource_table, sprite.render_handle[i]).object;
+				component->color = sprite.color[i];
+				component->material = sprite.material[i].render_handle;
+				component->geometry = sprite.geometry[i];
 
-			ur.handles[i] = sprite.render_handle[i];
-			ur.new_resources[i] = RenderResource(component);
-			ur.old_resources[i] = RenderResource(component);
+				ur.handles[i] = sprite.render_handle[i];
+				ur.new_resources[i] = RenderResource(component);
+				ur.old_resources[i] = RenderResource(component);
+			}
+
+			return ur;
 		}
-
-		return ur;
-	}
-	default: assert(!"Unknown render resource type"); return UpdatedResources();
+		default: assert(!"Unknown render resource type"); return UpdatedResources();
 	}
 }
 
@@ -459,9 +459,6 @@ void thread(Renderer* renderer)
 }
 
 } // namespace internal
-
-////////////////////////////////
-// Public interface.
 
 namespace renderer
 {
