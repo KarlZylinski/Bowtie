@@ -36,17 +36,6 @@ namespace bowtie
 			return p;
 		}
 
-		char* copy_string(const char* str)
-		{
-			if (str == nullptr)
-				return nullptr;
-
-			auto len = (unsigned)strlen(str) + 1;
-			auto new_str = (char*)allocate(len);
-			memcpy(new_str, str, len);
-			return new_str;
-		}
-
 		static const uint32_t SIZE_NOT_TRACKED = 0xffffffffu;
 
 		/// Returns the amount of usable memory allocated at p. p must be a pointer
