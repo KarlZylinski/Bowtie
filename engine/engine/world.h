@@ -14,7 +14,7 @@ struct Font;
 struct Rect;
 struct Material;
 struct RenderInterface;
-class ResourceManager;
+struct ResourceManager;
 
 struct World
 {

@@ -17,7 +17,7 @@ namespace world_script_interface
 int create(lua_State* lua)
 {
 	auto& engine = *(Engine*)lua_touserdata(lua, 1);
-	auto world = engine.create_world();
+	auto world = engine::create_world(engine);
 	lua_pushlightuserdata(lua, world);
 	return 1;
 }
@@ -26,7 +26,7 @@ int destroy(lua_State* lua)
 {
 	auto& engine = *(Engine*)lua_touserdata(lua, 1);
 	auto& world = *(World*)lua_touserdata(lua, 2);
-	engine.destroy_world(world);
+	engine::destroy_world(engine, world);
 	return 0;
 }
 

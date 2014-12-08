@@ -25,45 +25,45 @@ int engine(lua_State* lua)
 
 int load_resource(lua_State* lua)
 {
-	auto resource = s_engine->resource_manager().load(lua_tostring(lua, 1), lua_tostring(lua, 2));
+	auto resource = resource_manager::load(s_engine->resource_manager, resource_manager::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	lua_pushlightuserdata(lua, resource.object);
 	return 1;
 }
 
 int reload_resource(lua_State* lua)
 {
-	s_engine->resource_manager().reload(lua_tostring(lua, 1), lua_tostring(lua, 2));
+	resource_manager::reload(s_engine->resource_manager, resource_manager::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	return 0;
 }
 
 int set_default_resource(lua_State* lua)
 {
 	auto resource_type_str = lua_tostring(lua, 1);
-	auto resource_type = ResourceManager::resource_type_from_string(resource_type_str);
+	auto resource_type = resource_manager::resource_type_from_string(resource_type_str);
 	auto resource_name = lua_tostring(lua, 2);
 	auto resource_hash = hash_str(resource_name);
 	
-	auto& resource_manager = s_engine->resource_manager();
-	resource_manager.set_default(resource_type, resource_manager.get(resource_type, resource_hash));
+	auto& resource_manager = s_engine->resource_manager;
+	resource_manager::set_default(resource_manager, resource_type, resource_manager::get(resource_manager, resource_type, resource_hash));
 
 	return 0;
 }
 
 int keyboard_pressed(lua_State* lua)
 {
-	lua_pushboolean(lua, keyboard::key_pressed(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_pressed(s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
 int keyboard_released(lua_State* lua)
 {
-	lua_pushboolean(lua, keyboard::key_released(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_released(s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
 int keyboard_held(lua_State* lua)
 {
-	lua_pushboolean(lua, keyboard::key_held(s_engine->keyboard(), keyboard::key_from_string(lua_tostring(lua, 1))));
+	lua_pushboolean(lua, keyboard::key_held(s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 

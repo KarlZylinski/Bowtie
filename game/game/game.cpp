@@ -69,7 +69,7 @@ void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render
 	luaL_openlibs(g._lua);
 	engine_script_interface::load(g._lua, engine);
 	world_script_interface::load(g._lua);
-	entity_script_interface::load(g._lua, engine.entity_manager());
+	entity_script_interface::load(g._lua, engine.entity_manager);
 	time_script_interface::load(g._lua);
 	material_script_interface::load(g._lua, render_interface);
 

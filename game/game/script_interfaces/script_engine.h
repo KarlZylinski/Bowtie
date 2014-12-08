@@ -6,7 +6,7 @@ struct lua_State;
 namespace bowtie
 {
 
-class Engine;
+struct Engine;
 
 namespace engine_script_interface
 {

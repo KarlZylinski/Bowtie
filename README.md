@@ -26,12 +26,12 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Fix fonts, maybe as entity component or as some kind of gui thing... Not sure. Maybe have the renderer agnostic of the CPU impl?
 - [ ] Fix sorting of batches so that it breaks on not only material, but also on uniform permutations
 - [ ] Turn engine into namespace of functions which operates on engine struct.
-- [ ] Turn font into namespace of functions which operates on font struct.
-- [ ] Turn render_interface into namespace of functions which operates on render_interface struct.
+- [x] Turn font into namespace of functions which operates on font struct.
+- [x] Turn render_interface into namespace of functions which operates on render_interface struct.
 - [ ] Rename resource_manager to resource_store and have functions which operate on it in namespace
     - [ ] Optionally remove load functions and add auto-load enum
-- [ ] Convert view
-- [ ] Convert game
+- [x] Convert view
+- [x] Convert game
 - [ ] Convert window
 - [x] Convert render_world
 - [ ] Convert callstack capturer to struct of function ptrs
@@ -43,8 +43,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] Add page allocator?
 - [ ] Array -> Vector, also shape up Vector to match new allocator shizmajings
 - [ ] Make reflection message data for 1 array into soa
-- [ ] Write a data compiler by moving all the loading code from resource_manager to a compiler file. Have reasource manager open compiled resources and
-        throw the data into memory.
+- [ ] Write a data compiler by moving all the loading code from resource_manager to a compiler file. Have reasource manager open compiled resources and throw the data into memory.
 - [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest. Or maybe specify default package from main.lua?
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base

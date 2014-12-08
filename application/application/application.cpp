@@ -26,17 +26,17 @@ void create_render_context_callback(HWND hwnd, const Vector2u& resolution)
 
 void window_resized_callback(const Vector2u& resolution)
 {
-	s_engine->resize(resolution);
+	engine::resize(*s_engine, resolution);
 }
 
 void key_down_callback(keyboard::Key key)
 {
-	s_engine->key_pressed(key);
+	engine::key_pressed(*s_engine, key);
 }
 
 void key_up_callback(keyboard::Key key)
 {
-	s_engine->key_released(key);
+	engine::key_released(*s_engine, key);
 }
 
 struct Haze
@@ -62,16 +62,18 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		auto& render_interface = renderer.render_interface();
 
 		{
-			Engine engine(allocator, render_interface);
+			Engine engine;
+			engine::init(engine, allocator, render_interface);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
 			Window window(instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);		
 			while(window.is_open())
 			{
 				window.dispatch_messages();
-				engine.update();
+				engine::update(engine);
 				renderer.deallocate_processed_commands(allocator);
 			}
+			engine::deinit(engine);
 		}
 		
 		renderer.stop(allocator);
