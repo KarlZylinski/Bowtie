@@ -1,134 +1,55 @@
 #pragma once
 
-#include "types.h"
+#include <stdint.h>
 #include "memory_types.h"
-#include <new>
+
+#define TRACING 1
 
 namespace bowtie
 {
-	struct CallstackCapturer;
 
-	/// Base class for memory allocators.
-	///
-	/// Note: Regardless of which allocator is used, prefer to allocate memory in larger chunks
-	/// instead of in many small allocations. This helps with data locality, fragmentation,
-	/// memory usage tracking, etc.
-	class Allocator
-	{
-	public:
-		/// Default alignment for memory allocations.
-		static const uint32_t DEFAULT_ALIGN = 8;
+namespace memory
+{
+	inline void *align_forward(void *p, unsigned align);
+	inline void *pointer_add(void *p, unsigned bytes);
+	inline const void *pointer_add(const void *p, unsigned bytes);
+	inline void *pointer_sub(void *p, unsigned bytes);
+	inline const void *pointer_sub(const void *p, unsigned bytes);
 
-		Allocator() {}
-		virtual ~Allocator() {}
-		
-		/// Allocates the specified amount of memory aligned to the specified alignment.
-		virtual void *allocate(uint32_t size, uint32_t align = DEFAULT_ALIGN) = 0;
+	void init_allocator(Allocator& a, const char* name, CallstackCapturer* callstack_capturer);
+	void deinit_allocator(Allocator& a);
+}
 
-		/// Frees an allocation previously made with allocate().
-		virtual void deallocate(void *p) = 0;
-		virtual void deallocate(const void *p) { deallocate((void*)p); }
+// Aligns p to the specified alignment by moving it forward if necessary and returns the result.
+inline void *memory::align_forward(void *p, unsigned align)
+{
+	uintptr_t pi = uintptr_t(p);
+	const unsigned mod = pi % align;
+	if (mod)
+		pi += (align - mod);
+	return (void *)pi;
+}
 
-		void* init(uint32_t size, uint32_t align = DEFAULT_ALIGN)
-		{
-			auto p = allocate(size, align);
-			memset(p, 0, size);
-			return p;
-		}
+// Returns the result of advancing p by the specified number of bytes
+inline void *memory::pointer_add(void *p, unsigned bytes)
+{
+	return (void*)((char *)p + bytes);
+}
 
-		static const uint32_t SIZE_NOT_TRACKED = 0xffffffffu;
+inline const void *memory::pointer_add(const void *p, unsigned bytes)
+{
+	return (const void*)((const char *)p + bytes);
+}
 
-		/// Returns the amount of usable memory allocated at p. p must be a pointer
-		/// returned by allocate() that has not yet been deallocated. The value returned
-		/// will be at least the size specified to allocate(), but it can be bigger.
-		/// (The allocator may round up the allocation to fit into a set of predefined
-		/// slot sizes.)
-		///
-		/// Not all allocators support tracking the size of individual allocations.
-		/// An allocator that doesn't suppor it will return SIZE_NOT_TRACKED.
-		virtual uint32_t allocated_size(void *p) = 0;
+// Returns the result of moving p back by the specified number of bytes
+inline void *memory::pointer_sub(void *p, unsigned bytes)
+{
+	return (void*)((char *)p - bytes);
+}
 
-		/// Returns the total amount of memory allocated by this allocator. Note that the 
-		/// size returned can be bigger than the size of all individual allocations made,
-		/// because the allocator may keep additional structures.
-		///
-		/// If the allocator doesn't track memory, this function returns SIZE_NOT_TRACKED.
-		virtual uint32_t total_allocated() = 0;
+inline const void *memory::pointer_sub(const void *p, unsigned bytes)
+{
+	return (const void*)((const char *)p - bytes);
+}
 
-	private:
-		/// Allocators cannot be copied.
-	    Allocator(const Allocator& other);
-	    Allocator& operator=(const Allocator& other);
-	};
-
-	/// Functions for accessing global memory data.
-	namespace memory_globals {
-		/// Initializes the global memory allocators. scratch_buffer_size is the size of the
-		/// memory buffer used by the scratch allocators.
-		void init(CallstackCapturer& callstack_captururer, uint32_t scratch_buffer_size = 4*1024*1024);
-
-		/// Returns a default memory allocator that can be used for most allocations.
-		///
-		/// You need to call init() for this allocator to be available.
-		Allocator &default_allocator();
-
-		/// Returns a "scratch" allocator that can be used for temporary short-lived memory
-		/// allocations. The scratch allocator uses a ring buffer of size scratch_buffer_size
-		/// to service the allocations.
-		///
-		/// If there is not enough memory in the buffer to match requests for scratch
-		/// memory, memory from the default_allocator will be returned instead.
-		Allocator &default_scratch_allocator();
-
-		/// Shuts down the global memory allocators created by init().
-		void shutdown();
-
-		Allocator* new_allocator(CallstackCapturer& callstack_captururer, const char* name);
-		void destroy_allocator(Allocator* allocator);
-	}
-
-	namespace memory {
-		inline void *align_forward(void *p, uint32_t align);
-		inline void *pointer_add(void *p, uint32_t bytes);
-		inline const void *pointer_add(const void *p, uint32_t bytes);
-		inline void *pointer_sub(void *p, uint32_t bytes);
-		inline const void *pointer_sub(const void *p, uint32_t bytes);
-	}
-
-	// ---------------------------------------------------------------
-	// Inline function implementations
-	// ---------------------------------------------------------------
-
-	// Aligns p to the specified alignment by moving it forward if necessary
-	// and returns the result.
-	inline void *memory::align_forward(void *p, uint32_t align)
-	{
-		uintptr_t pi = uintptr_t(p);
-		const uint32_t mod = pi % align;
-		if (mod)
-			pi += (align - mod);
-		return (void *)pi;
-	}
-
-	/// Returns the result of advancing p by the specified number of bytes
-	inline void *memory::pointer_add(void *p, uint32_t bytes)
-	{
-		return (void*)((char *)p + bytes);
-	}
-
-	inline const void *memory::pointer_add(const void *p, uint32_t bytes)
-	{
-		return (const void*)((const char *)p + bytes);
-	}
-
-	/// Returns the result of moving p back by the specified number of bytes
-	inline void *memory::pointer_sub(void *p, uint32_t bytes)
-	{
-		return (void*)((char *)p - bytes);
-	}
-
-	inline const void *memory::pointer_sub(const void *p, uint32_t bytes)
-	{
-		return (const void*)((const char *)p - bytes);
-	}
 }

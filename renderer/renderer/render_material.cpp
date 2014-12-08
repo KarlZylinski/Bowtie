@@ -36,7 +36,7 @@ void init(RenderMaterial& material, Allocator& allocator, RenderResourceHandle s
 void deinit(RenderMaterial& material, Allocator& allocator)
 {
 	for (unsigned i = 0; i < array::size(material.uniforms); ++i)
-		allocator.deallocate(material.uniforms[i].value);
+		allocator.dealloc(material.uniforms[i].value);
 
 	array::deinit(material.uniforms);
 }

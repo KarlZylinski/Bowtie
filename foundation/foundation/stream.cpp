@@ -1,7 +1,9 @@
 #pragma once
 
 #include "stream.h"
+#include "memory_types.h"
 #include "memory.h"
+#include <cstring>
 
 namespace bowtie
 {
@@ -12,9 +14,9 @@ namespace
 void grow(Stream& s, Allocator& allocator, unsigned minimum_size)
 {
 	auto new_capacity = (s.capacity == 0 ? 1 : s.capacity * 2) + minimum_size;
-	auto new_data = (char*)allocator.allocate(new_capacity);
+	auto new_data = (char*)allocator.alloc_raw(new_capacity);
 	memcpy(new_data, s.start, s.size);
-	allocator.deallocate(s.start);
+	allocator.dealloc(s.start);
 	auto write_head_offset = unsigned(s.write_head - s.start);
 	s.capacity = new_capacity;
 	s.start = new_data;

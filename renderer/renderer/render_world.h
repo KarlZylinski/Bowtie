@@ -7,7 +7,7 @@
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 struct Rect;
 struct RenderComponent;
 

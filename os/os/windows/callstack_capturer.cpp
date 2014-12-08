@@ -11,13 +11,15 @@ namespace bowtie
 namespace internal
 {
 
-CapturedCallstack capture(unsigned frames_to_skip)
+CapturedCallstack capture(unsigned frames_to_skip, void* p)
 {
 	#if defined(_WIN32)
 		const unsigned long frames_to_capture = 64;
 		unsigned long back_trace_hash = 0; 
 		CapturedCallstack cc;
 		cc.num_frames = CaptureStackBackTrace(frames_to_skip + 2, frames_to_capture, cc.frames, &back_trace_hash);
+		cc.ptr = p;
+		cc.used = true;
 		return cc;
 	#endif
 }	

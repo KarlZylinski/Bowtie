@@ -5,7 +5,7 @@ struct lua_State;
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 
 namespace transform_component_script_interface
 {

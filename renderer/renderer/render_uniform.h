@@ -7,7 +7,7 @@
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 struct RenderUniform
 {
 	// TODO: Move to namespace when usages are correct.

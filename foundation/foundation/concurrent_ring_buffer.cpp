@@ -36,7 +36,7 @@ void init(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size, unsigned
 {
 	b.size = size;
 	b.element_size = element_size;
-	b.start = (char*)allocator.allocate(element_size * size);
+	b.start = (char*)allocator.alloc_raw(element_size * size);
 	b.write_head = b.start;
 	b.has_wrapped = false;
 	b.consume_head = b.start;
@@ -45,7 +45,7 @@ void init(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size, unsigned
 
 void deinit(ConcurrentRingBuffer& b)
 {
-	b.allocator->deallocate(b.start);
+	b.allocator->dealloc(b.start);
 }
 
 void write_one(ConcurrentRingBuffer& b, const void* data)

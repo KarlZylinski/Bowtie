@@ -1,7 +1,8 @@
 #include <engine/engine.h>
 #include <engine/resource_manager.h>
 #include <foundation/array.h>
-#include <foundation/temp_allocator.h>
+#include <foundation/malloc_allocator.h>
+#include <foundation/memory.h>
 #include <opengl_renderer/opengl_context_windows.h>
 #include <opengl_renderer/opengl_renderer.h>
 #include <os/windows/callstack_capturer.h>
@@ -42,15 +43,16 @@ void key_up_callback(keyboard::Key key)
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
 	auto callstack_capturer = callstack_capturer::create();
-	memory_globals::init(callstack_capturer);
-	Allocator& allocator = memory_globals::default_allocator();
-	s_allocator = &allocator;	
-	Allocator* renderer_allocator = memory_globals::new_allocator(callstack_capturer, "renderer allocator");
+	auto allocator = new MallocAllocator();
+	memory::init_allocator(*allocator, "default allocator", &callstack_capturer);
+	s_allocator = allocator;
+	auto renderer_allocator = new MallocAllocator();
+	memory::init_allocator(*renderer_allocator, "renederer allocator", &callstack_capturer);
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer;
-		renderer::init(renderer, opengl_renderer, *renderer_allocator, allocator);
+		renderer::init(renderer, opengl_renderer, *renderer_allocator, *allocator);
 		s_renderer = &renderer;
 		OpenGLContextWindows context;
 		s_context = &context;
@@ -58,7 +60,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 		{
 			Engine engine;
-			engine::init(engine, allocator, render_interface);
+			engine::init(engine, *allocator, render_interface);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
 			Window window;
@@ -68,16 +70,16 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				window::dispatch_messages(window);
 				engine::update(engine);
-				renderer::deallocate_processed_commands(renderer, allocator);
+				renderer::deallocate_processed_commands(renderer, *allocator);
 			}
 
 			engine::deinit(engine);
 		}
 		
-		renderer::stop(renderer, allocator);
+		renderer::stop(renderer, *allocator);
 		renderer::deinit(renderer);
 	}
 
-	memory_globals::destroy_allocator(renderer_allocator);
-	memory_globals::shutdown();
+	memory::deinit_allocator(*renderer_allocator);
+	memory::deinit_allocator(*allocator);
 }

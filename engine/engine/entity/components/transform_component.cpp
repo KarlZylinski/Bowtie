@@ -150,11 +150,11 @@ void grow(TransformComponent& c, Allocator& allocator)
 {
 	const unsigned new_capacity = (c.header.capacity == 0 ? 8 : c.header.capacity * 2) + 1; // One extra so last index always can be used for swapping.
 	const unsigned bytes = new_capacity * transform_component::component_size;
-	void* buffer = allocator.allocate(bytes);
+	void* buffer = allocator.alloc_raw(bytes);
 	auto new_data = initialize_data(buffer, new_capacity);
 	copy(c.data, new_data, c.header.num);
 	c.data = new_data;
-	allocator.deallocate(c.buffer);
+	allocator.dealloc(c.buffer);
 	c.buffer = buffer;
 	c.header.capacity = new_capacity;
 }
@@ -205,7 +205,7 @@ void init(TransformComponent& c, Allocator& allocator)
 void deinit(TransformComponent& c, Allocator& allocator)
 {
 	component::deinit(c.header);
-	allocator.deallocate(c.buffer);
+	allocator.dealloc(c.buffer);
 }
 
 void create(TransformComponent& c, Entity e, Allocator& allocator)
@@ -304,7 +304,7 @@ const Matrix4& world_transform(TransformComponent& c, Entity e)
 void* copy_dirty_data(TransformComponent& c, Allocator& allocator)
 {
 	auto num_dirty = c.header.last_dirty_index + 1;
-	void* buffer = allocator.allocate(component_size * num_dirty);
+	void* buffer = allocator.alloc_raw(component_size * num_dirty);
 	auto data = initialize_data(buffer, num_dirty);
 	copy(c.data, data, num_dirty);
 	return buffer;

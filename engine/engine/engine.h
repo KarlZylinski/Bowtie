@@ -10,7 +10,7 @@
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 struct RenderInterface;
 struct World;
 

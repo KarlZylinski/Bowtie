@@ -163,7 +163,7 @@ void draw(World& w, const Rect& view)
 {
 	auto render_world_command = render_interface::create_command(*w.render_interface, RendererCommand::RenderWorld);
 
-	auto& rwd = *(RenderWorldData*)w.allocator->allocate(sizeof(RenderWorldData));
+	auto& rwd = *(RenderWorldData*)w.allocator->alloc(sizeof(RenderWorldData));
 	rwd.view = view;
 	rwd.render_world = w.render_handle;
 	render_world_command.data = &rwd;

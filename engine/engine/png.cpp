@@ -509,12 +509,12 @@ UncompressedTexture load(const char* filename, Allocator& allocator)
 	unsigned long width, height;
 	decodePNG(decoded_png, width, height, png_file.data, png_file.size);
 
-	allocator.deallocate(png_file.data);
+	allocator.dealloc(png_file.data);
 	
 	auto texture = UncompressedTexture();
 
 	texture.data_size = (unsigned)decoded_png.size();
-	texture.data = allocator.allocate(texture.data_size);
+	texture.data = allocator.alloc_raw(texture.data_size);
 	memcpy(texture.data, &decoded_png[0], texture.data_size);
 	texture.width = width;
 	texture.height = height;

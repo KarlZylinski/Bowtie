@@ -39,7 +39,7 @@ struct ConcreteRenderer
 
 	// Drawing
 	void (*clear)();
-	void (*draw)(const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table);
+	void (*draw)(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table);
 	void (*combine_rendered_worlds)(RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds);
 };
 

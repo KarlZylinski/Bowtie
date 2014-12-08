@@ -24,7 +24,7 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 {
 	RendererCommand rc;
 
-	auto copied_resource = (RenderResourceData*)allocator.allocate(sizeof(RenderResourceData));
+	auto copied_resource = (RenderResourceData*)allocator.alloc_raw(sizeof(RenderResourceData));
 	memcpy(copied_resource, &resource, sizeof(RenderResourceData));
 	rc.data = copied_resource;
 	rc.type = command_type;
@@ -32,23 +32,23 @@ RendererCommand create_or_update_resource_renderer_command(Allocator& allocator,
 	switch (resource.type)
 	{
 	case RenderResourceData::RenderMaterial:
-		copied_resource->data = allocator.allocate(sizeof(MaterialResourceData));
+		copied_resource->data = allocator.alloc_raw(sizeof(MaterialResourceData));
 		memcpy(copied_resource->data, resource.data, sizeof(MaterialResourceData));
 		break;
 	case RenderResourceData::Shader:
-		copied_resource->data = allocator.allocate(sizeof(ShaderResourceData));
+		copied_resource->data = allocator.alloc_raw(sizeof(ShaderResourceData));
 		memcpy(copied_resource->data, resource.data, sizeof(ShaderResourceData));
 		break;
 	case RenderResourceData::Texture:
-		copied_resource->data = allocator.allocate(sizeof(TextureResourceData));
+		copied_resource->data = allocator.alloc_raw(sizeof(TextureResourceData));
 		memcpy(copied_resource->data, resource.data, sizeof(TextureResourceData));
 		break;
 	case RenderResourceData::SpriteRenderer:
-		copied_resource->data = allocator.allocate(sizeof(CreateSpriteRendererData));
+		copied_resource->data = allocator.alloc_raw(sizeof(CreateSpriteRendererData));
 		memcpy(copied_resource->data, resource.data, sizeof(CreateSpriteRendererData));
 		break;
 	case RenderResourceData::World:
-		copied_resource->data = allocator.allocate(sizeof(RenderWorldResourceData));
+		copied_resource->data = allocator.alloc_raw(sizeof(RenderWorldResourceData));
 		memcpy(copied_resource->data, resource.data, sizeof(RenderWorldResourceData));
 		break;
 	default:
@@ -71,7 +71,7 @@ RendererCommand create_command(Allocator& allocator, RendererCommand::Type type)
 	switch (type)
 	{
 	case RendererCommand::SetUniformValue:
-		command.data = allocator.allocate(sizeof(SetUniformValueData));
+		command.data = allocator.alloc(sizeof(SetUniformValueData));
 		break;
 	}
 
@@ -212,7 +212,7 @@ void dispatch(RenderInterface& ri, const RendererCommand& command)
 void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic_data, unsigned dynamic_data_size)
 {
 	auto command_with_dynamic_data = command;
-	command_with_dynamic_data.dynamic_data = ri.allocator->allocate(dynamic_data_size);
+	command_with_dynamic_data.dynamic_data = ri.allocator->alloc_raw(dynamic_data_size);
 	command_with_dynamic_data.dynamic_data_size = dynamic_data_size;
 	memcpy(command_with_dynamic_data.dynamic_data, dynamic_data, dynamic_data_size);
 	internal::dispatch(ri, command_with_dynamic_data);
@@ -221,7 +221,7 @@ void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic
 RenderFence& create_fence(RenderInterface& ri)
 {
 	auto fence_command = internal::create_command(*ri.allocator, RendererCommand::Fence);
-	fence_command.data = new(ri.allocator->allocate(sizeof(RenderFence), alignof(RenderFence))) RenderFence(); 
+	fence_command.data = new(ri.allocator->alloc_raw(sizeof(RenderFence), alignof(RenderFence))) RenderFence(); 
 	internal::dispatch(ri, fence_command);
 	return *(RenderFence*)fence_command.data;
 }
@@ -233,7 +233,7 @@ void wait_for_fence(RenderInterface& ri, RenderFence& fence)
 		fence.fence_processed.wait(lock, [&fence] { return fence.processed; });
 	}
 
-	ri.allocator->destroy(&fence);
+	ri.allocator->dealloc(&fence);
 }
 
 void wait_until_idle(RenderInterface& ri)
@@ -243,7 +243,7 @@ void wait_until_idle(RenderInterface& ri)
 
 void resize(RenderInterface& ri, const Vector2u& resolution)
 {
-	ResizeData& rd = *(ResizeData*)ri.allocator->allocate(sizeof(ResizeData));
+	ResizeData& rd = *(ResizeData*)ri.allocator->alloc(sizeof(ResizeData));
 	rd.resolution = resolution;
 	auto resize_command = internal::create_command(*ri.allocator, RendererCommand::Resize);
 	resize_command.data = &rd;

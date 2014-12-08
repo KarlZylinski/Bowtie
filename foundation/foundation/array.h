@@ -81,7 +81,7 @@ namespace bowtie {
 
 		template<typename T> inline void deinit(Array<T>& a)
 		{
-			a._allocator->deallocate(a._data);
+			a._allocator->dealloc(a._data);
 		}
 
 		template<typename T> inline uint32_t size(const Array<T> &a) 		{return a._size;}
@@ -163,10 +163,10 @@ namespace bowtie {
 
 			T *new_data = 0;
 			if (new_capacity > 0) {
-				new_data = (T *)a._allocator->allocate(sizeof(T)*new_capacity, alignof(T));
+				new_data = (T *)a._allocator->alloc(sizeof(T)*new_capacity, alignof(T));
 				memcpy(new_data, a._data, sizeof(T)*a._size);
 			}
-			a._allocator->deallocate(a._data);
+			a._allocator->dealloc(a._data);
 			a._data = new_data;
 			a._capacity = new_capacity;
 		}

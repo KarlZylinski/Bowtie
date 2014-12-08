@@ -5,7 +5,7 @@ struct lua_State;
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 
 namespace sprite_renderer_component_script_interface
 {

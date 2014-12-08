@@ -59,13 +59,13 @@ void grow(SpriteRendererComponent& c, Allocator& allocator)
 {
 	const unsigned new_capacity = c.header.capacity == 0 ? 8 : c.header.capacity * 2;
 	const unsigned bytes = new_capacity * sprite_renderer_component::component_size;
-	void* buffer = allocator.allocate(bytes);
+	void* buffer = allocator.alloc_raw(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
 	copy(c.data, new_data, c.header.num);
 	c.data = new_data;
 
-	allocator.deallocate(c.buffer);
+	allocator.dealloc(c.buffer);
 	c.buffer = buffer;
 	c.header.capacity = new_capacity;
 }
@@ -96,7 +96,7 @@ void init(SpriteRendererComponent& c, Allocator& allocator)
 void deinit(SpriteRendererComponent& c, Allocator& allocator)
 {
 	component::deinit(c.header);
-	allocator.deallocate(c.buffer);
+	allocator.dealloc(c.buffer);
 }
 
 void create(SpriteRendererComponent& c, Entity e, Allocator& allocator, const Rect& rect, const Color& color)
@@ -190,7 +190,7 @@ const Quad& transform(SpriteRendererComponent& c, Entity e)
 void* copy_dirty_data(SpriteRendererComponent& c, Allocator& allocator)
 {
 	auto num_dirty = component::num_dirty(c.header);
-	void* buffer = allocator.allocate(component_size * num_dirty);
+	void* buffer = allocator.alloc_raw(component_size * num_dirty);
 	auto data = initialize_data(buffer, num_dirty);
 	copy(c.data, data, num_dirty);
 	return buffer;
@@ -199,7 +199,7 @@ void* copy_dirty_data(SpriteRendererComponent& c, Allocator& allocator)
 void* copy_new_data(SpriteRendererComponent& c, Allocator& allocator)
 {
 	auto num_new = component::num_new(c.header);
-	void* buffer = allocator.allocate(component_size * num_new);
+	void* buffer = allocator.alloc_raw(component_size * num_new);
 	auto data = initialize_data(buffer, num_new);
 	copy_offset(c.data, data, num_new, c.header.first_new, 0);
 	return buffer;

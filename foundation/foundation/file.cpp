@@ -1,5 +1,5 @@
 #include "file.h"
-#include "memory.h"
+#include "memory_types.h"
 #include "resource_path.h"
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +29,7 @@ Option<LoadedFile> load(const char* filename, Allocator& allocator)
 	filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	data = (unsigned char*)allocator.allocate(unsigned(filesize) + 1);
+	data = (unsigned char*)allocator.alloc_raw(unsigned(filesize) + 1);
 
 	if (!data)
 		return option::none<LoadedFile>();

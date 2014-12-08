@@ -34,6 +34,8 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Convert game
 - [ ] Convert window
 - [x] Convert render_world
+- [ ] resource manager l 222, TA
+- [ ] gl rendeerr l 313, TA
 - [x] Convert callstack capturer to struct of function ptrs
 - [x] Convert render_material
     - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.

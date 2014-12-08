@@ -5,7 +5,7 @@
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 
 struct LoadedFile
 {

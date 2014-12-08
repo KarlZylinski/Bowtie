@@ -3,7 +3,7 @@
 namespace bowtie
 {
 
-class Allocator;
+struct Allocator;
 
 namespace tests
 {

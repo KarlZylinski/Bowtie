@@ -40,7 +40,7 @@ void deinit(Engine& e)
 
 World* create_world(Engine& e)
 {
-	auto world = (World*)e.allocator->init(sizeof(World));
+	auto world = (World*)e.allocator->alloc(sizeof(World));
 	world::init(*world, *e.allocator, *e.render_interface, e.resource_manager);
 	render_interface::create_render_world(*e.render_interface, *world);
 	return world;
@@ -49,7 +49,7 @@ World* create_world(Engine& e)
 void destroy_world(Engine& e, World& world)
 {
 	world::deinit(world);
-	e.allocator->deallocate(&world);
+	e.allocator->dealloc(&world);
 }
 
 void key_pressed(Engine& e, keyboard::Key key)

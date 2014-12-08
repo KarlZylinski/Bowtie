@@ -7,7 +7,7 @@
 #include <foundation/murmur_hash.h>
 #include <foundation/jzon.h>
 #include <foundation/string_utils.h>
-#include <foundation/temp_allocator.h>
+//#include <foundation/temp_allocator.h>
 #include <foundation/stream.h>
 #include <resource_path.h>
 
@@ -24,12 +24,12 @@ static JzonAllocator jzon_allocator;
 
 static void* jzon_static_allocate(size_t size)
 {
-	return static_allocator->allocate((uint32_t)size);
+	return static_allocator->alloc_raw((uint32_t)size);
 }
 
 static void jzon_static_deallocate(void* ptr)
 {
-	return static_allocator->deallocate(ptr);
+	return static_allocator->dealloc(ptr);
 }
 
 namespace bowtie
@@ -119,12 +119,12 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& al
 	assert(shader_source_option.is_some && "Failed loading shader source");
 	auto& shader_source = shader_source_option.value;
 	auto split_shader = shader_utils::split_shader(shader_source, allocator);
-	allocator.deallocate(shader_source.data);
+	allocator.dealloc(shader_source.data);
 
 	ShaderResourceData srd;
 	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
 	unsigned shader_dynamic_data_offset = 0;
-	void* shader_resource_dynamic_data = allocator.allocate(shader_dynamic_data_size);
+	void* shader_resource_dynamic_data = allocator.alloc_raw(shader_dynamic_data_size);
 
 	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
@@ -133,8 +133,8 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& al
 	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
 
-	allocator.deallocate(split_shader.vertex_source);
-	allocator.deallocate(split_shader.fragment_source);
+	allocator.dealloc(split_shader.vertex_source);
+	allocator.dealloc(split_shader.fragment_source);
 	return RenderResourcePackage<ShaderResourceData>(srd, shader_resource_dynamic_data, shader_dynamic_data_size);
 }
 
@@ -150,7 +150,7 @@ Shader* load_shader(ResourceManager& rm, const char* filename)
 	resource_package.data.handle = render_interface::create_handle(*rm.render_interface);
 	auto create_resource_data = get_create_render_resource_data(RenderResourceData::Shader, &resource_package.data);
 	render_interface::create_resource(*rm.render_interface, create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
-	auto shader = (Shader*)rm.allocator->allocate(sizeof(Shader));
+	auto shader = (Shader*)rm.allocator->alloc(sizeof(Shader));
 	shader->render_handle = resource_package.data.handle;
 	add(rm._resources, name, ResourceType::Shader, shader);
 	return shader;
@@ -165,7 +165,7 @@ Image* load_image(ResourceManager& rm, const char* filename)
 		return (Image*)existing.value;
 
 	UncompressedTexture tex = png::load(filename, *rm.allocator);
-	auto image = (Image*)rm.allocator->init(sizeof(Image));
+	auto image = (Image*)rm.allocator->alloc(sizeof(Image));
 	image->resolution = Vector2u(tex.width, tex.height);
 	image->data = tex.data;
 	image->data_size = tex.data_size;
@@ -183,7 +183,7 @@ Texture* load_texture(ResourceManager& rm, const char* filename)
 		return (Texture*)existing.value;
 
 	auto image = load_image(rm, filename);
-	auto texture = (Texture*)rm.allocator->init(sizeof(Texture));
+	auto texture = (Texture*)rm.allocator->alloc(sizeof(Texture));
 	texture->image = image;
 	texture->render_handle = RenderResourceHandle();
 	render_interface::create_texture(*rm.render_interface, *texture);
@@ -204,7 +204,7 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	auto& file = material_file_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
-	rm.allocator->deallocate(file.data);
+	rm.allocator->dealloc(file.data);
 
 	auto jzon = jzon_result.output;
 	auto shader_filename = jzon_get(jzon, "shader")->string_value;
@@ -212,16 +212,16 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
 	unsigned uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
-	auto uniforms = (UniformResourceData*)rm.allocator->allocate(uniforms_size);
+	auto uniforms = (UniformResourceData*)rm.allocator->alloc(uniforms_size);
 	Stream dynamic_uniform_data = { 0 };
 
 	for (unsigned i = 0; i < uniforms_jzon->size; ++i)
 	{
 		auto uniform_json = uniforms_jzon->array_values[i];
 
-		TempAllocator4096 ta;
+		//TempAllocator4096 ta;
 		auto uniform_str = uniform_json->string_value;
-		auto split_uniform = split(ta, uniform_str, ' ');
+		auto split_uniform = split(*rm.allocator, uniform_str, ' ');
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
 
@@ -260,17 +260,22 @@ Material* load_material(ResourceManager& rm, const char* filename)
 			}
 		}
 
+		for (unsigned j = 0; j < array::size(split_uniform); ++j)
+		{
+			rm.allocator->dealloc(split_uniform[j]);
+		}
+
 		array::deinit(split_uniform);
 		uniforms[i] = uniform;
 	}
 
 
 	auto uniform_data_size = uniforms_size + dynamic_uniform_data.size;
-	auto uniforms_data = rm.allocator->allocate(uniform_data_size);
+	auto uniforms_data = rm.allocator->alloc_raw(uniform_data_size);
 	memcpy(uniforms_data, uniforms, uniforms_size);
 	memcpy(memory::pointer_add(uniforms_data, uniforms_size), dynamic_uniform_data.start, dynamic_uniform_data.size);
-	rm.allocator->deallocate(uniforms);
-	rm.allocator->deallocate(dynamic_uniform_data.start);
+	rm.allocator->dealloc(uniforms);
+	rm.allocator->dealloc(dynamic_uniform_data.start);
 
 	MaterialResourceData mrd;
 	mrd.handle = render_interface::create_handle(*rm.render_interface);
@@ -280,7 +285,7 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	material_resource_data.data = &mrd;
 	render_interface::create_resource(*rm.render_interface, material_resource_data, uniforms_data, uniform_data_size);
 
-	auto material = (Material*)rm.allocator->init(sizeof(Material));
+	auto material = (Material*)rm.allocator->alloc(sizeof(Material));
 	material->render_handle = mrd.handle;
 	material->shader = shader;
 	add(rm._resources, name, ResourceType::Material, material);
@@ -301,13 +306,13 @@ Font* load_font(ResourceManager& rm, const char* filename)
 	auto& file = font_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
-	rm.allocator->deallocate(file.data);
+	rm.allocator->dealloc(file.data);
 	auto jzon = jzon_result.output;
 	auto texture_filename = jzon_get(jzon, "texture")->string_value;
 	auto columns = jzon_get(jzon, "columns")->int_value;
 	auto rows = jzon_get(jzon, "rows")->int_value;
 
-	auto font = (Font*)rm.allocator->init(sizeof(Font));
+	auto font = (Font*)rm.allocator->alloc(sizeof(Font));
 	font->columns = columns;
 	font->rows = rows;
 	font->texture = load_texture(rm, texture_filename);
@@ -348,7 +353,7 @@ void init(ResourceManager& rm, Allocator& allocator, RenderInterface& render_int
 void deinit(ResourceManager& rm)
 {
 	for(auto resource_iter = hash::begin(rm._resources); resource_iter != hash::end(rm._resources); ++resource_iter)
-		rm.allocator->deallocate(resource_iter->value);
+		rm.allocator->dealloc(resource_iter->value);
 
 	hash::deinit(rm._resources);
 }

@@ -8,7 +8,7 @@
 #include <foundation/array.h>
 #include <foundation/file.h>
 #include <foundation/murmur_hash.h>
-#include <foundation/temp_allocator.h>
+//#include <foundation/temp_allocator.h>
 #include <foundation/string_utils.h>
 #include "render_material.h"
 #include "render_world.h"
@@ -48,8 +48,8 @@ CreatedResources copy_single_resource(SingleCreatedResource resource, Allocator&
 {
 	CreatedResources cr;
 	cr.num = 1;
-	cr.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle));
-	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource));
+	cr.handles = (RenderResourceHandle*)allocator.alloc(sizeof(RenderResourceHandle));
+	cr.resources = (RenderResource*)allocator.alloc(sizeof(RenderResource));
 	cr.handles[0] = resource.handle;
 	cr.resources[0] = resource.resource;
 	return cr;
@@ -59,8 +59,8 @@ CreatedResources create_created_resources(unsigned num, Allocator& allocator)
 {
 	CreatedResources cr;
 	cr.num = num;
-	cr.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
-	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	cr.handles = (RenderResourceHandle*)allocator.alloc(sizeof(RenderResourceHandle) * num);
+	cr.resources = (RenderResource*)allocator.alloc(sizeof(RenderResource) * num);
 	return cr;
 }
 
@@ -77,7 +77,7 @@ RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource
 
 SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data)
 {
-	auto material = (RenderMaterial*)allocator.allocate(sizeof(RenderMaterial));
+	auto material = (RenderMaterial*)allocator.alloc(sizeof(RenderMaterial));
 	render_material::init(*material, allocator, data.shader);
 	auto shader = render_resource_table::lookup(resource_table, data.shader);
 	auto uniforms_data = (UniformResourceData*)dynamic_data;
@@ -128,7 +128,7 @@ RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const Ren
 
 RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets)
 {
-	auto render_target = (RenderTarget*)allocator.allocate(sizeof(RenderTarget));
+	auto render_target = (RenderTarget*)allocator.alloc(sizeof(RenderTarget));
 	*render_target = create_render_target(concrete_renderer, texture, render_targets);
 	return RenderResource(render_target);
 }
@@ -153,14 +153,14 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
 	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
-	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
+	RenderTexture* render_texture = (RenderTexture*)allocator.alloc(sizeof(RenderTexture));
 	*render_texture = create_texture(concrete_renderer, pixel_format, resolution, data);
 	return RenderResource(render_texture);
 }
 
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target)
 {
-	auto rw = (RenderWorld*)allocator.allocate(sizeof(RenderWorld));
+	auto rw = (RenderWorld*)allocator.alloc(sizeof(RenderWorld));
 	render_world::init(*rw, render_target, allocator);
 	return single_resource(data.handle, RenderResource(rw));
 }
@@ -177,12 +177,12 @@ void raise_fence(RenderFence& fence)
 	fence.fence_processed.notify_all();
 }
 
-void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view)
+void draw(Allocator& ta, ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view)
 {
 	render_world::sort(render_world);
 	concrete_renderer.set_render_target(resolution, render_world.render_target.handle);
 	concrete_renderer.clear();
-	concrete_renderer.draw(view, render_world, resolution, resource_table);
+	concrete_renderer.draw(ta, view, render_world, resolution, resource_table);
 	array::push_back(rendered_worlds, &render_world);
 }
 
@@ -221,7 +221,7 @@ CreatedResources create_resources(Renderer& r, RenderResourceData::Type type, vo
 
 		for (unsigned i = 0; i < sprite_data->num; ++i)
 		{
-			auto component = (RenderComponent*)r.allocator->allocate(sizeof(RenderComponent));
+			auto component = (RenderComponent*)r.allocator->alloc(sizeof(RenderComponent));
 			component->color = sprite.color[i];
 			component->material = sprite.material[i].render_handle;
 			component->geometry = sprite.geometry[i];
@@ -241,9 +241,9 @@ UpdatedResources create_updated_resources(unsigned num, Allocator& allocator)
 {
 	UpdatedResources ur;
 	ur.num = num;
-	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
-	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
-	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	ur.handles = (RenderResourceHandle*)allocator.alloc(sizeof(RenderResourceHandle) * num);
+	ur.old_resources = (RenderResource*)allocator.alloc(sizeof(RenderResource) * num);
+	ur.new_resources = (RenderResource*)allocator.alloc(sizeof(RenderResource) * num);
 	return ur;
 }
 
@@ -295,7 +295,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 		case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			draw(r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view);
+			draw(*r.allocator, r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view);
 		} break;
 
 		// Rename to CreateResource
@@ -321,8 +321,8 @@ void execute_command(Renderer& r, const RendererCommand& command)
 					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
 			}
 
-			r.allocator->deallocate(created_resources.handles);
-			r.allocator->deallocate(created_resources.resources);
+			r.allocator->dealloc(created_resources.handles);
+			r.allocator->dealloc(created_resources.resources);
 
 			std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
 			array::push_back(r._processed_memory, data.data);
@@ -353,9 +353,9 @@ void execute_command(Renderer& r, const RendererCommand& command)
 					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
 			}
 
-			r.allocator->deallocate(updated_resources.handles);
-			r.allocator->deallocate(updated_resources.new_resources);
-			r.allocator->deallocate(updated_resources.old_resources);
+			r.allocator->dealloc(updated_resources.handles);
+			r.allocator->dealloc(updated_resources.new_resources);
+			r.allocator->dealloc(updated_resources.old_resources);
 
 			std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
 			array::push_back(r._processed_memory, data.data);
@@ -446,9 +446,9 @@ void thread(Renderer* renderer)
 		auto& shader_source = shader_source_option.value;
 		auto split_shader = shader_utils::split_shader(shader_source, *r.allocator);
 		r._rendered_worlds_combining_shader = r._concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
-		r.allocator->deallocate(shader_source.data);
-		r.allocator->deallocate(split_shader.vertex_source);
-		r.allocator->deallocate(split_shader.fragment_source);
+		r.allocator->dealloc(shader_source.data);
+		r.allocator->dealloc(split_shader.vertex_source);
+		r.allocator->dealloc(split_shader.fragment_source);
 	}
 
 	while (r.active)
@@ -492,14 +492,14 @@ void deinit(Renderer& r)
 			render_world::deinit(*(RenderWorld*)object);
 			break;
 		case RenderResourceData::RenderTarget:
-			r.allocator->deallocate((RenderTarget*)object);
+			r.allocator->dealloc((RenderTarget*)object);
 			break;
 		case RenderResourceData::RenderMaterial:
 			render_material::deinit(*(RenderMaterial*)object, *r.allocator);
 			break;
 		}
 
-		r.allocator->deallocate(object);
+		r.allocator->dealloc(object);
 	}
 	
 	concurrent_ring_buffer::deinit(r._unprocessed_commands);
@@ -516,7 +516,7 @@ void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allo
 	for (unsigned i = 0; i < array::size(r._processed_memory); ++i)
 	{
 		void* ptr = r._processed_memory[i];
-		render_interface_allocator.deallocate(ptr);
+		render_interface_allocator.dealloc(ptr);
 	}
 
 	array::clear(r._processed_memory);

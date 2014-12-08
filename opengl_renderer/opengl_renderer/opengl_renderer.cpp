@@ -12,7 +12,7 @@
 #include <renderer/render_world.h>
 #include <renderer/render_resource_table.h>
 #include "gl3w.h"
-#include <foundation/temp_allocator.h>
+//#include <foundation/temp_allocator.h>
 
 namespace bowtie
 {
@@ -239,7 +239,7 @@ void destroy_render_target(RenderResource render_target)
 	destroy_render_target_internal(*(RenderTarget*)render_target.object);
 }
 
-void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
+void draw_batch(Allocator& ta, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
@@ -310,8 +310,8 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 	const unsigned rect_buffer_num_elements = 54;
 	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
 	const unsigned total_buffer_size = rect_buffer_size * size;
-	TempAllocator<864000> ta;
-	float* buffer = (float*)ta.allocate(total_buffer_size);
+//	TempAllocator<864000> ta;
+	float* buffer = (float*)ta.alloc(total_buffer_size);
 
 	for (unsigned i = start; i < start + size; ++i)
 	{
@@ -352,6 +352,7 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 	}
 
 	auto geometry = create_geometry_internal(buffer, total_buffer_size);
+	ta.dealloc(buffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
 	glEnableVertexAttribArray(0);
@@ -390,7 +391,7 @@ void draw_batch(unsigned start, unsigned size, const Array<RenderComponent*>& co
 	destroy_geometry_internal(geometry);
 }
 
-void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
+void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
 {
 	if (render_world.components._size == 0)
 		return;
@@ -408,13 +409,13 @@ void draw(const Rect& view, const RenderWorld& render_world, const Vector2u& res
 		if (batch_material == material)
 			continue;
 
-		draw_batch(batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
+		draw_batch(ta, batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
 		batch_start = i;
 		batch_material = material;
 	}
 
 	// Draw last batch.
-	draw_batch(batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
+	draw_batch(ta, batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)
