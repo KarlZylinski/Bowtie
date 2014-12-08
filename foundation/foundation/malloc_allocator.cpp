@@ -6,6 +6,9 @@
 #include <cstring>
 #include "allocator_helpers.h"
 
+namespace bowtie
+{
+
 namespace internal
 {
 
@@ -98,10 +101,7 @@ inline void dealloc(Allocator& a, void* p)
 	free(h);
 }
 
-} // anonymous namespace
-
-namespace bowtie 
-{
+} // namespace internal
 
 void* MallocAllocator::alloc(unsigned size, unsigned align)
 {
