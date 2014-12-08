@@ -110,7 +110,7 @@ void* MallocAllocator::alloc(unsigned size, unsigned align)
 	return p;
 }
 
-void* MallocAllocator::alloc_raw(uint32_t size, uint32_t align)
+void* MallocAllocator::alloc_raw(unsigned size, unsigned align)
 {
 	return internal::alloc(*this, size, align);
 }
