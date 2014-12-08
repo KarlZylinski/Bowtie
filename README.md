@@ -34,10 +34,11 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Convert game
 - [ ] Convert window
 - [x] Convert render_world
-- [ ] Convert callstack capturer to struct of function ptrs
+- [x] Convert callstack capturer to struct of function ptrs
 - [x] Convert render_material
     - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
 - [x] Convert resource_lut
+- [ ] Go a pass over all struct defs and see how they can be inited as 0 (as valid state). For example, maybe make 0 the not inited value for most stuff instead of -1? Can we make writer function init on demand instead of explicit init step?
 - [ ] Convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 - [ ] Rewrite allocators, throw out construct / destroy
     - [ ] Add page allocator?

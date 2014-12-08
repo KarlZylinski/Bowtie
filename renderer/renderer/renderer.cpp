@@ -10,7 +10,6 @@
 #include <foundation/murmur_hash.h>
 #include <foundation/temp_allocator.h>
 #include <foundation/string_utils.h>
-#include "concrete_renderer.h"
 #include "render_material.h"
 #include "render_world.h"
 #include "render_target.h"
@@ -21,10 +20,7 @@
 namespace bowtie
 {
 
-////////////////////////////////
-// Implementation fordward decl.
-
-namespace
+namespace internal
 {
 
 struct SingleCreatedResource
@@ -39,142 +35,6 @@ struct SingleUpdatedResource
 	RenderResource old_resource;
 	RenderResource new_resource;
 };
-
-SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data);
-RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets);
-RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const RenderTexture& texture, Array<RenderTarget>& render_targets);
-SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data);
-RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data);
-RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data);
-SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target);
-void flip(IRendererContext& context);
-void raise_fence(RenderFence& fence);
-void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, Array<RenderWorld*>& rendered_worlds, RenderWorld& render_world, const Rect& view);
-SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const RenderResource* resource_table, void* dynamic_data, const ShaderResourceData& data);
-
-}
-
-////////////////////////////////
-// Public interface.
-
-Renderer::Renderer(ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator) :
-	_allocator(renderer_allocator), _concrete_renderer(concrete_renderer), _processed_memory(array::create<void*>(_allocator)), _context(nullptr),
-	_unprocessed_commands_exist(false), _resource_objects(array::create<RendererResourceObject>(_allocator)), _render_targets(array::create<RenderTarget>(_allocator)), _rendered_worlds(array::create<RenderWorld*>(_allocator))
-{
-	concurrent_ring_buffer::init(_unprocessed_commands, _allocator, unprocessed_commands_num, sizeof(RendererCommand));
-	render_interface::init(_render_interface, render_interface_allocator, _unprocessed_commands, _unprocessed_commands_exist, _unprocessed_commands_exist_mutex, _wait_for_unprocessed_commands_to_exist);
-}
-
-Renderer::~Renderer()
-{	
-	for (unsigned i = 0; i < array::size(_resource_objects); ++i)
-	{
-		auto& resource_object = _resource_objects[i];
-		auto object = render_resource_table::lookup(_resource_table, resource_object.handle).object;
-
-		switch (resource_object.type)
-		{
-		case RenderResourceData::World:
-			render_world::deinit(*(RenderWorld*)object);
-			break;
-		case RenderResourceData::RenderTarget:
-			_allocator.deallocate((RenderTarget*)object);
-			break;
-		case RenderResourceData::RenderMaterial:
-			render_material::deinit(*(RenderMaterial*)object, _allocator);
-			break;
-		}
-
-		_allocator.deallocate(object);
-	}
-	
-	concurrent_ring_buffer::deinit(_unprocessed_commands);
-	array::deinit(_processed_memory);
-	array::deinit(_resource_objects);
-	array::deinit(_render_targets);
-	array::deinit(_rendered_worlds);
-}
-
-void Renderer::deallocate_processed_commands(Allocator& render_interface_allocator)
-{
-	std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-
-	for (unsigned i = 0; i < array::size(_processed_memory); ++i)
-	{
-		void* ptr = _processed_memory[i];
-		render_interface_allocator.deallocate(ptr);
-	}
-
-	array::clear(_processed_memory);
-}
-
-RenderInterface& Renderer::render_interface()
-{
-	return _render_interface;
-}
-
-const Vector2u& Renderer::resolution() const
-{
-	return _resolution;
-}
-
-void Renderer::run(IRendererContext* context, const Vector2u& resolution)
-{
-	_context = context;
-	_resolution = resolution;
-	_thread = std::thread(&Renderer::thread, this);
-
-	// Do stuff here which should happen before anything else.
-	render_interface::resize(_render_interface, resolution);
-}
-
-void Renderer::stop(Allocator& render_interface_allocator)
-{
-	_active = false;
-
-	{
-		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exist_mutex);
-		_unprocessed_commands_exist = true;
-	}
-
-	_wait_for_unprocessed_commands_to_exist.notify_all();
-	_thread.join();
-	render_interface::deinit(_render_interface);
-	deallocate_processed_commands(render_interface_allocator);
-}
-
-
-////////////////////////////////
-// Implementation.
-
-void Renderer::consume_command_queue()
-{
-	{
-		std::lock_guard<std::mutex> lock(_unprocessed_commands_exist_mutex);
-		_unprocessed_commands_exist = false;
-	}
-		
-	auto command = (RendererCommand*)concurrent_ring_buffer::peek(_unprocessed_commands);
-	
-	while (command != nullptr)
-	{
-		execute_command(*command);
-		
-		{
-			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-			auto dont_free = command->type == RendererCommand::Fence;
-
-			if (!dont_free)
-			{
-				array::push_back(_processed_memory, command->data);
-				array::push_back(_processed_memory, command->dynamic_data);
-			}
-		}
-
-		concurrent_ring_buffer::consume_one(_unprocessed_commands);
-		command = (RendererCommand*)concurrent_ring_buffer::peek(_unprocessed_commands);
-	}
-}
 
 SingleCreatedResource single_resource(RenderResourceHandle handle, RenderResource resource)
 {
@@ -203,244 +63,6 @@ CreatedResources create_created_resources(unsigned num, Allocator& allocator)
 	cr.resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
 	return cr;
 }
-
-CreatedResources Renderer::create_resources(RenderResourceData::Type type, void* data, void* dynamic_data)
-{
-	switch(type)
-	{
-		case RenderResourceData::RenderMaterial: return copy_single_resource(create_material(_allocator, _concrete_renderer, dynamic_data, _resource_table, *(MaterialResourceData*)data), _allocator);
-		case RenderResourceData::Shader: return copy_single_resource(create_shader(_concrete_renderer, dynamic_data, *(ShaderResourceData*)data), _allocator);
-		case RenderResourceData::Texture: {
-			auto texture_resource_data = (TextureResourceData*)data;
-			auto texture_bits = memory::pointer_add(dynamic_data, texture_resource_data->texture_data_dynamic_data_offset);
-			return copy_single_resource(single_resource(texture_resource_data->handle, create_texture_resource(_concrete_renderer, _allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits)), _allocator);
-		}
-		case RenderResourceData::World: {
-			return copy_single_resource(create_world(_allocator, *(RenderWorldResourceData*)data, create_render_target(_concrete_renderer, create_texture(_concrete_renderer, PixelFormat::RGBA, _resolution, 0), _render_targets)), _allocator);
-		}
-		case RenderResourceData::SpriteRenderer: {
-			auto sprite_data = (CreateSpriteRendererData*)data;
-			auto& rw = *(RenderWorld*)render_resource_table::lookup(_resource_table, sprite_data->world).object;
-			CreatedResources cr = create_created_resources(sprite_data->num, _allocator);
-			auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
-
-			for (unsigned i = 0; i < sprite_data->num; ++i)
-			{
-				auto component = (RenderComponent*)_allocator.allocate(sizeof(RenderComponent));
-				component->color = sprite.color[i];
-				component->material = sprite.material[i].render_handle;
-				component->geometry = sprite.geometry[i];
-				render_world::add_component(rw, component);
-
-				cr.handles[i] = sprite.render_handle[i];
-				cr.resources[i] = RenderResource(component);
-			}
-
-			return cr;
-		} break;
-		default: assert(!"Unknown render resource type"); return CreatedResources();
-	}
-}
-
-void Renderer::execute_command(const RendererCommand& command)
-{
-	switch(command.type)
-	{
-	case RendererCommand::Fence:
-		raise_fence(*(RenderFence*)command.data);
-		break;
-			
-	case RendererCommand::RenderWorld:
-		{
-			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			draw(_concrete_renderer, _resolution, _resource_table, _rendered_worlds, *(RenderWorld*)render_resource_table::lookup(_resource_table, rwd.render_world).object, rwd.view);
-		}
-		break;
-
-		// Rename to CreateResource
-	case RendererCommand::LoadResource:
-		{
-			RenderResourceData& data = *(RenderResourceData*)command.data;
-			void* dynamic_data = command.dynamic_data;
-
-			auto created_resources = create_resources(data.type, data.data, dynamic_data);
-
-			for (unsigned i = 0; i < created_resources.num; ++i)
-			{
-				auto handle = created_resources.handles[i];
-				auto resource = created_resources.resources[i];
-
-				assert(resource.type != RenderResource::NotInitialized && "Failed to load resource!");
-
-				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-				render_resource_table::set(_resource_table, handle, resource);
-
-				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-				if (resource.type == RenderResource::Object)
-					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
-			}
-
-			_allocator.deallocate(created_resources.handles);
-			_allocator.deallocate(created_resources.resources);
-	
-			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-			array::push_back(_processed_memory, data.data);
-		}
-		break;
-
-	case RendererCommand::UpdateResource:
-		{
-			RenderResourceData& data = *(RenderResourceData*)command.data;
-			void* dynamic_data = command.dynamic_data;
-			auto updated_resources = update_resources(data.type, data.data, dynamic_data);
-
-			for (unsigned i = 0; i < updated_resources.num; ++i)
-			{
-				auto handle = updated_resources.handles[i];
-				auto old_resource = updated_resources.old_resources[i];
-				auto new_resource = updated_resources.new_resources[i];
-
-				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
-
-				if (old_resource.type == RenderResource::Object)
-					array::remove(_resource_objects, [&](const RendererResourceObject& rro) { return handle == rro.handle; });
-
-				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-				render_resource_table::set(_resource_table, handle, new_resource);
-
-				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-				if (new_resource.type == RenderResource::Object)
-					array::push_back(_resource_objects, RendererResourceObject(data.type, handle));
-			}
-
-			_allocator.deallocate(updated_resources.handles);
-			_allocator.deallocate(updated_resources.new_resources);
-			_allocator.deallocate(updated_resources.old_resources);
-
-			std::lock_guard<std::mutex> queue_lock(_processed_memory_mutex);
-			array::push_back(_processed_memory, data.data);
-		}
-		break;
-
-	case RendererCommand::Resize:
-		{
-			ResizeData& data = *(ResizeData*)command.data;
-			_resolution = data.resolution;
-			_concrete_renderer.resize(data.resolution, _render_targets);
-		}
-		break;
-
-	case RendererCommand::CombineRenderedWorlds:
-		{
-			_concrete_renderer.unset_render_target(_resolution);
-			_concrete_renderer.clear();
-			_concrete_renderer.combine_rendered_worlds(_rendered_worlds_combining_shader, _rendered_worlds);
-			array::clear(_rendered_worlds);
-			flip(*_context);
-		}
-		break;
-
-	case RendererCommand::SetUniformValue:
-		{
-			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
-			auto& material = *(RenderMaterial*)render_resource_table::lookup(_resource_table, set_uniform_value_data.material).object;
-			switch (set_uniform_value_data.type)
-			{
-			case uniform::Float:
-				render_material::set_uniform_float_value(material, _allocator, set_uniform_value_data.uniform_name, *(float*)command.dynamic_data);
-				break;
-			default:
-				assert(!"Unknown uniform type");
-				break;
-			}
-		}
-		break;
-
-	default:
-		assert(!"Command not implemented!");
-		break;
-	}
-}
-
-void Renderer::thread()
-{
-	_context->make_current_for_calling_thread();
-	_concrete_renderer.initialize_thread();
-	_active = true;
-
-	{
-		auto shader_source_option = file::load("rendered_world_combining.shader", _allocator);
-		assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
-		auto& shader_source = shader_source_option.value;
-		auto split_shader = shader_utils::split_shader(shader_source, _allocator);
-		_rendered_worlds_combining_shader = _concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
-		_allocator.deallocate(shader_source.data);
-		_allocator.deallocate(split_shader.vertex_source);
-		_allocator.deallocate(split_shader.fragment_source);
-	}
-
-	while (_active)
-	{
-		wait_for_unprocessed_commands_to_exist();
-		consume_command_queue();
-	}
-}
-
-UpdatedResources create_updated_resources(unsigned num, Allocator& allocator)
-{
-	UpdatedResources ur;
-	ur.num = num;
-	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
-	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
-	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
-	return ur;
-}
-
-UpdatedResources single_update(SingleUpdatedResource resource, Allocator& allocator)
-{
-	UpdatedResources ur = create_updated_resources(1, allocator);
-	ur.handles[0] = resource.handle;
-	ur.old_resources[0] = resource.old_resource;
-	ur.new_resources[0] = resource.new_resource;
-	return ur;
-}
-
-UpdatedResources Renderer::update_resources(RenderResourceData::Type type, void* data, void* dynamic_data)
-{
-	switch(type)
-	{
-		case RenderResourceData::Shader: return single_update(update_shader(_concrete_renderer, _resource_table, dynamic_data, *(ShaderResourceData*)data), _allocator);
-		case RenderResourceData::SpriteRenderer: {
-			auto sprite_data = (UpdateSpriteRendererData*)data;
-			UpdatedResources ur = create_updated_resources(sprite_data->num, _allocator);
-
-			for (unsigned i = 0; i < sprite_data->num; ++i)
-			{
-				auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
-				auto component = (RenderComponent*)render_resource_table::lookup(_resource_table, sprite.render_handle[i]).object;
-				component->color = sprite.color[i];
-				component->material = sprite.material[i].render_handle;
-				component->geometry = sprite.geometry[i];
-
-				ur.handles[i] = sprite.render_handle[i];
-				ur.new_resources[i] = RenderResource(component);
-				ur.old_resources[i] = RenderResource(component);
-			}
-
-			return ur;
-		}
-		default: assert(!"Unknown render resource type"); return UpdatedResources();
-	}
-}
-
-void Renderer::wait_for_unprocessed_commands_to_exist()
-{	
-	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(_unprocessed_commands_exist_mutex);
-	_wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return _unprocessed_commands_exist;});
-}
-
-namespace
-{
 
 RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource shader, const UniformResourceData& uniform_data, const char* name)
 {
@@ -494,13 +116,6 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 	return single_resource(data.handle, RenderResource(material));
 }
 
-RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets)
-{
-	auto render_target = (RenderTarget*)allocator.allocate(sizeof(RenderTarget));
-	*render_target = create_render_target(concrete_renderer, texture, render_targets);
-	return RenderResource(render_target);
-}
-
 RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const RenderTexture& texture, Array<RenderTarget>& render_targets)
 {
 	auto render_target_resource = concrete_renderer.create_render_target(texture);
@@ -511,19 +126,18 @@ RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const Ren
 	return rt;
 }
 
+RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, const RenderTexture& texture, Array<RenderTarget>& render_targets)
+{
+	auto render_target = (RenderTarget*)allocator.allocate(sizeof(RenderTarget));
+	*render_target = create_render_target(concrete_renderer, texture, render_targets);
+	return RenderResource(render_target);
+}
+
 SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
 {
 	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
 	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
 	return single_resource(data.handle, concrete_renderer.create_shader(vertex_source, fragment_source));
-}
-
-RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
-{
-	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
-	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
-	*render_texture = create_texture(concrete_renderer, pixel_format, resolution, data);
-	return RenderResource(render_texture);
 }
 
 RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data)
@@ -534,6 +148,14 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 	render_texture.render_handle = texture_resource;
 	render_texture.resolution = resolution;
 	return render_texture;
+}
+
+RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
+{
+	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
+	RenderTexture* render_texture = (RenderTexture*)allocator.allocate(sizeof(RenderTexture));
+	*render_texture = create_texture(concrete_renderer, pixel_format, resolution, data);
+	return RenderResource(render_texture);
 }
 
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target)
@@ -577,6 +199,357 @@ SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const R
 	return sur;
 }
 
-} // implementation
+CreatedResources create_resources(Renderer& r, RenderResourceData::Type type, void* data, void* dynamic_data)
+{
+	switch (type)
+	{
+	case RenderResourceData::RenderMaterial: return copy_single_resource(create_material(*r.allocator, r._concrete_renderer, dynamic_data, r.resource_table, *(MaterialResourceData*)data), *r.allocator);
+	case RenderResourceData::Shader: return copy_single_resource(create_shader(r._concrete_renderer, dynamic_data, *(ShaderResourceData*)data), *r.allocator);
+	case RenderResourceData::Texture: {
+		auto texture_resource_data = (TextureResourceData*)data;
+		auto texture_bits = memory::pointer_add(dynamic_data, texture_resource_data->texture_data_dynamic_data_offset);
+		return copy_single_resource(single_resource(texture_resource_data->handle, create_texture_resource(r._concrete_renderer, *r.allocator, texture_resource_data->pixel_format, texture_resource_data->resolution, texture_bits)), *r.allocator);
+	}
+	case RenderResourceData::World: {
+		return copy_single_resource(create_world(*r.allocator, *(RenderWorldResourceData*)data, create_render_target(r._concrete_renderer, create_texture(r._concrete_renderer, PixelFormat::RGBA, r.resolution, 0), r._render_targets)), *r.allocator);
+	}
+	case RenderResourceData::SpriteRenderer: {
+		auto sprite_data = (CreateSpriteRendererData*)data;
+		auto& rw = *(RenderWorld*)render_resource_table::lookup(r.resource_table, sprite_data->world).object;
+		CreatedResources cr = create_created_resources(sprite_data->num, *r.allocator);
+		auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
+
+		for (unsigned i = 0; i < sprite_data->num; ++i)
+		{
+			auto component = (RenderComponent*)r.allocator->allocate(sizeof(RenderComponent));
+			component->color = sprite.color[i];
+			component->material = sprite.material[i].render_handle;
+			component->geometry = sprite.geometry[i];
+			render_world::add_component(rw, component);
+
+			cr.handles[i] = sprite.render_handle[i];
+			cr.resources[i] = RenderResource(component);
+		}
+
+		return cr;
+	} break;
+	default: assert(!"Unknown render resource type"); return CreatedResources();
+	}
+}
+
+UpdatedResources create_updated_resources(unsigned num, Allocator& allocator)
+{
+	UpdatedResources ur;
+	ur.num = num;
+	ur.handles = (RenderResourceHandle*)allocator.allocate(sizeof(RenderResourceHandle) * num);
+	ur.old_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	ur.new_resources = (RenderResource*)allocator.allocate(sizeof(RenderResource) * num);
+	return ur;
+}
+
+UpdatedResources single_update(SingleUpdatedResource resource, Allocator& allocator)
+{
+	UpdatedResources ur = create_updated_resources(1, allocator);
+	ur.handles[0] = resource.handle;
+	ur.old_resources[0] = resource.old_resource;
+	ur.new_resources[0] = resource.new_resource;
+	return ur;
+}
+
+UpdatedResources update_resources(Renderer& r, RenderResourceData::Type type, void* data, void* dynamic_data)
+{
+	switch (type)
+	{
+	case RenderResourceData::Shader: return single_update(update_shader(r._concrete_renderer, r.resource_table, dynamic_data, *(ShaderResourceData*)data), *r.allocator);
+	case RenderResourceData::SpriteRenderer: {
+		auto sprite_data = (UpdateSpriteRendererData*)data;
+		UpdatedResources ur = create_updated_resources(sprite_data->num, *r.allocator);
+
+		for (unsigned i = 0; i < sprite_data->num; ++i)
+		{
+			auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
+			auto component = (RenderComponent*)render_resource_table::lookup(r.resource_table, sprite.render_handle[i]).object;
+			component->color = sprite.color[i];
+			component->material = sprite.material[i].render_handle;
+			component->geometry = sprite.geometry[i];
+
+			ur.handles[i] = sprite.render_handle[i];
+			ur.new_resources[i] = RenderResource(component);
+			ur.old_resources[i] = RenderResource(component);
+		}
+
+		return ur;
+	}
+	default: assert(!"Unknown render resource type"); return UpdatedResources();
+	}
+}
+
+void execute_command(Renderer& r, const RendererCommand& command)
+{
+	switch (command.type)
+	{
+		case RendererCommand::Fence:
+			raise_fence(*(RenderFence*)command.data);
+			break;
+
+		case RendererCommand::RenderWorld:
+		{
+			RenderWorldData& rwd = *(RenderWorldData*)command.data;
+			draw(r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view);
+		} break;
+
+		// Rename to CreateResource
+		case RendererCommand::LoadResource:
+		{
+			RenderResourceData& data = *(RenderResourceData*)command.data;
+			void* dynamic_data = command.dynamic_data;
+
+			auto created_resources = create_resources(r, data.type, data.data, dynamic_data);
+
+			for (unsigned i = 0; i < created_resources.num; ++i)
+			{
+				auto handle = created_resources.handles[i];
+				auto resource = created_resources.resources[i];
+
+				assert(resource.type != RenderResource::NotInitialized && "Failed to load resource!");
+
+				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
+				render_resource_table::set(r.resource_table, handle, resource);
+
+				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+				if (resource.type == RenderResource::Object)
+					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
+			}
+
+			r.allocator->deallocate(created_resources.handles);
+			r.allocator->deallocate(created_resources.resources);
+
+			std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
+			array::push_back(r._processed_memory, data.data);
+		} break;
+
+		case RendererCommand::UpdateResource:
+		{
+			RenderResourceData& data = *(RenderResourceData*)command.data;
+			void* dynamic_data = command.dynamic_data;
+			auto updated_resources = update_resources(r, data.type, data.data, dynamic_data);
+
+			for (unsigned i = 0; i < updated_resources.num; ++i)
+			{
+				auto handle = updated_resources.handles[i];
+				auto old_resource = updated_resources.old_resources[i];
+				auto new_resource = updated_resources.new_resources[i];
+
+				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
+
+				if (old_resource.type == RenderResource::Object)
+					array::remove(r._resource_objects, [&](const RendererResourceObject& rro) { return handle == rro.handle; });
+
+				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
+				render_resource_table::set(r.resource_table, handle, new_resource);
+
+				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
+				if (new_resource.type == RenderResource::Object)
+					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
+			}
+
+			r.allocator->deallocate(updated_resources.handles);
+			r.allocator->deallocate(updated_resources.new_resources);
+			r.allocator->deallocate(updated_resources.old_resources);
+
+			std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
+			array::push_back(r._processed_memory, data.data);
+		} break;
+
+		case RendererCommand::Resize:
+		{
+			ResizeData& data = *(ResizeData*)command.data;
+			r.resolution = data.resolution;
+			r._concrete_renderer.resize(data.resolution, r._render_targets);
+		} break;
+
+		case RendererCommand::CombineRenderedWorlds:
+		{
+			r._concrete_renderer.unset_render_target(r.resolution);
+			r._concrete_renderer.clear();
+			r._concrete_renderer.combine_rendered_worlds(r._rendered_worlds_combining_shader, r._rendered_worlds);
+			array::clear(r._rendered_worlds);
+			flip(*r._context);
+		} break;
+
+		case RendererCommand::SetUniformValue:
+		{
+			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
+			auto& material = *(RenderMaterial*)render_resource_table::lookup(r.resource_table, set_uniform_value_data.material).object;
+			switch (set_uniform_value_data.type)
+			{
+			case uniform::Float:
+				render_material::set_uniform_float_value(material, *r.allocator, set_uniform_value_data.uniform_name, *(float*)command.dynamic_data);
+				break;
+			default:
+				assert(!"Unknown uniform type");
+				break;
+			}
+		} break;
+
+		default:
+			assert(!"Command not implemented!");
+			break;
+	}
+}
+
+void consume_command_queue(Renderer& r)
+{
+	{
+		std::lock_guard<std::mutex> lock(r._unprocessed_commands_exist_mutex);
+		r._unprocessed_commands_exist = false;
+	}
+
+	auto command = (RendererCommand*)concurrent_ring_buffer::peek(r._unprocessed_commands);
+
+	while (command != nullptr)
+	{
+		execute_command(r, *command);
+
+		{
+			std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
+			auto dont_free = command->type == RendererCommand::Fence;
+
+			if (!dont_free)
+			{
+				array::push_back(r._processed_memory, command->data);
+				array::push_back(r._processed_memory, command->dynamic_data);
+			}
+		}
+
+		concurrent_ring_buffer::consume_one(r._unprocessed_commands);
+		command = (RendererCommand*)concurrent_ring_buffer::peek(r._unprocessed_commands);
+	}
+}
+
+void wait_for_unprocessed_commands_to_exist(Renderer& r)
+{
+	std::unique_lock<std::mutex> unprocessed_commands_exists_lock(r._unprocessed_commands_exist_mutex);
+	r._wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return r._unprocessed_commands_exist; });
+}
+
+void thread(Renderer* renderer)
+{
+	auto& r = *renderer;
+	r._context->make_current_for_calling_thread();
+	r._concrete_renderer.initialize_thread();
+	r.active = true;
+
+	{
+		auto shader_source_option = file::load("rendered_world_combining.shader", *r.allocator);
+		assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
+		auto& shader_source = shader_source_option.value;
+		auto split_shader = shader_utils::split_shader(shader_source, *r.allocator);
+		r._rendered_worlds_combining_shader = r._concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
+		r.allocator->deallocate(shader_source.data);
+		r.allocator->deallocate(split_shader.vertex_source);
+		r.allocator->deallocate(split_shader.fragment_source);
+	}
+
+	while (r.active)
+	{
+		wait_for_unprocessed_commands_to_exist(r);
+		consume_command_queue(r);
+	}
+}
+
+} // namespace internal
+
+////////////////////////////////
+// Public interface.
+
+namespace renderer
+{
+
+void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator)
+{
+	r.allocator = &renderer_allocator;
+	r.active = false;
+	r._concrete_renderer = concrete_renderer;
+	array::init(r._processed_memory, *r.allocator);
+	array::init(r._resource_objects, *r.allocator);
+	array::init(r._render_targets, *r.allocator);
+	array::init(r._rendered_worlds, *r.allocator);
+	r._unprocessed_commands_exist = false;
+	r._context = nullptr;
+	const auto unprocessed_commands_num = 64000;
+	concurrent_ring_buffer::init(r._unprocessed_commands, *r.allocator, unprocessed_commands_num, sizeof(RendererCommand));
+	render_interface::init(r.render_interface, render_interface_allocator, r._unprocessed_commands, r._unprocessed_commands_exist, r._unprocessed_commands_exist_mutex, r._wait_for_unprocessed_commands_to_exist);
+}
+
+void deinit(Renderer& r)
+{	
+	for (unsigned i = 0; i < array::size(r._resource_objects); ++i)
+	{
+		auto& resource_object = r._resource_objects[i];
+		auto object = render_resource_table::lookup(r.resource_table, resource_object.handle).object;
+
+		switch (resource_object.type)
+		{
+		case RenderResourceData::World:
+			render_world::deinit(*(RenderWorld*)object);
+			break;
+		case RenderResourceData::RenderTarget:
+			r.allocator->deallocate((RenderTarget*)object);
+			break;
+		case RenderResourceData::RenderMaterial:
+			render_material::deinit(*(RenderMaterial*)object, *r.allocator);
+			break;
+		}
+
+		r.allocator->deallocate(object);
+	}
+	
+	concurrent_ring_buffer::deinit(r._unprocessed_commands);
+	array::deinit(r._processed_memory);
+	array::deinit(r._resource_objects);
+	array::deinit(r._render_targets);
+	array::deinit(r._rendered_worlds);
+}
+
+void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allocator)
+{
+	std::lock_guard<std::mutex> queue_lock(r._processed_memory_mutex);
+
+	for (unsigned i = 0; i < array::size(r._processed_memory); ++i)
+	{
+		void* ptr = r._processed_memory[i];
+		render_interface_allocator.deallocate(ptr);
+	}
+
+	array::clear(r._processed_memory);
+}
+
+void run(Renderer& r, IRendererContext* context, const Vector2u& resolution)
+{
+	r._context = context;
+	r.resolution = resolution;
+	r._thread = std::thread(&internal::thread, &r);
+
+	// Do stuff here which should happen before anything else.
+	render_interface::resize(r.render_interface, resolution);
+}
+
+void stop(Renderer& r, Allocator& render_interface_allocator)
+{
+	r.active = false;
+
+	{
+		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(r._unprocessed_commands_exist_mutex);
+		r._unprocessed_commands_exist = true;
+	}
+
+	r._wait_for_unprocessed_commands_to_exist.notify_all();
+	r._thread.join();
+	render_interface::deinit(r.render_interface);
+	deallocate_processed_commands(r, render_interface_allocator);
+}
+
+} // namespace renderer
 
 } // namespace bowtie

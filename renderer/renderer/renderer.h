@@ -13,6 +13,7 @@
 #include "render_resource.h"
 #include "irenderer_context.h"
 #include "render_world.h"
+#include "concrete_renderer.h"
 
 namespace bowtie
 {
@@ -42,41 +43,17 @@ struct UpdatedResources {
 	RenderResource* new_resources;
 };
 
-class Renderer
+struct Renderer
 {
-public:
-	static const unsigned unprocessed_commands_num = 64000;
-
-	Renderer(ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
-	~Renderer();
-
-	typedef std::function<RenderResource(RenderResourceHandle)> LookupResourceFunction;
-	
-	void add_renderer_command(const RendererCommand& command);
-	void deallocate_processed_commands(Allocator& render_interface_allocator);
-	RenderInterface& render_interface();
-	const Vector2u& resolution() const;
-	void run(IRendererContext* context, const Vector2u& resolution);
-	void stop(Allocator& render_interface_allocator);
-	
-private:
-	void consume_command_queue();
-	CreatedResources create_resources(RenderResourceData::Type type, void* data, void* dynamic_data);
-	void execute_command(const RendererCommand& command);
-	void notify_unprocessed_commands_exists();
-	void thread();
-	UpdatedResources update_resources(RenderResourceData::Type type, void* data, void* dynamic_data);
-	void wait_for_unprocessed_commands_to_exist();
-	
-	bool _active;
-	Allocator& _allocator;
-	ConcreteRenderer& _concrete_renderer;
+	bool active;
+	Allocator* allocator;
+	ConcreteRenderer _concrete_renderer;
 	IRendererContext* _context;
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
-	RenderInterface _render_interface;
-	Vector2u _resolution;
-	RenderResource _resource_table[render_resource_handle::num];
+	RenderInterface render_interface;
+	Vector2u resolution;
+	RenderResource resource_table[render_resource_handle::num];
 	Array<RenderTarget> _render_targets;
 	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
 	Array<RendererResourceObject> _resource_objects;
@@ -86,6 +63,15 @@ private:
 	std::mutex _unprocessed_commands_exist_mutex;
 	std::condition_variable _wait_for_unprocessed_commands_to_exist;
 	bool _unprocessed_commands_exist;
+};
+
+namespace renderer
+{
+	void init(Renderer& r, const ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
+	void deinit(Renderer& r);	
+	void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allocator);
+	void run(Renderer& r, IRendererContext* context, const Vector2u& resolution);
+	void stop(Renderer& r, Allocator& render_interface_allocator);
 };
 
 }

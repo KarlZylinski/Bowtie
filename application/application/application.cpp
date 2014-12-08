@@ -21,7 +21,7 @@ namespace
 void create_render_context_callback(HWND hwnd, const Vector2u& resolution)
 {
 	s_context->create(hwnd);
-	s_renderer->run(s_context, resolution);
+	renderer::run(*s_renderer, s_context, resolution);
 }
 
 void window_resized_callback(const Vector2u& resolution)
@@ -39,12 +39,6 @@ void key_up_callback(keyboard::Key key)
 	engine::key_released(*s_engine, key);
 }
 
-struct Haze
-{
-	int lax;
-	short bulgur;
-};
-
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
 	auto callstack_capturer = callstack_capturer::create();
@@ -55,11 +49,12 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
-		Renderer renderer(opengl_renderer, *renderer_allocator, allocator);
+		Renderer renderer;
+		renderer::init(renderer, opengl_renderer, *renderer_allocator, allocator);
 		s_renderer = &renderer;
 		OpenGLContextWindows context;
 		s_context = &context;
-		auto& render_interface = renderer.render_interface();
+		auto& render_interface = renderer.render_interface;
 
 		{
 			Engine engine;
@@ -73,13 +68,14 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				window::dispatch_messages(window);
 				engine::update(engine);
-				renderer.deallocate_processed_commands(allocator);
+				renderer::deallocate_processed_commands(renderer, allocator);
 			}
 
 			engine::deinit(engine);
 		}
 		
-		renderer.stop(allocator);
+		renderer::stop(renderer, allocator);
+		renderer::deinit(renderer);
 	}
 
 	memory_globals::destroy_allocator(renderer_allocator);
