@@ -49,7 +49,7 @@ World* create_world(Engine& e)
 void destroy_world(Engine& e, World& world)
 {
 	world::deinit(world);
-	e.allocator->destroy(&world);
+	e.allocator->deallocate(&world);
 }
 
 void key_pressed(Engine& e, keyboard::Key key)

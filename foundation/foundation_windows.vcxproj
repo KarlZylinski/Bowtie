@@ -26,7 +26,6 @@
     <ClInclude Include="foundation\hash.h" />
     <ClInclude Include="foundation\callstack_capturer.h" />
     <ClInclude Include="foundation\jzon.h" />
-    <ClInclude Include="foundation\math_types.h" />
     <ClInclude Include="foundation\matrix4.h" />
     <ClInclude Include="foundation\memory.h" />
     <ClInclude Include="foundation\memory_types.h" />
@@ -35,7 +34,6 @@
     <ClInclude Include="foundation\quad.h" />
     <ClInclude Include="foundation\result.h" />
     <ClInclude Include="foundation\stream.h" />
-    <ClInclude Include="foundation\string_stream.h" />
     <ClInclude Include="foundation\string_utils.h" />
     <ClInclude Include="foundation\temp_allocator.h" />
     <ClInclude Include="foundation\types.h" />
@@ -51,7 +49,6 @@
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />
     <ClCompile Include="foundation\stream.cpp" />
-    <ClCompile Include="foundation\string_stream.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

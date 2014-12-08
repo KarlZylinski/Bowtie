@@ -35,49 +35,6 @@ namespace bowtie
 			memset(p, 0, size);
 			return p;
 		}
-		
-		template<typename T> T* construct() { return new(allocate(sizeof(T), alignof(T))) T(); }
-		
-		template<typename T, typename P1> T* construct(P1& p1) { return new(allocate(sizeof(T), alignof(T))) T(p1); }
-		template<typename T, typename P1> T* construct(const P1& p1) { return new(allocate(sizeof(T), alignof(T))) T(p1); }
-		
-		template<typename T, typename P1, typename P2> T* construct(P1& p1, P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
-		template<typename T, typename P1, typename P2> T* construct(const P1& p1, P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
-		template<typename T, typename P1, typename P2> T* construct(P1& p1, const P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
-		template<typename T, typename P1, typename P2> T* construct(const P1& p1, const P2& p2) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2); }
-
-		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, const P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, const P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(P1& p1, P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, const P2& p2, P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		template<typename T, typename P1, typename P2, typename P3> T* construct(const P1& p1, const P2& p2, const P3& p3) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3); }
-		
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, P2& p2, P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, const P2& p2, P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, const P2& p2, const P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, P2& p2, const P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, P2& p2, P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, P2& p2, const P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, const P2& p2, P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, const P2& p2, const P3& p3, P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, P2& p2, P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, const P2& p2, P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, const P2& p2, const P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(P1& p1, P2& p2, const P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, P2& p2, P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, P2& p2, const P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, const P2& p2, P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-		template<typename T, typename P1, typename P2, typename P3, typename P4> T* construct(const P1& p1, const P2& p2, const P3& p3, const P4& p4) { return new(allocate(sizeof(T), alignof(T))) T(p1, p2, p3, p4); }
-
-		template<typename T>
-		void destroy(T* p)
-		{
-			p->~T();
-			deallocate(p);
-		}
 
 		char* copy_string(const char* str)
 		{

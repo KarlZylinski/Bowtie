@@ -221,7 +221,7 @@ void dispatch(RenderInterface& ri, const RendererCommand& command, void* dynamic
 RenderFence& create_fence(RenderInterface& ri)
 {
 	auto fence_command = internal::create_command(*ri.allocator, RendererCommand::Fence);
-	fence_command.data = ri.allocator->construct<RenderFence>();
+	fence_command.data = new(ri.allocator->allocate(sizeof(RenderFence), alignof(RenderFence))) RenderFence(); 
 	internal::dispatch(ri, fence_command);
 	return *(RenderFence*)fence_command.data;
 }
