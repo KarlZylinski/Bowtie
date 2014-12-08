@@ -24,7 +24,7 @@
     <ClInclude Include="foundation\concurrent_ring_buffer.h" />
     <ClInclude Include="foundation\file.h" />
     <ClInclude Include="foundation\hash.h" />
-    <ClInclude Include="foundation\icallstack_capturer.h" />
+    <ClInclude Include="foundation\callstack_capturer.h" />
     <ClInclude Include="foundation\jzon.h" />
     <ClInclude Include="foundation\math_types.h" />
     <ClInclude Include="foundation\matrix4.h" />

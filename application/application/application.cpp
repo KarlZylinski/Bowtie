@@ -47,11 +47,11 @@ struct Haze
 
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
-	auto callstack_capturer = new CallstackCapturer();
-	memory_globals::init(*callstack_capturer);
+	auto callstack_capturer = callstack_capturer::create();
+	memory_globals::init(callstack_capturer);
 	Allocator& allocator = memory_globals::default_allocator();
 	s_allocator = &allocator;	
-	Allocator* renderer_allocator = memory_globals::new_allocator(*callstack_capturer, "renderer allocator");
+	Allocator* renderer_allocator = memory_globals::new_allocator(callstack_capturer, "renderer allocator");
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
@@ -81,5 +81,4 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 	memory_globals::destroy_allocator(renderer_allocator);
 	memory_globals::shutdown();
-	delete callstack_capturer;
 }

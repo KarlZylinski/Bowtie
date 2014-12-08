@@ -25,10 +25,10 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Redo console as external application
 - [ ] Fix fonts, maybe as entity component or as some kind of gui thing... Not sure. Maybe have the renderer agnostic of the CPU impl?
 - [ ] Fix sorting of batches so that it breaks on not only material, but also on uniform permutations
-- [ ] Turn engine into namespace of functions which operates on engine struct.
+- [x] Turn engine into namespace of functions which operates on engine struct.
 - [x] Turn font into namespace of functions which operates on font struct.
 - [x] Turn render_interface into namespace of functions which operates on render_interface struct.
-- [ ] Rename resource_manager to resource_store and have functions which operate on it in namespace
+- [/] Rename resource_manager to resource_store and have functions which operate on it in namespace
     - [ ] Optionally remove load functions and add auto-load enum
 - [x] Convert view
 - [x] Convert game
