@@ -34,6 +34,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Convert game
 - [x] Convert window
 - [x] Convert render_world
+- [ ] Auto size from sprite renderer material texture. Maybe not hack in directly, but rather as a layer outside...
 - [ ] Fix adding and removal of components as well as unspawning of renderer side stuff, maybe toss out the "new" block in the component header and do it all explicitly.
 - [x] Convert callstack capturer to struct of function ptrs
 - [x] Convert render_material
