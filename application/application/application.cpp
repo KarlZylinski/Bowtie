@@ -59,11 +59,11 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		auto& render_interface = renderer.render_interface;
 
 		{
-			Engine engine;
+			Engine engine = {0};
 			engine::init(engine, allocator, render_interface);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
-			Window window;
+			Window window = {0};
 			window::init(window, instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);	
 				
 			while(window.is_open)
