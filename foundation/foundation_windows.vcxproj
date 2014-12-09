@@ -55,6 +55,9 @@
     <ClCompile Include="foundation\stream.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="foundation\allocator_helpers.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F1C9E9F9-BFD6-4020-A64C-54734C47B6B4}</ProjectGuid>
     <RootNamespace>foundation</RootNamespace>
