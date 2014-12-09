@@ -239,7 +239,8 @@ void destroy_render_target(RenderResource render_target)
 	destroy_render_target_internal(*(RenderTarget*)render_target.object);
 }
 
-void draw_batch(Allocator& ta, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
+
+void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
@@ -307,15 +308,16 @@ void draw_batch(Allocator& ta, unsigned start, unsigned size, const Array<Render
 		}
 	}
 
+	static const unsigned draw_buffer_size = 864000;
+	static float draw_buffer[draw_buffer_size];
 	const unsigned rect_buffer_num_elements = 54;
 	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
 	const unsigned total_buffer_size = rect_buffer_size * size;
-//	TempAllocator<864000> ta;
-	float* buffer = (float*)ta.alloc(total_buffer_size);
+	assert(total_buffer_size <= draw_buffer_size && "Draw buffer size exceeded limit. Increase in opengl_renderer.cpp");
 
 	for (unsigned i = start; i < start + size; ++i)
 	{
-		float* current_buffer = buffer + rect_buffer_num_elements * (i - start);
+		float* current_buffer = draw_buffer + rect_buffer_num_elements * (i - start);
 		const auto& v1 = components[i]->geometry.v1;
 		const auto& v2 = components[i]->geometry.v2;
 		const auto& v3 = components[i]->geometry.v3;
@@ -351,8 +353,7 @@ void draw_batch(Allocator& ta, unsigned start, unsigned size, const Array<Render
 		memcpy(current_buffer, &current_buffer_data, rect_buffer_size);
 	}
 
-	auto geometry = create_geometry_internal(buffer, total_buffer_size);
-	ta.dealloc(buffer);
+	auto geometry = create_geometry_internal(draw_buffer, total_buffer_size);
 
 	glBindBuffer(GL_ARRAY_BUFFER, geometry);
 	glEnableVertexAttribArray(0);

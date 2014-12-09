@@ -218,8 +218,6 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	for (unsigned i = 0; i < uniforms_jzon->size; ++i)
 	{
 		auto uniform_json = uniforms_jzon->array_values[i];
-
-		//TempAllocator4096 ta;
 		auto uniform_str = uniform_json->string_value;
 		auto split_uniform = split(*rm.allocator, uniform_str, ' ');
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
@@ -261,9 +259,7 @@ Material* load_material(ResourceManager& rm, const char* filename)
 		}
 
 		for (unsigned j = 0; j < array::size(split_uniform); ++j)
-		{
 			rm.allocator->dealloc(split_uniform[j]);
-		}
 
 		array::deinit(split_uniform);
 		uniforms[i] = uniform;
