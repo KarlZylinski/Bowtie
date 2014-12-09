@@ -3,16 +3,17 @@
 #include "types.h"
 #include "memory_types.h"
 
-/// All collection types assume that they are used to store POD objects. I.e. they:
-///
-/// * Don't call constructors and destructors on elements.
-/// * Move elements with memmove().
-///
-/// If you want to store items that are not PODs, use something other than these collection
-/// classes.
 namespace bowtie
 {
-	/// Dynamically resizable array of POD objects.
+	struct VectorHeader
+	{
+		Allocator* allocator;
+		unsigned size;
+		unsigned capacity;
+		unsigned element_size;
+		unsigned element_alignment;
+	};
+
 	template<typename T> struct Array
 	{
 		T &operator[](uint32_t i);
@@ -24,8 +25,6 @@ namespace bowtie
 		T* _data;
 	};
 
-	/// Hash from an uint64_t to POD objects. If you want to use a generic key
-	/// object, use a hash function to map that object to an uint64_t.
 	template<typename T> struct Hash
 	{
 	public:

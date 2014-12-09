@@ -39,6 +39,7 @@
     <ClInclude Include="foundation\stream.h" />
     <ClInclude Include="foundation\string_utils.h" />
     <ClInclude Include="foundation\types.h" />
+    <ClInclude Include="foundation\vector.h" />
     <ClInclude Include="foundation\vector2.h" />
     <ClInclude Include="foundation\vector2i.h" />
     <ClInclude Include="foundation\vector4.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />
     <ClCompile Include="foundation\stream.cpp" />
+    <ClCompile Include="foundation\vector.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>
   <ItemGroup>

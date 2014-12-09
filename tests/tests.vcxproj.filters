@@ -3,8 +3,10 @@
   <ItemGroup>
     <ClCompile Include="tests/tests.cpp" />
     <ClCompile Include="tests\concurrent_ring_buffer.cpp" />
+    <ClCompile Include="tests\vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tests\concurrent_ring_buffer.h" />
+    <ClInclude Include="tests\vector.h" />
   </ItemGroup>
 </Project>

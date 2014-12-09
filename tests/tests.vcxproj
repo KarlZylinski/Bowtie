@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="tests/tests.cpp" />
     <ClCompile Include="tests\concurrent_ring_buffer.cpp" />
+    <ClCompile Include="tests\vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine_windows.vcxproj">
@@ -44,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tests\concurrent_ring_buffer.h" />
+    <ClInclude Include="tests\vector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2D63BCE4-0E2C-44E6-A617-99AA5AE4CA78}</ProjectGuid>
