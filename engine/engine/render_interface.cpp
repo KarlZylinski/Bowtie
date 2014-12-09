@@ -103,11 +103,11 @@ void update_resource(RenderInterface& ri, RenderResourceData& resource, void* dy
 	dispatch(ri, create_or_update_resource_renderer_command(*ri.allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource));
 }
 
-RenderResourceHandle create_handle(Array<RenderResourceHandle>& free_handles)
+RenderResourceHandle create_handle(RenderResourceHandle* free_handles, unsigned* num_free_handles)
 {
-	assert(array::any(free_handles) && "Out of render resource handles!");
-	RenderResourceHandle handle = array::back(free_handles);
-	array::pop_back(free_handles);
+	assert(*num_free_handles > 0 && "Out of render resource handles!");
+	RenderResourceHandle handle = free_handles[*num_free_handles - 1];
+	--*num_free_handles;
 	return handle;
 }
 
@@ -124,28 +124,24 @@ void init(RenderInterface& ri, Allocator& allocator, ConcurrentRingBuffer& unpro
 	ri._unprocessed_commands_exist = &unprocessed_commands_exist;
 	ri._unprocessed_commands_exist_mutex = &unprocessed_commands_exist_mutex;
 	ri._wait_for_unprocessed_commands_to_exist = &wait_for_unprocessed_commands_to_exist;
-	array::init(ri._free_handles, allocator);
 	auto num_handles = render_resource_handle::num;
-	array::set_capacity(ri._free_handles, num_handles);
-
+	
 	for (unsigned handle = num_handles; handle > 0; --handle)
-		array::push_back(ri._free_handles, RenderResourceHandle(handle));
-}
+		ri._free_handles[num_handles - handle] = handle;
 
-void deinit(RenderInterface& ri)
-{
-	array::deinit(ri._free_handles);
+	ri.num_free_handles = num_handles;
 }
 
 RenderResourceHandle create_handle(RenderInterface& ri)
 {
-	return internal::create_handle(ri._free_handles);
+	return internal::create_handle(ri._free_handles, &ri.num_free_handles);
 }
 
 void free_handle(RenderInterface& ri, RenderResourceHandle handle)
 {
 	assert(handle < render_resource_handle::num && "Trying to free render resource handle with a higher value than render_resource_handle::num.");
-	array::push_back(ri._free_handles, handle);
+	ri._free_handles[ri.num_free_handles] = handle;
+	++ri.num_free_handles;
 }
 
 void create_texture(RenderInterface& ri, Texture& texture)
@@ -157,7 +153,7 @@ void create_texture(RenderInterface& ri, Texture& texture)
 	auto texture_resource = render_resource_data::create(RenderResourceData::Texture);
 
 	auto trd = TextureResourceData();
-	trd.handle = internal::create_handle(ri._free_handles);
+	trd.handle = internal::create_handle(ri._free_handles, &ri.num_free_handles);
 	trd.resolution = image.resolution;
 	trd.texture_data_dynamic_data_offset = 0;
 	trd.texture_data_size = image.data_size;
@@ -193,7 +189,7 @@ void create_render_world(RenderInterface& ri, World& world)
 	assert(world.render_handle == handle_not_initialized);
 	auto render_world_data = render_resource_data::create(RenderResourceData::World);
 	RenderWorldResourceData rwrd;
-	rwrd.handle = internal::create_handle(ri._free_handles);
+	rwrd.handle = internal::create_handle(ri._free_handles, &ri.num_free_handles);
 	render_world_data.data = &rwrd;
 	world.render_handle = rwrd.handle;
 	internal::create_resource(ri, render_world_data, nullptr, 0);

@@ -22,14 +22,14 @@ struct RenderInterface
 	bool* _unprocessed_commands_exist;
 	std::mutex* _unprocessed_commands_exist_mutex;
 	std::condition_variable* _wait_for_unprocessed_commands_to_exist;
-	Array<RenderResourceHandle> _free_handles;
+	RenderResourceHandle _free_handles[render_resource_handle::num];
+	unsigned num_free_handles;
 };
 
 namespace render_interface
 {
 	void init(RenderInterface& ri, Allocator& allocator, ConcurrentRingBuffer& unprocessed_commands, bool& unprocessed_commands_exist,
 			  std::mutex& unprocessed_commands_exist_mutex, std::condition_variable& wait_for_unprocessed_commands_to_exist);
-	void deinit(RenderInterface& ri);
 	RenderResourceHandle create_handle(RenderInterface& ri);
 	void free_handle(RenderInterface& ri, RenderResourceHandle handle);
 	void create_texture(RenderInterface& ri, Texture& texture);

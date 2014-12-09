@@ -556,7 +556,6 @@ void stop(Renderer& r, Allocator& render_interface_allocator)
 
 	r._wait_for_unprocessed_commands_to_exist.notify_all();
 	r._thread.join();
-	render_interface::deinit(r.render_interface);
 	deallocate_processed_commands(r, render_interface_allocator);
 }
 
