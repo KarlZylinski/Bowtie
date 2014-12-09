@@ -330,7 +330,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (resource.type == RenderResource::Object)
-					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
+					r._resource_objects[handle.handle] = RendererResourceObject(data.type, handle);
 			}
 
 			r.allocator->dealloc(created_resources.handles);
@@ -355,14 +355,14 @@ void execute_command(Renderer& r, const RendererCommand& command)
 				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
 
 				if (old_resource.type == RenderResource::Object)
-					array::remove(r._resource_objects, [&](const RendererResourceObject& rro) { return handle == rro.handle; });
+					memset(r._resource_objects + handle.handle, 0, sizeof(RendererResourceObject));
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
 				render_resource_table::set(r.resource_table, handle, new_resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (new_resource.type == RenderResource::Object)
-					array::push_back(r._resource_objects, RendererResourceObject(data.type, handle));
+					r._resource_objects[handle.handle] = RendererResourceObject(data.type, handle);
 			}
 
 			r.allocator->dealloc(updated_resources.handles);
@@ -481,7 +481,6 @@ void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& ren
 	r.active = false;
 	r._concrete_renderer = concrete_renderer;
 	array::init(r._processed_memory, *r.allocator);
-	array::init(r._resource_objects, *r.allocator);
 	memset(r._render_targets, 0, sizeof(RenderTarget) * max_render_targets);
 	r._unprocessed_commands_exist = false;
 	r.num_rendered_worlds = 0;
@@ -493,7 +492,7 @@ void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& ren
 
 void deinit(Renderer& r)
 {	
-	for (unsigned i = 0; i < array::size(r._resource_objects); ++i)
+	for (unsigned i = 0; i < render_resource_handle::num; ++i)
 	{
 		auto& resource_object = r._resource_objects[i];
 		auto object = render_resource_table::lookup(r.resource_table, resource_object.handle).object;
@@ -516,7 +515,6 @@ void deinit(Renderer& r)
 	
 	concurrent_ring_buffer::deinit(r._unprocessed_commands);
 	array::deinit(r._processed_memory);
-	array::deinit(r._resource_objects);
 }
 
 void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allocator)

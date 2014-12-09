@@ -24,6 +24,7 @@ struct RenderTarget;
 
 struct RendererResourceObject
 {
+	RendererResourceObject() {}
 	RendererResourceObject(RenderResourceData::Type type, RenderResourceHandle handle)
 		: type(type), handle(handle) {}
 
@@ -58,7 +59,7 @@ struct Renderer
 	RenderTarget _render_targets[renderer::max_render_targets];
 	RenderWorld* _rendered_worlds[renderer::max_rendered_worlds];
 	unsigned num_rendered_worlds;
-	Array<RendererResourceObject> _resource_objects;
+	RendererResourceObject _resource_objects[render_resource_handle::num]; // Same amount of maximum resource objects as handles.
 	RenderResource _rendered_worlds_combining_shader;
 	std::thread _thread;
 	ConcurrentRingBuffer _unprocessed_commands;
