@@ -36,6 +36,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Convert render_world
 - [ ] resource manager l 222, TA
 - [ ] gl rendeerr l 313, TA
+- [ ] Fix adding and removal of components as well as unspawning of renderer side stuff, maybe toss out the "new" block in the component header and do it all explicitly.
 - [x] Convert callstack capturer to struct of function ptrs
 - [x] Convert render_material
     - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
