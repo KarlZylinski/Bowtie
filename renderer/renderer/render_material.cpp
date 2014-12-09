@@ -30,7 +30,7 @@ namespace render_material
 void init(RenderMaterial& material, Allocator& allocator, RenderResourceHandle shader)
 {
 	material.shader = shader;
-	material.uniforms = array::create<RenderUniform>(allocator);
+	array::init(material.uniforms, allocator);
 }
 
 void deinit(RenderMaterial& material, Allocator& allocator)

@@ -10,7 +10,6 @@ namespace bowtie {
 	namespace array
 	{
 		template<typename T> void init(Array<T>& a, Allocator& allocator);
-		template<typename T> Array<T> create(Allocator& allocator);
 		template<typename T> void copy(Array<T>& from, Array<T>& to);
 		template<typename T> void deinit(Array<T>& a);
 
@@ -62,13 +61,6 @@ namespace bowtie {
 		{
 			memset(&a, 0, sizeof(Array<T>));
 			a._allocator = &allocator;
-		}
-		
-		template<typename T> inline Array<T> create(Allocator& allocator)
-		{
-			Array<T> a = {0};
-			a._allocator = &allocator;
-			return a;
 		}
 
 		template<typename T> inline void copy(Array<T>& from, Array<T>& to)

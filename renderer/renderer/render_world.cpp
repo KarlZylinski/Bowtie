@@ -13,7 +13,7 @@ namespace render_world
 
 void init(RenderWorld& rw, const RenderTarget& render_target, Allocator& allocator)
 {
-	rw.components = array::create<RenderComponent*>(allocator);
+	array::init(rw.components, allocator);
 	rw.render_target = render_target;
 }
 

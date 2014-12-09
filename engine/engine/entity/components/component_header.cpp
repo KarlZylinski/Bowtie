@@ -11,7 +11,7 @@ namespace component
 void init(ComponentHeader& h, Allocator& allocator)
 {
 	memset(&h, 0, sizeof(ComponentHeader));
-	h.map = hash::create<unsigned>(allocator);
+	hash::init(h.map, allocator);
 	reset_dirty(h);
 	reset_new(h);
 }

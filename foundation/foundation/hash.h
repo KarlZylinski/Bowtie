@@ -15,7 +15,6 @@ namespace bowtie {
 	namespace hash
 	{
 		template<typename T> void init(Hash<T>& a, Allocator& allocator);
-		template<typename T> Hash<T> create(Allocator& allocator);
 		template<typename T> void copy(Hash<T>& from, Hash<T>& to);
 		template<typename T> void deinit(Hash<T>& a);
 
@@ -196,7 +195,8 @@ namespace bowtie {
 
 		template<typename T> void rehash(Hash<T> &h, uint32_t new_size)
 		{
-			Hash<T> nh = hash::create<T>(*h._hash._allocator);
+			Hash<T> nh;
+			hash::init(nh, *h._hash._allocator);
 			array::resize(nh._hash, new_size);
 			array::reserve(nh._data, array::size(h._data));
 			for (uint32_t i=0; i<new_size; ++i)
@@ -206,7 +206,8 @@ namespace bowtie {
 				multi_hash::insert(nh, e.key, e.value);
 			}
 
-			Hash<T> empty = hash::create<T>(*h._hash._allocator);
+			Hash<T> empty;
+			hash::init(empty, *h._data._allocator);
 			hash::deinit(h);
 			memcpy(&h, &nh, sizeof(Hash<T>));
 			memcpy(&nh, &empty, sizeof(Hash<T>));
@@ -230,15 +231,8 @@ namespace bowtie {
 		template<typename T> inline void init(Hash<T>& a, Allocator& allocator)
 		{
 			memset(&a, 0, sizeof(Hash<T>));
-			a._hash = array::create<uint32_t>(allocator);
-			a._data = array::create<Hash<T>::Entry>(allocator);
-		}
-
-		template<typename T> inline Hash<T> create(Allocator& allocator)
-		{
-			Hash<T> a = { 0 };
-			init(a, allocator);
-			return a;
+			array::init(a._hash, allocator);
+			array::init(a._data, allocator);
 		}
 
 		template<typename T> inline void copy(Hash<T>& from, Hash<T>& to)
