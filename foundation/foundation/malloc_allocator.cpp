@@ -12,7 +12,6 @@ namespace bowtie
 namespace internal
 {
 
-using namespace bowtie;
 const unsigned HEADER_PAD_VALUE = 0xffffffffu;
 
 #if defined(TRACING)
