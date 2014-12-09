@@ -43,16 +43,16 @@ void key_up_callback(keyboard::Key key)
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
 	auto callstack_capturer = callstack_capturer::create();
-	auto allocator = new MallocAllocator();
-	memory::init_allocator(*allocator, "default allocator", &callstack_capturer);
-	s_allocator = allocator;
-	auto renderer_allocator = new MallocAllocator();
-	memory::init_allocator(*renderer_allocator, "renederer allocator", &callstack_capturer);
+	auto& allocator = *(new MallocAllocator());
+	memory::init_allocator(allocator, "default allocator", &callstack_capturer);
+	s_allocator = &allocator;
+	auto& renderer_allocator = *(new MallocAllocator());
+	memory::init_allocator(renderer_allocator, "renederer allocator", &callstack_capturer);
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer;
-		renderer::init(renderer, opengl_renderer, *renderer_allocator, *allocator);
+		renderer::init(renderer, opengl_renderer, renderer_allocator, allocator);
 		s_renderer = &renderer;
 		OpenGLContextWindows context;
 		s_context = &context;
@@ -60,7 +60,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 
 		{
 			Engine engine;
-			engine::init(engine, *allocator, render_interface);
+			engine::init(engine, allocator, render_interface);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
 			Window window;
@@ -70,16 +70,16 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				window::dispatch_messages(window);
 				engine::update(engine);
-				renderer::deallocate_processed_commands(renderer, *allocator);
+				renderer::deallocate_processed_commands(renderer, allocator);
 			}
 
 			engine::deinit(engine);
 		}
 		
-		renderer::stop(renderer, *allocator);
+		renderer::stop(renderer, allocator);
 		renderer::deinit(renderer);
 	}
 
-	memory::deinit_allocator(*renderer_allocator);
-	memory::deinit_allocator(*allocator);
+	memory::deinit_allocator(renderer_allocator);
+	memory::deinit_allocator(allocator);
 }
