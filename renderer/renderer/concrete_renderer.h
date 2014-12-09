@@ -33,14 +33,14 @@ struct ConcreteRenderer
 	RenderResource (*update_shader)(const RenderResource& shader, const char* vertex_source, const char* fragment_source);
 		
 	// State setters
-	void (*resize)(const Vector2u& size, Array<RenderTarget>& render_targets);
+	void (*resize)(const Vector2u& size, RenderTarget* render_targets);
 	void (*set_render_target)(const Vector2u& resolution, RenderResource render_target);
 	void (*unset_render_target)(const Vector2u& resolution);
 
 	// Drawing
 	void (*clear)();
 	void (*draw)(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table);
-	void (*combine_rendered_worlds)(RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds);
+	void (*combine_rendered_worlds)(RenderResource rendered_worlds_combining_shader, RenderWorld** rendered_worlds, unsigned num_rendered_worlds);
 };
 
 }

@@ -14,6 +14,7 @@
 #include "irenderer_context.h"
 #include "render_world.h"
 #include "concrete_renderer.h"
+#include "constants.h"
 
 namespace bowtie
 {
@@ -54,8 +55,9 @@ struct Renderer
 	RenderInterface render_interface;
 	Vector2u resolution;
 	RenderResource resource_table[render_resource_handle::num];
-	Array<RenderTarget> _render_targets;
-	Array<RenderWorld*> _rendered_worlds; // filled each frame with all rendered world, in order
+	RenderTarget _render_targets[renderer::max_render_targets];
+	RenderWorld* _rendered_worlds[renderer::max_rendered_worlds];
+	unsigned num_rendered_worlds;
 	Array<RendererResourceObject> _resource_objects;
 	RenderResource _rendered_worlds_combining_shader;
 	std::thread _thread;

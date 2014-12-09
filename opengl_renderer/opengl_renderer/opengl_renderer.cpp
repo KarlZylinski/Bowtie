@@ -11,8 +11,8 @@
 #include <renderer/render_texture.h>
 #include <renderer/render_world.h>
 #include <renderer/render_resource_table.h>
+#include <renderer/constants.h>
 #include "gl3w.h"
-//#include <foundation/temp_allocator.h>
 
 namespace bowtie
 {
@@ -66,7 +66,7 @@ void destroy_geometry_internal(GLuint handle)
 	glDeleteBuffers(1, &handle);
 }
 
-void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, const Array<RenderWorld*>& rendered_worlds)
+void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, RenderWorld** rendered_worlds, unsigned num_rendered_worlds)
 {
 	auto shader = rendered_worlds_combining_shader.handle;
 
@@ -81,10 +81,10 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, co
 
 	auto quad = create_geometry_internal((void*)fullscreen_quad_data, sizeof(fullscreen_quad_data));
 	glUseProgram(shader);
-	assert(array::size(rendered_worlds) <= 16);
+	assert(num_rendered_worlds <= renderer::max_rendered_worlds);
 	GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_samplers");
 
-	for (unsigned i = 0; i < array::size(rendered_worlds); ++i)
+	for (unsigned i = 0; i < num_rendered_worlds; ++i)
 	{
 		auto& rw = *rendered_worlds[i];
 		auto& rt = rw.render_target;
@@ -95,7 +95,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, co
 	}
 
 	GLuint num_samplers_id = glGetUniformLocation(shader, "num_samplers");
-	glUniform1i(num_samplers_id, array::size(rendered_worlds));
+	glUniform1i(num_samplers_id, num_rendered_worlds);
 
 	glBindBuffer(GL_ARRAY_BUFFER, quad);
 	glEnableVertexAttribArray(0);
@@ -438,13 +438,17 @@ void initialize_thread()
 	glDisable(GL_DEPTH_TEST);
 }
 
-void resize(const Vector2u& resolution, Array<RenderTarget>& render_targets)
+void resize(const Vector2u& resolution, RenderTarget* render_targets)
 {
 	glViewport(0, 0, resolution.x, resolution.y);
 
-	for (unsigned i = 0; i < array::size(render_targets); ++i)
+	for (unsigned i = 0; i < renderer::max_render_targets; ++i)
 	{
 		auto& rt = render_targets[i];
+
+		if (rt.handle.type == RenderResource::NotInitialized)
+			continue;
+
 		destroy_render_target_internal(rt);
 		auto texture = create_texture_internal(rt.texture.pixel_format, resolution, 0);
 		auto new_rt = create_render_target_internal(texture);

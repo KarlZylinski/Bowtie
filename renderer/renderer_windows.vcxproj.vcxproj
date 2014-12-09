@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\concrete_renderer.h" />
+    <ClInclude Include="renderer\constants.h" />
     <ClInclude Include="renderer\irenderer_context.h" />
     <ClInclude Include="renderer\render_component.h" />
     <ClInclude Include="renderer\render_material.h" />

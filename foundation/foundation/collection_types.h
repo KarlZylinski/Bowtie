@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "memory_types.h"
+#include <cassert>
 
 /// All collection types assume that they are used to store POD objects. I.e. they:
 ///
@@ -38,4 +39,19 @@ namespace bowtie
 		Array<uint32_t> _hash;
 		Array<Entry> _data;
 	};
+
+	/*namespace array
+	{
+		inline unsigned remove(void* arr, unsigned element_size, unsigned size, unsigned index)
+		{
+			assert(size != 0 && "Trying to remove from empty array");
+			assert(index < size && "Tried to remove outside of array");
+
+			if (index == size - 1)
+				return size - 1;
+
+			memcpy(memory::pointer_add(arr, element_size * index), memory::pointer_add(arr, element_size * size - 1), element_size);
+			return size - 1;
+		}
+	}*/
 }
