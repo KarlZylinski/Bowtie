@@ -32,7 +32,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] Optionally remove load functions and add auto-load enum
 - [x] Convert view
 - [x] Convert game
-- [ ] Convert window
+- [x] Convert window
 - [x] Convert render_world
 - [ ] Fix adding and removal of components as well as unspawning of renderer side stuff, maybe toss out the "new" block in the component header and do it all explicitly.
 - [x] Convert callstack capturer to struct of function ptrs
@@ -40,7 +40,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     - [ ] Have uniforms on main thread as well and keep them in a flat index-based list in renderer? Otherwise we cannot know what type uniforms are before sending update messages and we cannot fetch the values from lua.
 - [x] Convert resource_lut
 - [ ] Go a pass over all struct defs and see how they can be inited as 0 (as valid state). For example, maybe make 0 the not inited value for most stuff instead of -1? Can we make writer function init on demand instead of explicit init step?
-- [ ] Convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
+- [x] Convert renderer to struct + namespace and ditch irenderer for struct of func ptrs.
 - [x] Rewrite allocators, throw out construct / destroy
     - [ ] Add page allocator?
 - [ ] Array -> Vector, also shape up Vector to match new allocator shizmajings
@@ -49,7 +49,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Replace load functions in resource manager with only getter (maybe add auto load feature?). Introduce packages which specify which resources should be loaded. Have a boot package and then have levels/other types of packages do the rest. Or maybe specify default package from main.lua?
 - [ ] Move all struct defs into _type.h files?
 - [ ] Rename foundation to base
-- [ ] Move geometry generation to renderer
+- [x] Move geometry generation to renderer
 - [ ] Deffered / heightmap lighting
 - [ ] Replace PNG with homebrew DDS loader
 - [ ] Proper assert() and error()

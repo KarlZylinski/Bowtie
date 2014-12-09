@@ -237,6 +237,7 @@ CreatedResources create_resources(Renderer& r, RenderResourceData::Type type, vo
 			component->color = sprite.color[i];
 			component->material = sprite.material[i].render_handle;
 			component->geometry = sprite.geometry[i];
+			component->depth = sprite.depth[i];
 			render_world::add_component(rw, component);
 
 			cr.handles[i] = sprite.render_handle[i];
@@ -284,6 +285,7 @@ UpdatedResources update_resources(Renderer& r, RenderResourceData::Type type, vo
 				component->color = sprite.color[i];
 				component->material = sprite.material[i].render_handle;
 				component->geometry = sprite.geometry[i];
+				component->depth = sprite.depth[i];
 
 				ur.handles[i] = sprite.render_handle[i];
 				ur.new_resources[i] = RenderResource(component);

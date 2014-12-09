@@ -79,7 +79,7 @@ void create_sprites(Allocator& allocator, RenderInterface& ri, RenderResourceHan
 	{
 		sprite_renderer.data.render_handle[i] = render_interface::create_handle(ri);
 
-		if (sprite_renderer.data.material[i].render_handle == (unsigned)-1)
+		if (sprite_renderer.data.material[i].render_handle == handle_not_initialized)
 			sprite_renderer.data.material[i].render_handle = default_material;
 	}
 

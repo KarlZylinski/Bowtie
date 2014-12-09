@@ -29,7 +29,7 @@ void add_component(RenderWorld& rw, RenderComponent* component)
 
 void sort(RenderWorld& rw)
 {
-	std::sort(&rw.components[0], &rw.components[array::size(rw.components)], [](RenderComponent* x, RenderComponent* y){ return x->material < y->material; });
+	std::sort(&rw.components[0], &rw.components[array::size(rw.components)], [](RenderComponent* x, RenderComponent* y){ return (x->depth == y->depth && x->material < y->material) || x->depth < y->depth; });
 }
 
 } // namespace render_world

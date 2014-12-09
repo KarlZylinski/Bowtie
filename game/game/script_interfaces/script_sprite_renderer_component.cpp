@@ -98,6 +98,13 @@ int set_material(lua_State* lua)
 	return 0;
 }
 
+int set_depth(lua_State* lua)
+{
+	auto e = script_interface::to_entity(lua, 1);
+	sprite_renderer_component::set_depth(e.world->sprite_renderer_components, e.entity, (int)lua_tonumber(lua, 2));
+	return 0;
+}
+
 void load(lua_State* lua, Allocator& allocator)
 {
 	s_allocator = &allocator;
@@ -109,10 +116,11 @@ void load(lua_State* lua, Allocator& allocator)
 		{ "set_rect", set_rect },
 		{ "color", color },
 		{ "set_color", set_color },
-		{ "set_material", set_material }
+		{ "set_material", set_material },
+		{ "set_depth", set_depth }
 	};
 
-	script_interface::register_interface(lua, "SpriteRenderer", functions, 7);
+	script_interface::register_interface(lua, "SpriteRenderer", functions, 8);
 }
 
 } // namespace sprite_renderer_component_script_interface

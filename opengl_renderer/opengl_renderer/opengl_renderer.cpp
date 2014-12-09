@@ -401,18 +401,21 @@ void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, cons
 	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
 	unsigned num_components = array::size(render_world.components);
 	auto batch_material = render_world.components[0]->material;
+	auto batch_depth = render_world.components[0]->depth;
 	unsigned batch_start = 0;	
 
 	for (unsigned i = 0; i < num_components; ++i)
 	{
 		auto material = render_world.components[i]->material;
+		auto depth = render_world.components[i]->depth;
 
-		if (batch_material == material)
+		if (batch_material == material && batch_depth == depth)
 			continue;
 
 		draw_batch(ta, batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
 		batch_start = i;
 		batch_material = material;
+		batch_depth = depth;
 	}
 
 	// Draw last batch.
