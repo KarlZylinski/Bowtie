@@ -254,7 +254,7 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 	Matrix4 ident;
 
 	auto uniforms = material.uniforms;
-	for (unsigned i = 0; i < array::size(uniforms); ++i)
+	for (unsigned i = 0; i < material.num_uniforms; ++i)
 	{
 		const auto& uniform = uniforms[i];
 		auto value = uniform.value;

@@ -10,7 +10,7 @@ namespace
 
 void set_uniform_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const void* value, unsigned value_size)
 {
-	for (unsigned i = 0; i < array::size(material.uniforms); ++i)
+	for (unsigned i = 0; i < material.num_uniforms; ++i)
 	{
 		auto& uniform = material.uniforms[i];
 
@@ -27,23 +27,19 @@ void set_uniform_value(RenderMaterial& material, Allocator& allocator, uint64_t 
 namespace render_material
 {
 
-void init(RenderMaterial& material, Allocator& allocator, RenderResourceHandle shader)
+void init(RenderMaterial& material, Allocator& allocator, unsigned num_uniforms, RenderResourceHandle shader)
 {
 	material.shader = shader;
-	array::init(material.uniforms, allocator);
+	material.num_uniforms = num_uniforms;
+	material.uniforms = (RenderUniform*)allocator.alloc(num_uniforms * sizeof(RenderUniform));
 }
 
 void deinit(RenderMaterial& material, Allocator& allocator)
 {
-	for (unsigned i = 0; i < array::size(material.uniforms); ++i)
+	for (unsigned i = 0; i < material.num_uniforms; ++i)
 		allocator.dealloc(material.uniforms[i].value);
 
-	array::deinit(material.uniforms);
-}
-
-void add_uniform(RenderMaterial& material, const RenderUniform& uniform)
-{
-	array::push_back(material.uniforms, uniform);
+	allocator.dealloc(material.uniforms);
 }
 
 void set_uniform_vector4_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const Vector4& value)

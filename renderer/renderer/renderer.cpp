@@ -78,7 +78,7 @@ RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource
 SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data)
 {
 	auto material = (RenderMaterial*)allocator.alloc(sizeof(RenderMaterial));
-	render_material::init(*material, allocator, data.shader);
+	render_material::init(*material, allocator, data.num_uniforms, data.shader);
 	auto shader = render_resource_table::lookup(resource_table, data.shader);
 	auto uniforms_data = (UniformResourceData*)dynamic_data;
 	
@@ -110,7 +110,7 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 			}
 		}
 
-		render_material::add_uniform(*material, uniform);
+		material->uniforms[i] = uniform;
 	}
 
 	return single_resource(data.handle, RenderResource(material));
