@@ -110,7 +110,7 @@ void create(SpriteRendererComponent& c, Entity e, Allocator& allocator, const Re
 	c.data.color[i] = color;
 	c.data.rect[i] = rect;
 	c.data.material[i].render_handle = (unsigned)-1;
-	c.data.render_handle[i] = RenderResourceHandle::NotInitialized;
+	c.data.render_handle[i] = handle_not_initialized;
 	memset(c.data.geometry + i, 0, sizeof(Quad));
 	
 	if (c.header.first_new == (unsigned)-1)

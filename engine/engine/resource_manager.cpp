@@ -251,7 +251,7 @@ Material* load_material(ResourceManager& rm, const char* filename)
 				case uniform::Texture3:
 				{
 					auto texture = load_texture(rm, value_str);
-					stream::write(dynamic_uniform_data, &texture->render_handle.handle, sizeof(unsigned), *rm.allocator);
+					stream::write(dynamic_uniform_data, &texture->render_handle, sizeof(unsigned), *rm.allocator);
 				}
 					break;
 				}

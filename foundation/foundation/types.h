@@ -9,3 +9,8 @@
 #if !defined(alignof)
 	#define alignof(x) __alignof(x)
 #endif
+
+namespace bowtie
+{
+	static const unsigned handle_not_initialized = 0;
+}

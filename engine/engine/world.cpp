@@ -108,7 +108,7 @@ void init(World& w, Allocator& allocator, RenderInterface& render_interface, Res
 {
 	w.allocator = &allocator;
 	w.render_interface = &render_interface;
-	w.render_handle = RenderResourceHandle::NotInitialized;
+	w.render_handle = handle_not_initialized;
 	auto default_material = resource_manager::load(resource_manager, ResourceType::Material, "default.material");
 	assert(default_material.is_some && "Default material default.material is missing.");
 	w.default_material = ((Material*)default_material.value)->render_handle;

@@ -150,7 +150,7 @@ void free_handle(RenderInterface& ri, RenderResourceHandle handle)
 
 void create_texture(RenderInterface& ri, Texture& texture)
 {
-	assert(texture.render_handle == RenderResourceHandle::NotInitialized && "Trying to create already created texture");
+	assert(texture.render_handle == handle_not_initialized && "Trying to create already created texture");
 
 	Image& image = *texture.image;
 
@@ -190,7 +190,7 @@ void update_resource(RenderInterface& ri, RenderResourceData& resource)
 
 void create_render_world(RenderInterface& ri, World& world)
 {
-	assert(world.render_handle == RenderResourceHandle::NotInitialized);
+	assert(world.render_handle == handle_not_initialized);
 	auto render_world_data = render_resource_data::create(RenderResourceData::World);
 	RenderWorldResourceData rwrd;
 	rwrd.handle = internal::create_handle(ri._free_handles);

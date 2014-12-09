@@ -330,7 +330,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (resource.type == RenderResource::Object)
-					r._resource_objects[handle.handle] = RendererResourceObject(data.type, handle);
+					r._resource_objects[handle] = RendererResourceObject(data.type, handle);
 			}
 
 			r.allocator->dealloc(created_resources.handles);
@@ -355,14 +355,14 @@ void execute_command(Renderer& r, const RendererCommand& command)
 				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
 
 				if (old_resource.type == RenderResource::Object)
-					memset(r._resource_objects + handle.handle, 0, sizeof(RendererResourceObject));
+					memset(r._resource_objects + handle, 0, sizeof(RendererResourceObject));
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
 				render_resource_table::set(r.resource_table, handle, new_resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (new_resource.type == RenderResource::Object)
-					r._resource_objects[handle.handle] = RendererResourceObject(data.type, handle);
+					r._resource_objects[handle] = RendererResourceObject(data.type, handle);
 			}
 
 			r.allocator->dealloc(updated_resources.handles);
@@ -482,6 +482,7 @@ void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& ren
 	r._concrete_renderer = concrete_renderer;
 	array::init(r._processed_memory, *r.allocator);
 	memset(r._render_targets, 0, sizeof(RenderTarget) * max_render_targets);
+	memset(r._resource_objects, 0, sizeof(RendererResourceObject) * render_resource_handle::num);
 	r._unprocessed_commands_exist = false;
 	r.num_rendered_worlds = 0;
 	r._context = nullptr;
@@ -495,6 +496,10 @@ void deinit(Renderer& r)
 	for (unsigned i = 0; i < render_resource_handle::num; ++i)
 	{
 		auto& resource_object = r._resource_objects[i];
+
+		if (resource_object.handle == handle_not_initialized)
+			continue;
+
 		auto object = render_resource_table::lookup(r.resource_table, resource_object.handle).object;
 
 		switch (resource_object.type)
