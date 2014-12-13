@@ -490,7 +490,7 @@ void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& ren
 	r._context = nullptr;
 	const auto unprocessed_commands_num = 64000;
 	concurrent_ring_buffer::init(r._unprocessed_commands, *r.allocator, unprocessed_commands_num, sizeof(RendererCommand));
-	render_interface::init(r.render_interface, render_interface_allocator, r._unprocessed_commands, r._unprocessed_commands_exist, r._unprocessed_commands_exist_mutex, r._wait_for_unprocessed_commands_to_exist);
+	render_interface::init(&r.render_interface, &render_interface_allocator, &r._unprocessed_commands, &r._unprocessed_commands_exist, &r._unprocessed_commands_exist_mutex, &r._wait_for_unprocessed_commands_to_exist);
 }
 
 void deinit(Renderer& r)
@@ -544,7 +544,7 @@ void run(Renderer& r, IRendererContext* context, const Vector2u& resolution)
 	r._thread = std::thread(&internal::thread, &r);
 
 	// Do stuff here which should happen before anything else.
-	render_interface::resize(r.render_interface, resolution);
+	render_interface::resize(&r.render_interface, &resolution);
 }
 
 void stop(Renderer& r, Allocator& render_interface_allocator)

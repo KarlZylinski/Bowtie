@@ -78,7 +78,7 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
 
 	for (unsigned i = sprite_renderer->header.first_new; i < sprite_renderer->header.num; ++i)
 	{
-		sprite_renderer->data.render_handle[i] = render_interface::create_handle(*ri);
+		sprite_renderer->data.render_handle[i] = render_interface::create_handle(ri);
 
 		if (sprite_renderer->data.material[i].render_handle == handle_not_initialized)
 			sprite_renderer->data.material[i].render_handle = default_material;
@@ -88,7 +88,7 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
 	data.num = num;
 	data.world = render_world;
 	rrd.data = &data;
-	render_interface::create_resource(*ri, rrd, sprite_renderer_component::copy_new_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
 }
 
 void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererComponent* sprite_renderer, unsigned num)
@@ -97,7 +97,7 @@ void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererCom
 	UpdateSpriteRendererData data;
 	data.num = num;
 	rrd.data = &data;
-	render_interface::update_resource(*ri, rrd, sprite_renderer_component::copy_dirty_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::update_resource(ri, &rrd, sprite_renderer_component::copy_dirty_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
 }
 
 } // anonymous namespace
@@ -162,7 +162,7 @@ void update(World* w)
 
 void draw(World* w, const Rect* view, float time)
 {
-	auto render_world_command = render_interface::create_command(*w->render_interface, RendererCommand::RenderWorld);
+	auto render_world_command = render_interface::create_command(w->render_interface, RendererCommand::RenderWorld);
 
 	auto rwd = (RenderWorldData*)w->allocator->alloc(sizeof(RenderWorldData));
 	rwd->view = *view;
@@ -170,7 +170,7 @@ void draw(World* w, const Rect* view, float time)
 	rwd->time = time;
 	render_world_command.data = rwd;
 
-	render_interface::dispatch(*w->render_interface, render_world_command);
+	render_interface::dispatch(w->render_interface, &render_world_command);
 }
 
 } // namespace world

@@ -147,9 +147,9 @@ Shader* load_shader(ResourceManager& rm, const char* filename)
 		return (Shader*)existing.value;
 
 	auto resource_package = get_shader_resource_data(*rm.allocator, filename);
-	resource_package.data.handle = render_interface::create_handle(*rm.render_interface);
+	resource_package.data.handle = render_interface::create_handle(rm.render_interface);
 	auto create_resource_data = get_create_render_resource_data(RenderResourceData::Shader, &resource_package.data);
-	render_interface::create_resource(*rm.render_interface, create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
+	render_interface::create_resource(rm.render_interface, &create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
 	auto shader = (Shader*)rm.allocator->alloc(sizeof(Shader));
 	shader->render_handle = resource_package.data.handle;
 	add(rm._resources, name, ResourceType::Shader, shader);
@@ -186,7 +186,7 @@ Texture* load_texture(ResourceManager& rm, const char* filename)
 	auto texture = (Texture*)rm.allocator->alloc(sizeof(Texture));
 	texture->image = image;
 	texture->render_handle = RenderResourceHandle();
-	render_interface::create_texture(*rm.render_interface, *texture);
+	render_interface::create_texture(rm.render_interface, texture);
 	add(rm._resources, name, ResourceType::Texture, texture);
 	return texture;
 }
@@ -274,12 +274,12 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	rm.allocator->dealloc(dynamic_uniform_data.start);
 
 	MaterialResourceData mrd;
-	mrd.handle = render_interface::create_handle(*rm.render_interface);
+	mrd.handle = render_interface::create_handle(rm.render_interface);
 	mrd.num_uniforms = uniforms_jzon->size;
 	mrd.shader = shader->render_handle;
 	RenderResourceData material_resource_data = render_resource_data::create(RenderResourceData::RenderMaterial);
 	material_resource_data.data = &mrd;
-	render_interface::create_resource(*rm.render_interface, material_resource_data, uniforms_data, uniform_data_size);
+	render_interface::create_resource(rm.render_interface, &material_resource_data, uniforms_data, uniform_data_size);
 
 	auto material = (Material*)rm.allocator->alloc(sizeof(Material));
 	material->render_handle = mrd.handle;
@@ -384,7 +384,7 @@ void reload(ResourceManager& rm, ResourceType type, const char* filename)
 				auto shader_data = internal::get_shader_resource_data(*rm.allocator, filename);
 				shader_data.data.handle = shader->render_handle;
 				auto update_command_data = internal::get_update_render_resource_data(RenderResourceData::Shader, &shader_data.data);
-				render_interface::update_resource(*rm.render_interface, update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);
+				render_interface::update_resource(rm.render_interface, &update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);
 			}
 			break;
 		default:

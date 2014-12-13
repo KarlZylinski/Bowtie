@@ -40,7 +40,7 @@ World* create_world(Engine* e)
 {
 	auto world = (World*)e->allocator->alloc(sizeof(World));
 	world::init(world, e->allocator, e->render_interface, &e->resource_manager);
-	render_interface::create_render_world(*e->render_interface, *world);
+	render_interface::create_render_world(e->render_interface, world);
 	return world;
 }
 
@@ -62,12 +62,12 @@ void key_released(Engine* e, platform::Key key)
 
 void resize(Engine* e, const Vector2u* resolution)
 {
-	render_interface::resize(*e->render_interface, *resolution);
+	render_interface::resize(e->render_interface, resolution);
 }
 
 void update_and_render(Engine* e)
 {
-	render_interface::wait_until_idle(*e->render_interface);
+	render_interface::wait_until_idle(e->render_interface);
 
 	if (!e->_game.started)
 		game::start(e->_game);
@@ -75,13 +75,11 @@ void update_and_render(Engine* e)
 	float time_elapsed = e->timer->counter();
 	float dt = time_elapsed - e->_time_elapsed_previous_frame;
 	e->_time_elapsed_previous_frame = time_elapsed;
-
 	e->_time_since_start += dt;
-
 	game::update(e->_game, dt);
 	game::draw(e->_game);
-
-	render_interface::dispatch(*e->render_interface, render_interface::create_command(*e->render_interface, RendererCommand::CombineRenderedWorlds));
+	auto command = render_interface::create_command(e->render_interface, RendererCommand::CombineRenderedWorlds);
+	render_interface::dispatch(e->render_interface, &command);
 
 	if (keyboard::key_pressed(&e->keyboard, platform::Key::F5))
 		resource_manager::reload_all(e->resource_manager);
