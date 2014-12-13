@@ -5,7 +5,7 @@
 #include <foundation/quad.h>
 #include "material.h"
 #include "render_interface.h"
-#include "resource_manager.h"
+#include "resource_store.h"
 #include "timer.h"
 
 namespace bowtie
@@ -105,12 +105,12 @@ void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererCom
 namespace world
 {
 
-void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceManager* resource_manager)
+void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceStore* resource_store)
 {
 	w->allocator = allocator;
 	w->render_interface = render_interface;
 	w->render_handle = handle_not_initialized;
-	auto default_material = resource_manager::load(*resource_manager, ResourceType::Material, "default.material");
+	auto default_material = resource_store::load(resource_store, ResourceType::Material, "default.material");
 	assert(default_material.is_some && "Default material default.material is missing.");
 	w->default_material = ((Material*)default_material.value)->render_handle;
 	sprite_renderer_component::init(w->sprite_renderer_components, *allocator);

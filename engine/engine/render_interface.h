@@ -12,7 +12,6 @@ struct Allocator;
 struct World;
 struct Texture;
 struct RenderFence;
-struct ResourceManager;
 struct ConcurrentRingBuffer;
 
 struct RenderInterface

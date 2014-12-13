@@ -22,7 +22,7 @@ void init(Engine* e, Allocator* allocator, RenderInterface* render_interface, Ti
 	e->allocator = allocator;
 	e->render_interface = render_interface;
 	e->timer = timer;
-	resource_manager::init(e->resource_manager, *allocator, *render_interface);
+	resource_store::init(&e->resource_store, allocator, render_interface);
 	entity_manager::init(e->entity_manager, *allocator);
 	memset(&e->keyboard, 0, sizeof(Keyboard));
 	e->timer->start();
@@ -33,13 +33,13 @@ void deinit(Engine* e)
 {
 	game::deinit(e->_game);
 	entity_manager::deinit(e->entity_manager);
-	resource_manager::deinit(e->resource_manager);
+	resource_store::deinit(&e->resource_store);
 }
 
 World* create_world(Engine* e)
 {
 	auto world = (World*)e->allocator->alloc(sizeof(World));
-	world::init(world, e->allocator, e->render_interface, &e->resource_manager);
+	world::init(world, e->allocator, e->render_interface, &e->resource_store);
 	render_interface::create_render_world(e->render_interface, world);
 	return world;
 }
@@ -82,7 +82,7 @@ void update_and_render(Engine* e)
 	render_interface::dispatch(e->render_interface, &command);
 
 	if (keyboard::key_pressed(&e->keyboard, platform::Key::F5))
-		resource_manager::reload_all(e->resource_manager);
+		resource_store::reload_all(&e->resource_store);
 
 	keyboard::reset_pressed_released(&e->keyboard);
 }

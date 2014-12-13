@@ -1,5 +1,5 @@
 #include <engine/engine.h>
-#include <engine/resource_manager.h>
+#include <engine/resource_store.h>
 #include <foundation/array.h>
 #include <foundation/malloc_allocator.h>
 #include <foundation/memory.h>

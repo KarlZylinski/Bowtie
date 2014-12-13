@@ -36,7 +36,7 @@
     <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
-    <ClInclude Include="engine\resource_manager.h" />
+    <ClInclude Include="engine\resource_store.h" />
     <ClInclude Include="engine\resource_type.h" />
     <ClInclude Include="engine\shader.h" />
     <ClInclude Include="engine\shader_utils.h" />
@@ -57,7 +57,7 @@
     <ClCompile Include="engine\png.cpp" />
     <ClCompile Include="engine\rect.cpp" />
     <ClCompile Include="engine\render_interface.cpp" />
-    <ClCompile Include="engine\resource_manager.cpp" />
+    <ClCompile Include="engine\resource_store.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\world.cpp" />

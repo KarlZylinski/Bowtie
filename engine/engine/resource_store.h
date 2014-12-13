@@ -19,7 +19,7 @@ struct Image;
 struct Shader;
 struct Font;
 
-struct ResourceManager
+struct ResourceStore
 {
 	Allocator* allocator;
 	RenderInterface* render_interface;
@@ -27,19 +27,19 @@ struct ResourceManager
 	Option<void*> _default_resources[(unsigned)ResourceType::NumResourceTypes];
 };
 
-namespace resource_manager
+namespace resource_store
 {
 	static const char* resource_type_names[] = { "not_initialized", "shader", "image", "texture", "font", "material" };
 	ResourceType resource_type_from_string(const char* type);
 
-	void init(ResourceManager& rm, Allocator& allocator, RenderInterface& render_interface);
-	void deinit(ResourceManager& rm);
-	Option<void*> load(ResourceManager& rm, ResourceType type, const char* filename);
-	Option<void*> get(const ResourceManager& rm, ResourceType type, uint64_t name);
-	void reload(ResourceManager& rm, ResourceType type, const char* filename);
-	void reload_all(ResourceManager& rm);
-	void set_default(ResourceManager& rm, ResourceType type, void* resource);
-	Option<void*> get_default(const ResourceManager& rm, ResourceType type);
+	void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_interface);
+	void deinit(ResourceStore* rs);
+	Option<void*> load(ResourceStore* rs, ResourceType type, const char* filename);
+	Option<void*> get(const ResourceStore* rs, ResourceType type, uint64_t name);
+	void reload(ResourceStore* rs, ResourceType type, const char* filename);
+	void reload_all(ResourceStore* rs);
+	void set_default(ResourceStore* rs, ResourceType type, void* resource);
+	Option<void*> get_default(const ResourceStore* rs, ResourceType type);
 }
 
 } // namespace bowtie

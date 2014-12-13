@@ -9,7 +9,7 @@
 #include "image.h"
 #include "material.h"
 #include "render_fence.h"
-#include "resource_manager.h"
+#include "resource_store.h"
 #include "texture.h"
 #include "world.h"
 #include <foundation/concurrent_ring_buffer.h>

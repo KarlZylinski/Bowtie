@@ -2,7 +2,7 @@
 #include <foundation/vector2u.h>
 #include <game/game.h>
 #include "keyboard.h"
-#include "resource_manager.h"
+#include "resource_store.h"
 #include "entity/entity_manager.h"
 
 namespace bowtie
@@ -17,7 +17,7 @@ struct Engine
 {
 	Allocator* allocator;
 	EntityManager entity_manager;
-	ResourceManager resource_manager;
+	ResourceStore resource_store;
 	RenderInterface* render_interface;
 	Keyboard keyboard;
 	Game _game;

@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\view.cpp" />
-    <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\world.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
@@ -23,12 +22,12 @@
       <Filter>entity\components</Filter>
     </ClCompile>
     <ClCompile Include="engine\rect.cpp" />
+    <ClCompile Include="engine\resource_store.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />
     <ClInclude Include="engine\view.h" />
     <ClInclude Include="engine\timer.h" />
-    <ClInclude Include="engine\resource_manager.h" />
     <ClInclude Include="engine\image.h" />
     <ClInclude Include="engine\texture.h" />
     <ClInclude Include="engine\world.h" />
@@ -61,6 +60,7 @@
     <ClInclude Include="engine\entity\components\sprite_renderer_component.h">
       <Filter>entity\components</Filter>
     </ClInclude>
+    <ClInclude Include="engine\resource_store.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="entity">

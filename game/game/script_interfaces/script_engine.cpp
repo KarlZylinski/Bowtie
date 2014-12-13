@@ -25,29 +25,29 @@ int engine(lua_State* lua)
 
 int load_resource(lua_State* lua)
 {
-	auto resource = resource_manager::load(s_engine->resource_manager, resource_manager::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
+	auto resource = resource_store::load(&s_engine->resource_store, resource_store::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	lua_pushlightuserdata(lua, option::get_value_or_null(resource));
 	return 1;
 }
 
 int reload_resource(lua_State* lua)
 {
-	resource_manager::reload(s_engine->resource_manager, resource_manager::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
+	resource_store::reload(&s_engine->resource_store, resource_store::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	return 0;
 }
 
 int set_default_resource(lua_State* lua)
 {
 	auto resource_type_str = lua_tostring(lua, 1);
-	auto resource_type = resource_manager::resource_type_from_string(resource_type_str);
+	auto resource_type = resource_store::resource_type_from_string(resource_type_str);
 	auto resource_name = lua_tostring(lua, 2);
 	auto resource_hash = hash_str(resource_name);
 	
-	auto& resource_manager = s_engine->resource_manager;
-	auto resource = resource_manager::get(resource_manager, resource_type, resource_hash);
+	auto resource_store = &s_engine->resource_store;
+	auto resource = resource_store::get(resource_store, resource_type, resource_hash);
 
 	if (resource.is_some)
-		resource_manager::set_default(resource_manager, resource_type, resource.value);
+		resource_store::set_default(resource_store, resource_type, resource.value);
 
 	return 0;
 }
