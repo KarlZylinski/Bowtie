@@ -397,8 +397,8 @@ void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, cons
 	if (render_world.components._size == 0)
 		return;
 
-	auto view_matrix = view::view_matrix(view);
-	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
+	auto view_matrix = view::view_matrix(&view);
+	auto view_projection_matrix = view_matrix * view::projection_matrix(&view);
 	unsigned num_components = array::size(render_world.components);
 	auto batch_material = render_world.components[0]->material;
 	auto batch_depth = render_world.components[0]->depth;

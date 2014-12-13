@@ -17,7 +17,7 @@ struct SplitShader
 namespace shader_utils
 {
 
-SplitShader split_shader(const LoadedFile& shader_source, Allocator& allocator);
+SplitShader split_shader(const LoadedFile* shader_source, Allocator* allocator);
 
 }
 }

@@ -7,7 +7,6 @@
 #include <foundation/murmur_hash.h>
 #include <foundation/jzon.h>
 #include <foundation/string_utils.h>
-//#include <foundation/temp_allocator.h>
 #include <foundation/stream.h>
 #include <resource_path.h>
 
@@ -52,14 +51,14 @@ uint64_t get_name(uint64_t name, ResourceType type)
 	return name_with_type;
 }
 
-Option<void*> get(const Hash<void*>& resources, ResourceType type, uint64_t name)
+Option<void*> get(const Hash<void*>* resources, ResourceType type, uint64_t name)
 {
-	return hash::try_get<void*>(resources, get_name(name, type));
+	return hash::try_get<void*>(*resources, get_name(name, type));
 }
 
-void add(Hash<void*>& resources, uint64_t name, ResourceType type, void* resource)
+void add(Hash<void*>* resources, uint64_t name, ResourceType type, void* resource)
 {
-	hash::set(resources, get_name(name, type), resource);
+	hash::set(*resources, get_name(name, type), resource);
 }
 
 uniform::Type get_uniform_type_from_str(const char* str)
@@ -113,18 +112,18 @@ template<typename T> struct RenderResourcePackage
 	unsigned dynamic_data_size;
 };
 
-RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& allocator, const char* filename)
+RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* allocator, const char* filename)
 {
-	auto shader_source_option = file::load(filename, &allocator);
+	auto shader_source_option = file::load(filename, allocator);
 	assert(shader_source_option.is_some && "Failed loading shader source");
 	auto& shader_source = shader_source_option.value;
-	auto split_shader = shader_utils::split_shader(shader_source, allocator);
-	allocator.dealloc(shader_source.data);
+	auto split_shader = shader_utils::split_shader(&shader_source, allocator);
+	allocator->dealloc(shader_source.data);
 
 	ShaderResourceData srd;
 	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
 	unsigned shader_dynamic_data_offset = 0;
-	void* shader_resource_dynamic_data = allocator.alloc_raw(shader_dynamic_data_size);
+	void* shader_resource_dynamic_data = allocator->alloc_raw(shader_dynamic_data_size);
 
 	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
@@ -133,33 +132,33 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& al
 	srd.fragment_shader_source_offset = shader_dynamic_data_offset;
 	strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
 
-	allocator.dealloc(split_shader.vertex_source);
-	allocator.dealloc(split_shader.fragment_source);
+	allocator->dealloc(split_shader.vertex_source);
+	allocator->dealloc(split_shader.fragment_source);
 	return RenderResourcePackage<ShaderResourceData>(srd, shader_resource_dynamic_data, shader_dynamic_data_size);
 }
 
 Shader* load_shader(ResourceStore* rs, const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(rs->_resources, ResourceType::Shader, name);
+	auto existing = get(&rs->_resources, ResourceType::Shader, name);
 
 	if (existing.is_some)
 		return (Shader*)existing.value;
 
-	auto resource_package = get_shader_resource_data(*rs->allocator, filename);
+	auto resource_package = get_shader_resource_data(rs->allocator, filename);
 	resource_package.data.handle = render_interface::create_handle(rs->render_interface);
 	auto create_resource_data = get_create_render_resource_data(RenderResourceData::Shader, &resource_package.data);
 	render_interface::create_resource(rs->render_interface, &create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
 	auto shader = (Shader*)rs->allocator->alloc(sizeof(Shader));
 	shader->render_handle = resource_package.data.handle;
-	add(rs->_resources, name, ResourceType::Shader, shader);
+	add(&rs->_resources, name, ResourceType::Shader, shader);
 	return shader;
 }
 
 Image* load_image(ResourceStore* rs, const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(rs->_resources, ResourceType::Image, name);
+	auto existing = get(&rs->_resources, ResourceType::Image, name);
 
 	if (existing.is_some)
 		return (Image*)existing.value;
@@ -170,14 +169,14 @@ Image* load_image(ResourceStore* rs, const char* filename)
 	image->data = tex.data;
 	image->data_size = tex.data_size;
 	image->pixel_format = PixelFormat::RGBA;
-	add(rs->_resources, name, ResourceType::Shader, image);
+	add(&rs->_resources, name, ResourceType::Shader, image);
 	return image;
 }
 
 Texture* load_texture(ResourceStore* rs, const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(rs->_resources, ResourceType::Texture, name);
+	auto existing = get(&rs->_resources, ResourceType::Texture, name);
 
 	if (existing.is_some)
 		return (Texture*)existing.value;
@@ -187,14 +186,14 @@ Texture* load_texture(ResourceStore* rs, const char* filename)
 	texture->image = image;
 	texture->render_handle = RenderResourceHandle();
 	render_interface::create_texture(rs->render_interface, texture);
-	add(rs->_resources, name, ResourceType::Texture, texture);
+	add(&rs->_resources, name, ResourceType::Texture, texture);
 	return texture;
 }
 
 Material* load_material(ResourceStore* rs, const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(rs->_resources, ResourceType::Material, name);
+	auto existing = get(&rs->_resources, ResourceType::Material, name);
 
 	if (existing.is_some)
 		return (Material*)existing.value;
@@ -284,7 +283,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 	auto material = (Material*)rs->allocator->alloc(sizeof(Material));
 	material->render_handle = mrd.handle;
 	material->shader = shader;
-	add(rs->_resources, name, ResourceType::Material, material);
+	add(&rs->_resources, name, ResourceType::Material, material);
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return material;
 }
@@ -292,7 +291,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 Font* load_font(ResourceStore* rs, const char* filename)
 {
 	auto name = hash_name(filename);
-	auto existing = get(rs->_resources, ResourceType::Font, name);
+	auto existing = get(&rs->_resources, ResourceType::Font, name);
 	
 	if (existing.is_some)
 		return (Font*)existing.value;
@@ -312,7 +311,7 @@ Font* load_font(ResourceStore* rs, const char* filename)
 	font->columns = columns;
 	font->rows = rows;
 	font->texture = load_texture(rs, texture_filename);
-	add(rs->_resources, name, ResourceType::Font, font);
+	add(&rs->_resources, name, ResourceType::Font, font);
 	jzon_free_custom_allocator(jzon, &jzon_allocator);
 	return font;
 }
@@ -356,7 +355,7 @@ void deinit(ResourceStore* rs)
 
 Option<void*> get(const ResourceStore* rs, ResourceType type, uint64_t name)
 {
-	return internal::get(rs->_resources, type, name);
+	return internal::get(&rs->_resources, type, name);
 }
 
 Option<void*> load(ResourceStore* rs, ResourceType type, const char* filename)
@@ -381,7 +380,7 @@ void reload(ResourceStore* rs, ResourceType type, const char* filename)
 		case ResourceType::Shader:
 			{
 				auto shader = (Shader*)option::get(get(rs, type, name));
-				auto shader_data = internal::get_shader_resource_data(*rs->allocator, filename);
+				auto shader_data = internal::get_shader_resource_data(rs->allocator, filename);
 				shader_data.data.handle = shader->render_handle;
 				auto update_command_data = internal::get_update_render_resource_data(RenderResourceData::Shader, &shader_data.data);
 				render_interface::update_resource(rs->render_interface, &update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);

@@ -7,25 +7,25 @@ namespace bowtie
 namespace view
 {
 
-void move(Rect& rect, const Vector2& distance)
+void move(Rect* rect, const Vector2* distance)
 {
-	rect.position += distance;
+	rect->position += *distance;
 }
 
-Matrix4 projection_matrix(const Rect& rect)
+Matrix4 projection_matrix(const Rect* rect)
 {
 	Matrix4 projection_matrix;
 
 	auto near_plane = 0;
 	auto far_plane = 1.0f;
 	
-	projection_matrix[0][0] = 2.0f/(rect.size.x - 1.0f);
+	projection_matrix[0][0] = 2.0f/(rect->size.x - 1.0f);
 	projection_matrix[0][1] = 0;
 	projection_matrix[0][2] = 0;
 	projection_matrix[0][3] = 0;
 	
 	projection_matrix[1][0] = 0;
-	projection_matrix[1][1] = -2.0f/(rect.size.y - 1.0f);
+	projection_matrix[1][1] = -2.0f/(rect->size.y - 1.0f);
 	projection_matrix[1][2] = 0;
 	projection_matrix[1][3] = 0;
 
@@ -42,7 +42,7 @@ Matrix4 projection_matrix(const Rect& rect)
 	return projection_matrix;
 }
 
-Matrix4 view_matrix(const Rect& rect)
+Matrix4 view_matrix(const Rect* rect)
 {
 	Matrix4 view_matrix;
 		
@@ -61,15 +61,15 @@ Matrix4 view_matrix(const Rect& rect)
 	view_matrix[2][2] = 1;
 	view_matrix[2][3] = 0;
 	
-	view_matrix[3][0] = rect.position.x;
-	view_matrix[3][1] = rect.position.y;
+	view_matrix[3][0] = rect->position.x;
+	view_matrix[3][1] = rect->position.y;
 	view_matrix[3][2] = 0;
 	view_matrix[3][3] = 1;
 	
 	return view_matrix;
 }
 
-Matrix4 view_projection_matrix(const Rect& rect)
+Matrix4 view_projection_matrix(const Rect* rect)
 {
 	return view_matrix(rect) * projection_matrix(rect);
 }
