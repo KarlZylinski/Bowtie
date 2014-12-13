@@ -5,16 +5,16 @@
 namespace bowtie
 {
 
-namespace
+namespace internal
 {
 
-void set_uniform_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const void* value, unsigned value_size)
+void set_uniform_value(RenderMaterial* m, Allocator* allocator, uint64_t name, const void* value, unsigned value_size)
 {
-	for (unsigned i = 0; i < material.num_uniforms; ++i)
+	for (unsigned i = 0; i < m->num_uniforms; ++i)
 	{
-		auto& uniform = material.uniforms[i];
+		auto uniform = m->uniforms + i;
 
-		if (uniform.name == name)
+		if (uniform->name == name)
 		{
 			render_uniform::set_value(uniform, allocator, value, value_size);
 			break;
@@ -27,34 +27,34 @@ void set_uniform_value(RenderMaterial& material, Allocator& allocator, uint64_t 
 namespace render_material
 {
 
-void init(RenderMaterial& material, Allocator& allocator, unsigned num_uniforms, RenderResourceHandle shader)
+void init(RenderMaterial* m, Allocator* allocator, unsigned num_uniforms, RenderResourceHandle shader)
 {
-	material.shader = shader;
-	material.num_uniforms = num_uniforms;
-	material.uniforms = (RenderUniform*)allocator.alloc(num_uniforms * sizeof(RenderUniform));
+	m->shader = shader;
+	m->num_uniforms = num_uniforms;
+	m->uniforms = (RenderUniform*)allocator->alloc(num_uniforms * sizeof(RenderUniform));
 }
 
-void deinit(RenderMaterial& material, Allocator& allocator)
+void deinit(RenderMaterial* m, Allocator* allocator)
 {
-	for (unsigned i = 0; i < material.num_uniforms; ++i)
-		allocator.dealloc(material.uniforms[i].value);
+	for (unsigned i = 0; i < m->num_uniforms; ++i)
+		allocator->dealloc(m->uniforms[i].value);
 
-	allocator.dealloc(material.uniforms);
+	allocator->dealloc(m->uniforms);
 }
 
-void set_uniform_vector4_value(RenderMaterial& material, Allocator& allocator, uint64_t name, const Vector4& value)
+void set_uniform_vector4_value(RenderMaterial* m, Allocator* allocator, uint64_t name, const Vector4* value)
 {
-	set_uniform_value(material, allocator, name, &value, sizeof(Vector4));
+	internal::set_uniform_value(m, allocator, name, value, sizeof(Vector4));
 }
 
-void set_uniform_unsigned_value(RenderMaterial& material, Allocator& allocator, uint64_t name, unsigned value)
+void set_uniform_unsigned_value(RenderMaterial* m, Allocator* allocator, uint64_t name, unsigned value)
 {
-	set_uniform_value(material, allocator, name, &value, sizeof(unsigned));
+	internal::set_uniform_value(m, allocator, name, &value, sizeof(unsigned));
 }
 
-void set_uniform_float_value(RenderMaterial& material, Allocator& allocator, uint64_t name, float value)
+void set_uniform_float_value(RenderMaterial* m, Allocator* allocator, uint64_t name, float value)
 {
-	set_uniform_value(material, allocator, name, &value, sizeof(float));
+	internal::set_uniform_value(m, allocator, name, &value, sizeof(float));
 }
 
 } // namespace render_material

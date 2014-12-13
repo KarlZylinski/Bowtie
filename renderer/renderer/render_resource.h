@@ -3,17 +3,13 @@
 namespace bowtie
 {
 	
+enum class RenderResourceType
+{
+	NotInitialized, Handle, Object
+};
+
 struct RenderResource
 {
-	RenderResource() : type(NotInitialized) {}
-	explicit RenderResource(unsigned h) : handle(h), type(Handle) {}
-	explicit RenderResource(void* p) : object(p), type(Object) {}
-
-	enum RenderResourceType
-	{
-		NotInitialized, Handle, Object
-	};
-
 	RenderResourceType type;
 	union
 	{
@@ -21,5 +17,24 @@ struct RenderResource
 		unsigned handle;
 	};
 };
+
+namespace render_resource
+{
+	inline RenderResource create_handle(unsigned h)
+	{
+		RenderResource rr;
+		rr.type = RenderResourceType::Handle;
+		rr.handle = h;
+		return rr;
+	}
+
+	inline RenderResource create_object(void* p)
+	{
+		RenderResource rr;
+		rr.type = RenderResourceType::Object;
+		rr.object = p;
+		return rr;
+	}
+}
 
 } // namespace bowtie

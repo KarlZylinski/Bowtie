@@ -115,7 +115,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, Re
 
 RenderResource create_geometry(void* data, unsigned data_size)
 {
-	return RenderResource(create_geometry_internal(data, data_size));
+	return render_resource::create_handle(create_geometry_internal(data, data_size));
 }
 
 GLuint create_render_target_internal(GLuint texture_id)
@@ -132,7 +132,7 @@ GLuint create_render_target_internal(GLuint texture_id)
 
 RenderResource create_render_target(const RenderTexture* texture)
 {
-	return RenderResource(create_render_target_internal(texture->render_handle.handle));
+	return render_resource::create_handle(create_render_target_internal(texture->render_handle.handle));
 }
 
 GLuint compile_glsl(const char* shader_source, GLenum shader_type)
@@ -197,7 +197,7 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 
 	assert(program != 0 && "Failed to link glsl shader");
 
-	return RenderResource(program);
+	return render_resource::create_handle(program);
 }
 
 GLuint create_texture_internal(PixelFormat pf, const Vector2u* resolution, void* data)
@@ -214,7 +214,7 @@ GLuint create_texture_internal(PixelFormat pf, const Vector2u* resolution, void*
 
 RenderResource create_texture(PixelFormat pf, const Vector2u* resolution, void* data)
 {
-	return RenderResource(create_texture_internal(pf, resolution, data));
+	return render_resource::create_handle(create_texture_internal(pf, resolution, data));
 }
 
 void destroy_geometry(RenderResource handle)
@@ -449,14 +449,14 @@ void resize(const Vector2u* resolution, RenderTarget* render_targets)
 	{
 		auto rt = render_targets + i;
 
-		if (rt->handle.type == RenderResource::NotInitialized)
+		if (rt->handle.type == RenderResourceType::NotInitialized)
 			continue;
 
 		destroy_render_target_internal(rt);
 		auto texture = create_texture_internal(rt->texture.pixel_format, resolution, 0);
 		auto new_rt = create_render_target_internal(texture);
-		rt->handle = RenderResource(new_rt);
-		rt->texture.render_handle = RenderResource(texture);
+		rt->handle = render_resource::create_handle(new_rt);
+		rt->texture.render_handle = render_resource::create_handle(texture);
 	}
 }
 
@@ -473,7 +473,7 @@ void destroy_shader(RenderResource handle)
 
 void unset_render_target(const Vector2u* resolution)
 {
-	set_render_target(resolution, RenderResource(0u));
+	set_render_target(resolution, render_resource::create_handle(0u));
 }
 
 RenderResource update_shader(const RenderResource* shader, const char* vertex_source, const char* fragment_source)

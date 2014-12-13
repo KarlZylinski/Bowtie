@@ -68,16 +68,21 @@ RenderUniform create_uniform(ConcreteRenderer& concrete_renderer, RenderResource
 	auto location = concrete_renderer.get_uniform_location(shader, name);
 	auto name_hash = hash_str(name);
 
-	if (uniform_data.automatic_value == uniform::None)
-		return RenderUniform(uniform_data.type, name_hash, location);
-	else
-		return RenderUniform(uniform_data.type, name_hash, location, uniform_data.automatic_value);
+	RenderUniform ru = {};
+	ru.type = uniform_data.type;
+	ru.name = name_hash;
+	ru.location = location;
+
+	if (uniform_data.automatic_value != uniform::None)
+		ru.automatic_value = uniform_data.automatic_value;
+
+	return ru;
 }
 
 SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData& data)
 {
 	auto material = (RenderMaterial*)allocator.alloc(sizeof(RenderMaterial));
-	render_material::init(*material, allocator, data.num_uniforms, data.shader);
+	render_material::init(material, &allocator, data.num_uniforms, data.shader);
 	auto shader = render_resource_table::lookup(resource_table, data.shader);
 	auto uniforms_data = (UniformResourceData*)dynamic_data;
 	
@@ -93,15 +98,15 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 			switch (uniform_data.type)
 			{
 			case uniform::Float:
-				render_uniform::set_value(uniform, allocator, value, sizeof(float));
+				render_uniform::set_value(&uniform, &allocator, value, sizeof(float));
 				break;
 			case uniform::Texture1:
 			case uniform::Texture2:
 			case uniform::Texture3:
-				render_uniform::set_value(uniform, allocator, value, sizeof(unsigned));
+				render_uniform::set_value(&uniform, &allocator, value, sizeof(unsigned));
 				break;
 			case uniform::Vec4:
-				render_uniform::set_value(uniform, allocator, value, sizeof(Vector4));
+				render_uniform::set_value(&uniform, &allocator, value, sizeof(Vector4));
 				break;
 			default:
 				assert(!"Unkonwn uniform type.");
@@ -112,14 +117,14 @@ SingleCreatedResource create_material(Allocator& allocator, ConcreteRenderer& co
 		material->uniforms[i] = uniform;
 	}
 
-	return single_resource(data.handle, RenderResource(material));
+	return single_resource(data.handle, render_resource::create_object(material));
 }
 
 RenderTarget* find_free_render_target_slot(RenderTarget* render_targets)
 {
 	for (unsigned i = 0; i < renderer::max_render_targets; ++i)
 	{
-		if (render_targets[i].handle.type == RenderResource::NotInitialized)
+		if (render_targets[i].handle.type == RenderResourceType::NotInitialized)
 			return render_targets + i;
 	}
 
@@ -140,7 +145,7 @@ RenderResource create_render_target_resource(ConcreteRenderer& concrete_renderer
 {
 	auto render_target = (RenderTarget*)allocator.alloc(sizeof(RenderTarget));
 	*render_target = create_render_target(concrete_renderer, texture, render_targets);
-	return RenderResource(render_target);
+	return render_resource::create_object(render_target);
 }
 
 SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* dynamic_data, const ShaderResourceData& data)
@@ -162,17 +167,16 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 
 RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
-	auto texture_resource = concrete_renderer.create_texture(pixel_format, &resolution, data);
 	RenderTexture* render_texture = (RenderTexture*)allocator.alloc(sizeof(RenderTexture));
 	*render_texture = create_texture(concrete_renderer, pixel_format, resolution, data);
-	return RenderResource(render_texture);
+	return render_resource::create_object(render_texture);
 }
 
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target)
 {
 	auto rw = (RenderWorld*)allocator.alloc(sizeof(RenderWorld));
 	render_world::init(*rw, render_target, allocator);
-	return single_resource(data.handle, RenderResource(rw));
+	return single_resource(data.handle, render_resource::create_object(rw));
 }
 
 void flip(RendererContext* context, PlatformRendererContextData* platform_data)
@@ -241,7 +245,7 @@ CreatedResources create_resources(Renderer& r, RenderResourceData::Type type, vo
 			render_world::add_component(rw, component);
 
 			cr.handles[i] = sprite.render_handle[i];
-			cr.resources[i] = RenderResource(component);
+			cr.resources[i] = render_resource::create_object(component);
 		}
 
 		return cr;
@@ -288,8 +292,8 @@ UpdatedResources update_resources(Renderer& r, RenderResourceData::Type type, vo
 				component->depth = sprite.depth[i];
 
 				ur.handles[i] = sprite.render_handle[i];
-				ur.new_resources[i] = RenderResource(component);
-				ur.old_resources[i] = RenderResource(component);
+				ur.new_resources[i] = render_resource::create_object(component);
+				ur.old_resources[i] = render_resource::create_object(component);
 			}
 
 			return ur;
@@ -325,13 +329,13 @@ void execute_command(Renderer& r, const RendererCommand& command)
 				auto handle = created_resources.handles[i];
 				auto resource = created_resources.resources[i];
 
-				assert(resource.type != RenderResource::NotInitialized && "Failed to load resource!");
+				assert(resource.type != RenderResourceType::NotInitialized && "Failed to load resource!");
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
 				render_resource_table::set(r.resource_table, handle, resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-				if (resource.type == RenderResource::Object)
+				if (resource.type == RenderResourceType::Object)
 					r._resource_objects[handle] = RendererResourceObject(data.type, handle);
 			}
 
@@ -354,16 +358,16 @@ void execute_command(Renderer& r, const RendererCommand& command)
 				auto old_resource = updated_resources.old_resources[i];
 				auto new_resource = updated_resources.new_resources[i];
 
-				assert(new_resource.type != RenderResource::NotInitialized && "Failed to load resource!");
+				assert(new_resource.type != RenderResourceType::NotInitialized && "Failed to load resource!");
 
-				if (old_resource.type == RenderResource::Object)
+				if (old_resource.type == RenderResourceType::Object)
 					memset(r._resource_objects + handle, 0, sizeof(RendererResourceObject));
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
 				render_resource_table::set(r.resource_table, handle, new_resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
-				if (new_resource.type == RenderResource::Object)
+				if (new_resource.type == RenderResourceType::Object)
 					r._resource_objects[handle] = RendererResourceObject(data.type, handle);
 			}
 
@@ -394,11 +398,11 @@ void execute_command(Renderer& r, const RendererCommand& command)
 		case RendererCommand::SetUniformValue:
 		{
 			const auto& set_uniform_value_data = *(SetUniformValueData*)command.data;
-			auto& material = *(RenderMaterial*)render_resource_table::lookup(r.resource_table, set_uniform_value_data.material).object;
+			auto material = (RenderMaterial*)render_resource_table::lookup(r.resource_table, set_uniform_value_data.material).object;
 			switch (set_uniform_value_data.type)
 			{
 			case uniform::Float:
-				render_material::set_uniform_float_value(material, *r.allocator, set_uniform_value_data.uniform_name, *(float*)command.dynamic_data);
+				render_material::set_uniform_float_value(material, r.allocator, set_uniform_value_data.uniform_name, *(float*)command.dynamic_data);
 				break;
 			default:
 				assert(!"Unknown uniform type");
@@ -513,7 +517,7 @@ void deinit(Renderer& r)
 			r.allocator->dealloc((RenderTarget*)object);
 			break;
 		case RenderResourceData::RenderMaterial:
-			render_material::deinit(*(RenderMaterial*)object, *r.allocator);
+			render_material::deinit((RenderMaterial*)object, r.allocator);
 			break;
 		}
 
