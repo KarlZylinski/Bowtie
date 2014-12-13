@@ -25,13 +25,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os\keyboard.h" />
+    <ClInclude Include="os\renderer_context.h" />
     <ClInclude Include="os\windows\callstack_capturer.h" />
     <ClInclude Include="os\windows\keyboard.h" />
+    <ClInclude Include="os\windows\opengl_context.h" />
     <ClInclude Include="os\windows\timer.h" />
     <ClInclude Include="os\windows\window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="os\windows\callstack_capturer.cpp" />
+    <ClCompile Include="os\windows\opengl_context.cpp" />
     <ClCompile Include="os\windows\timer.cpp" />
     <ClCompile Include="os\windows\window.cpp" />
   </ItemGroup>
@@ -103,7 +106,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\os;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>

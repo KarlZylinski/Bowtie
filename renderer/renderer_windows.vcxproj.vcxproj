@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClInclude Include="renderer\concrete_renderer.h" />
     <ClInclude Include="renderer\constants.h" />
-    <ClInclude Include="renderer\irenderer_context.h" />
+    <ClInclude Include="renderer\renderer_context.h" />
     <ClInclude Include="renderer\render_component.h" />
     <ClInclude Include="renderer\render_material.h" />
     <ClInclude Include="renderer\renderer.h" />
@@ -40,6 +40,9 @@
     <ClCompile Include="renderer\render_uniform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\os\os_windows.vcxproj">
+      <Project>{ee0cf23b-fec0-4b55-a8df-d901d7bd9b73}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D6836398-0790-4B6D-8A0F-E299F5E306FC}</ProjectGuid>
@@ -109,7 +112,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>

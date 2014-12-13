@@ -2,12 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="opengl_renderer\opengl_renderer.cpp" />
-    <ClCompile Include="opengl_renderer\opengl_context_windows.cpp" />
     <ClCompile Include="opengl_renderer\gl3w.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="opengl_renderer\opengl_renderer.h" />
-    <ClInclude Include="opengl_renderer\opengl_context_windows.h" />
     <ClInclude Include="opengl_renderer\GL3\gl3.h" />
     <ClInclude Include="opengl_renderer\gl3w.h" />
   </ItemGroup>

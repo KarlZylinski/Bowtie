@@ -3,10 +3,10 @@
 #include <foundation/array.h>
 #include <foundation/malloc_allocator.h>
 #include <foundation/memory.h>
-#include <opengl_renderer/opengl_context_windows.h>
 #include <opengl_renderer/opengl_renderer.h>
 #include <os/windows/callstack_capturer.h>
 #include <os/windows/window.h>
+#include <os/windows/opengl_context.h>
 #include <renderer/renderer.h>
 #include <engine/timer.h>
 #include <os/windows/timer.h>
@@ -17,14 +17,14 @@ namespace
 {
 	Engine* s_engine;
 	Renderer* s_renderer;
-	OpenGLContextWindows* s_context;
+	PlatformRendererContextData* s_render_context_data;
 	Allocator* s_allocator;
 }
 
 void create_render_context_callback(HWND hwnd, const Vector2u* resolution)
 {
-	s_context->create(hwnd);
-	renderer::run(*s_renderer, s_context, *resolution);
+	windows::opengl_context::init(s_render_context_data, hwnd);
+	renderer::run(*s_renderer, s_render_context_data, *resolution);
 }
 
 void window_resized_callback(const Vector2u* resolution)
@@ -54,10 +54,10 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer;
-		renderer::init(renderer, opengl_renderer, renderer_allocator, allocator);
+		auto renderer_context = windows::opengl_context::create();
+		renderer::init(renderer, opengl_renderer, renderer_allocator, allocator, &renderer_context);
+		s_render_context_data = (PlatformRendererContextData*)allocator.alloc(sizeof(PlatformRendererContextData));
 		s_renderer = &renderer;
-		OpenGLContextWindows context;
-		s_context = &context;
 		auto& render_interface = renderer.render_interface;
 
 		{

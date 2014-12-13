@@ -11,7 +11,7 @@
 #include <foundation/concurrent_ring_buffer.h>
 #include "render_resource_table.h"
 #include "render_resource.h"
-#include "irenderer_context.h"
+#include <os/renderer_context.h>
 #include "render_world.h"
 #include "concrete_renderer.h"
 #include "constants.h"
@@ -50,7 +50,8 @@ struct Renderer
 	bool active;
 	Allocator* allocator;
 	ConcreteRenderer _concrete_renderer;
-	IRendererContext* _context;
+	RendererContext _context;
+	PlatformRendererContextData* _context_data;
 	Array<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
 	RenderInterface render_interface;
@@ -70,10 +71,10 @@ struct Renderer
 
 namespace renderer
 {
-	void init(Renderer& r, const ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator);
+	void init(Renderer& r, const ConcreteRenderer& concrete_renderer_obj, Allocator& renderer_allocator, Allocator& render_interface_allocator, const RendererContext* context);
 	void deinit(Renderer& r);	
 	void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allocator);
-	void run(Renderer& r, IRendererContext* context, const Vector2u& resolution);
+	void run(Renderer& r, PlatformRendererContextData* context, const Vector2u& resolution);
 	void stop(Renderer& r, Allocator& render_interface_allocator);
 };
 

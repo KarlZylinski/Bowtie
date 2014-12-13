@@ -15,6 +15,9 @@
     <ClCompile Include="os\windows\timer.cpp">
       <Filter>windows</Filter>
     </ClCompile>
+    <ClCompile Include="os\windows\opengl_context.cpp">
+      <Filter>windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os\windows\callstack_capturer.h">
@@ -28,6 +31,10 @@
     </ClInclude>
     <ClInclude Include="os\keyboard.h" />
     <ClInclude Include="os\windows\timer.h">
+      <Filter>windows</Filter>
+    </ClInclude>
+    <ClInclude Include="os\renderer_context.h" />
+    <ClInclude Include="os\windows\opengl_context.h">
       <Filter>windows</Filter>
     </ClInclude>
   </ItemGroup>

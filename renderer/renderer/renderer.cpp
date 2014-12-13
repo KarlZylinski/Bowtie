@@ -175,9 +175,9 @@ SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResour
 	return single_resource(data.handle, RenderResource(rw));
 }
 
-void flip(IRendererContext& context)
+void flip(RendererContext* context, PlatformRendererContextData* platform_data)
 {
-	context.flip();
+	context->flip(platform_data);
 }
 
 void raise_fence(RenderFence& fence)
@@ -388,7 +388,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 			r._concrete_renderer.clear();
 			r._concrete_renderer.combine_rendered_worlds(r._rendered_worlds_combining_shader, r._rendered_worlds, r.num_rendered_worlds);
 			r.num_rendered_worlds = 0;
-			flip(*r._context);
+			flip(&r._context, r._context_data);
 		} break;
 
 		case RendererCommand::SetUniformValue:
@@ -450,7 +450,7 @@ void wait_for_unprocessed_commands_to_exist(Renderer& r)
 void thread(Renderer* renderer)
 {
 	auto& r = *renderer;
-	r._context->make_current_for_calling_thread();
+	r._context.make_current_for_calling_thread(r._context_data);
 	r._concrete_renderer.initialize_thread();
 	r.active = true;
 
@@ -477,7 +477,7 @@ void thread(Renderer* renderer)
 namespace renderer
 {
 
-void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator)
+void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& renderer_allocator, Allocator& render_interface_allocator, const RendererContext* context)
 {
 	r.allocator = &renderer_allocator;
 	r.active = false;
@@ -487,7 +487,7 @@ void init(Renderer& r, const ConcreteRenderer& concrete_renderer, Allocator& ren
 	memset(r._resource_objects, 0, sizeof(RendererResourceObject) * render_resource_handle::num);
 	r._unprocessed_commands_exist = false;
 	r.num_rendered_worlds = 0;
-	r._context = nullptr;
+	r._context = *context;
 	const auto unprocessed_commands_num = 64000;
 	concurrent_ring_buffer::init(r._unprocessed_commands, *r.allocator, unprocessed_commands_num, sizeof(RendererCommand));
 	render_interface::init(&r.render_interface, &render_interface_allocator, &r._unprocessed_commands, &r._unprocessed_commands_exist, &r._unprocessed_commands_exist_mutex, &r._wait_for_unprocessed_commands_to_exist);
@@ -537,9 +537,9 @@ void deallocate_processed_commands(Renderer& r, Allocator& render_interface_allo
 	array::clear(r._processed_memory);
 }
 
-void run(Renderer& r, IRendererContext* context, const Vector2u& resolution)
+void run(Renderer& r, PlatformRendererContextData* context_data, const Vector2u& resolution)
 {
-	r._context = context;
+	r._context_data = context_data;
 	r.resolution = resolution;
 	r._thread = std::thread(&internal::thread, &r);
 

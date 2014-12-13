@@ -130,12 +130,10 @@
   <ItemGroup>
     <ClInclude Include="opengl_renderer\gl3w.h" />
     <ClInclude Include="opengl_renderer\GL3\gl3.h" />
-    <ClInclude Include="opengl_renderer\opengl_context_windows.h" />
     <ClInclude Include="opengl_renderer\opengl_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="opengl_renderer\gl3w.c" />
-    <ClCompile Include="opengl_renderer\opengl_context_windows.cpp" />
     <ClCompile Include="opengl_renderer\opengl_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
