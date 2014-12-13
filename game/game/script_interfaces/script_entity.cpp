@@ -33,9 +33,9 @@ int destroy(lua_State* lua)
 	return 0;
 }
 
-void load(lua_State* lua, EntityManager& manager)
+void load(lua_State* lua, EntityManager* manager)
 {
-	s_manager = &manager;
+	s_manager = manager;
 
 	const interface_function functions[] = {
 		{ "create", create },

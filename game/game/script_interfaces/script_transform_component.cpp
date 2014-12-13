@@ -93,9 +93,9 @@ int set_parent(lua_State* lua)
 	return 0;
 }
 
-void load(lua_State* lua, Allocator& allocator)
+void load(lua_State* lua, Allocator* allocator)
 {
-	s_allocator = &allocator;
+	s_allocator = allocator;
 
 	const interface_function functions[] = {
 		{ "create", create },

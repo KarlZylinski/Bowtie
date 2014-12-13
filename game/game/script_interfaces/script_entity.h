@@ -10,7 +10,7 @@ struct EntityManager;
 namespace entity_script_interface
 {
 
-void load(lua_State* lua, EntityManager& manager);
+void load(lua_State* lua, EntityManager* manager);
 
 }
 

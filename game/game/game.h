@@ -17,12 +17,12 @@ struct Game
 
 namespace game
 {
-	void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface);
-	void start(Game& g);
-	void deinit(Game& g);
-	void update(Game& g, float dt);
-	void draw(Game& g);
-	void deinit(Game& g);
+	void init(Game* g, Allocator* allocator, Engine* engine, RenderInterface* render_interface);
+	void start(Game* g);
+	void deinit(Game* g);
+	void update(Game* g, float dt);
+	void draw(Game* g);
+	void deinit(Game* g);
 }
 
 } // namespace bowtie

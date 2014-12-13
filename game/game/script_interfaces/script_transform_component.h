@@ -10,7 +10,7 @@ struct Allocator;
 namespace transform_component_script_interface
 {
 
-void load(lua_State* lua, Allocator& allocator);
+void load(lua_State* lua, Allocator* allocator);
 
 }
 

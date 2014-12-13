@@ -63,55 +63,55 @@ void load_shared_libs(lua_State* lua)
 namespace game
 {
 
-void init(Game& g, Allocator& allocator, Engine& engine, RenderInterface& render_interface)
+void init(Game* g, Allocator* allocator, Engine* engine, RenderInterface* render_interface)
 {
-	g.started = false;
-	g._lua = luaL_newstate();
-	luaL_openlibs(g._lua);
-	engine_script_interface::load(g._lua, engine);
-	world_script_interface::load(g._lua, &engine);
-	entity_script_interface::load(g._lua, engine.entity_manager);
-	time_script_interface::load(g._lua, &engine);
-	material_script_interface::load(g._lua, render_interface);
+	g->started = false;
+	g->_lua = luaL_newstate();
+	luaL_openlibs(g->_lua);
+	engine_script_interface::load(g->_lua, engine);
+	world_script_interface::load(g->_lua, engine);
+	entity_script_interface::load(g->_lua, &engine->entity_manager);
+	time_script_interface::load(g->_lua, engine);
+	material_script_interface::load(g->_lua, render_interface);
 
 	// Components
-	sprite_renderer_component_script_interface::load(g._lua, allocator);
-	transform_component_script_interface::load(g._lua, allocator);
+	sprite_renderer_component_script_interface::load(g->_lua, allocator);
+	transform_component_script_interface::load(g->_lua, allocator);
 
-	load_shared_libs(g._lua);
-	load_main(g._lua);
+	load_shared_libs(g->_lua);
+	load_main(g->_lua);
 }
 
-void start(Game& g)
+void start(Game* g)
 {
-	console::init(g._lua);
-	init_game(g._lua);
-	g.started = true;
+	console::init(g->_lua);
+	init_game(g->_lua);
+	g->started = true;
 }
 
-void deinit(Game& g)
+void deinit(Game* g)
 {
-	deinit_game(g._lua);
-	g.started = false;
-	lua_gc(g._lua, LUA_GCCOLLECT, 0);
-	lua_close(g._lua);
+	deinit_game(g->_lua);
+	g->started = false;
+	lua_gc(g->_lua, LUA_GCCOLLECT, 0);
+	lua_close(g->_lua);
 }
 
-void update(Game& g, float dt)
+void update(Game* g, float dt)
 {
-	if (!g.started)
+	if (!g->started)
 		return;
 
-	update_game(g._lua, dt);
+	update_game(g->_lua, dt);
 	console::update(dt);
 }
 
-void draw(Game& g)
+void draw(Game* g)
 {
-	if (!g.started)
+	if (!g->started)
 		return;
 
-	draw_game(g._lua);
+	draw_game(g->_lua);
 	console::draw();
 }
 

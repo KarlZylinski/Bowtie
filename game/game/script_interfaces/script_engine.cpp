@@ -70,9 +70,9 @@ int keyboard_held(lua_State* lua)
 	return 1;
 }
 
-void load(lua_State* lua, Engine& e)
+void load(lua_State* lua, Engine* e)
 {
-	s_engine = &e;
+	s_engine = e;
 	
 	const interface_function engine_functions[] = {
 		{ "engine", engine },
