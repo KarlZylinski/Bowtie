@@ -1,6 +1,6 @@
 #include "keyboard.h"
 #include <foundation/hash.h>
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/string_utils.h>
 #include <cassert>
 

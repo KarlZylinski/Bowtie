@@ -1,5 +1,5 @@
 #include "render_material.h"
-#include <foundation/array.h>
+#include <foundation/memory.h>
 #include <cassert>
 
 namespace bowtie

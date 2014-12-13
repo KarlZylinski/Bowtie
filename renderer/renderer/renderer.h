@@ -52,7 +52,7 @@ struct Renderer
 	ConcreteRenderer _concrete_renderer;
 	RendererContext _context;
 	PlatformRendererContextData* _context_data;
-	Array<void*> _processed_memory;
+	Vector<void*> _processed_memory;
 	std::mutex _processed_memory_mutex;
 	RenderInterface render_interface;
 	Vector2u resolution;

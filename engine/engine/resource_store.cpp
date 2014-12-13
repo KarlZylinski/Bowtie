@@ -219,7 +219,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 		auto uniform_json = uniforms_jzon->array_values[i];
 		auto uniform_str = uniform_json->string_value;
 		auto split_uniform = split(rs->allocator, uniform_str, ' ');
-		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
+		assert(split_uniform.size >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
 
 		UniformResourceData uniform;
@@ -230,7 +230,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 		stream::write(&dynamic_uniform_data, name, name_len, rs->allocator);
 		uniform.value_offset = (unsigned)-1;
 
-		if (array::size(split_uniform) > 2)
+		if (split_uniform.size > 2)
 		{
 			auto value_str = split_uniform[2];
 			uniform.automatic_value = get_automatic_value_from_str(value_str);
@@ -257,10 +257,10 @@ Material* load_material(ResourceStore* rs, const char* filename)
 			}
 		}
 
-		for (unsigned j = 0; j < array::size(split_uniform); ++j)
+		for (unsigned j = 0; j < split_uniform.size; ++j)
 			rs->allocator->dealloc(split_uniform[j]);
 
-		array::deinit(split_uniform);
+		vector::deinit(&split_uniform);
 		uniforms[i] = uniform;
 	}
 

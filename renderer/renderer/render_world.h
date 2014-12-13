@@ -13,7 +13,7 @@ struct RenderComponent;
 
 struct RenderWorld
 {
-	Array<RenderComponent*> components;
+	Vector<RenderComponent*> components;
 	RenderTarget render_target;
 };
 

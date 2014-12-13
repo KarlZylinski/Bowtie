@@ -1,6 +1,6 @@
 #pragma once
 
-#include "array.h"
+#include "vector.h"
 #include "collection_types.h"
 #include "option.h"
 
@@ -57,7 +57,7 @@ namespace bowtie {
 
 		/// Returns all the entries with the specified key.
 		/// Use a TempAllocator for the array to avoid allocating memory.
-		template<typename T> void get(const Hash<T> &h, uint64_t key, Array<T> &items);
+		template<typename T> void get(const Hash<T> &h, uint64_t key, Vector<T> &items);
 
 		/// Inserts the value as an aditional value for the key.
 		template<typename T> void insert(Hash<T> &h, uint64_t key, const T &value);
@@ -85,8 +85,8 @@ namespace bowtie {
 			typename Hash<T>::Entry e;
 			e.key = key;
 			e.next = END_OF_LIST;
-			uint32_t ei = array::size(h._data);
-			array::push_back(h._data, e);
+			uint32_t ei = h._data.size;
+			vector::push(&h._data, e);
 			return ei;
 		}
 
@@ -97,12 +97,12 @@ namespace bowtie {
 			else
 				h._data[fr.data_prev].next = h._data[fr.data_i].next;
 
-			if (fr.data_i == array::size(h._data) - 1) {
-				array::pop_back(h._data);
+			if (fr.data_i == h._data.size - 1) {
+				vector::pop(&h._data);
 				return;
 			}
 
-			h._data[fr.data_i] = h._data[array::size(h._data) - 1];
+			h._data[fr.data_i] = h._data[h._data.size - 1];
 			FindResult last = find(h, h._data[fr.data_i].key);
 
 			if (last.data_prev != END_OF_LIST)
@@ -118,10 +118,10 @@ namespace bowtie {
 			fr.data_prev = END_OF_LIST;
 			fr.data_i = END_OF_LIST;
 
-			if (array::size(h._hash) == 0)
+			if (h._hash.size == 0)
 				return fr;
 
-			fr.hash_i = key % array::size(h._hash);
+			fr.hash_i = key % h._hash.size;
 			fr.data_i = h._hash[fr.hash_i];
 			while (fr.data_i != END_OF_LIST) {
 				if (h._data[fr.data_i].key == key)
@@ -139,10 +139,10 @@ namespace bowtie {
 			fr.data_prev = END_OF_LIST;
 			fr.data_i = END_OF_LIST;
 
-			if (array::size(h._hash) == 0)
+			if (vector::size(h._hash) == 0)
 				return fr;
 
-			fr.hash_i = e->key % array::size(h._hash);
+			fr.hash_i = e->key % vector::size(h._hash);
 			fr.data_i = h._hash[fr.hash_i];
 			while (fr.data_i != END_OF_LIST) {
 				if (&h._data[fr.data_i] == e)
@@ -196,18 +196,18 @@ namespace bowtie {
 		template<typename T> void rehash(Hash<T> &h, uint32_t new_size)
 		{
 			Hash<T> nh;
-			hash::init(nh, *h._hash._allocator);
-			array::resize(nh._hash, new_size);
-			array::reserve(nh._data, array::size(h._data));
+			hash::init(nh, *h._hash.allocator);
+			vector::resize(&nh._hash, new_size);
+			vector::reserve(&nh._data, h._data.size);
 			for (uint32_t i=0; i<new_size; ++i)
 				nh._hash[i] = END_OF_LIST;
-			for (uint32_t i=0; i<array::size(h._data); ++i) {
+			for (uint32_t i=0; i<h._data.size; ++i) {
 				const typename Hash<T>::Entry &e = h._data[i];
 				multi_hash::insert(nh, e.key, e.value);
 			}
 
 			Hash<T> empty;
-			hash::init(empty, *h._data._allocator);
+			hash::init(empty, *h._data.allocator);
 			hash::deinit(h);
 			memcpy(&h, &nh, sizeof(Hash<T>));
 			memcpy(&nh, &empty, sizeof(Hash<T>));
@@ -216,12 +216,12 @@ namespace bowtie {
 		template<typename T> bool full(const Hash<T> &h)
 		{
 			const float max_load_factor = 0.7f;
-			return array::size(h._data) >= array::size(h._hash) * max_load_factor;
+			return h._data.size >= h._hash.size * max_load_factor;
 		}
 
 		template<typename T> void grow(Hash<T> &h)
 		{
-			const uint32_t new_size = array::size(h._data) * 2 + 10;
+			const uint32_t new_size = h._data.size * 2 + 10;
 			rehash(h, new_size);
 		}
 	}
@@ -231,21 +231,21 @@ namespace bowtie {
 		template<typename T> inline void init(Hash<T>& a, Allocator& allocator)
 		{
 			memset(&a, 0, sizeof(Hash<T>));
-			array::init(a._hash, allocator);
-			array::init(a._data, allocator);
+			vector::init(&a._hash, &allocator);
+			vector::init(&a._data, &allocator);
 		}
 
 		template<typename T> inline void copy(Hash<T>& from, Hash<T>& to)
 		{
 			const uint32_t n = from._size;
-			array::copy(from._hash, to._hash);
-			array::copy(from._data, to._data);
+			vector::copy(&from._hash, &to._hash);
+			vector::copy(&from._data, &to._data);
 		}
 
 		template<typename T> inline void deinit(Hash<T>& a)
 		{
-			array::deinit(a._hash);
-			array::deinit(a._data);
+			vector::deinit(&a._hash);
+			vector::deinit(&a._data);
 		}
 
 		template<typename T> bool has(const Hash<T> &h, uint64_t key)
@@ -273,7 +273,7 @@ namespace bowtie {
 
 		template<typename T> void set(Hash<T> &h, uint64_t key, const T &value)
 		{
-			if (array::size(h._hash) == 0)
+			if (h._hash.size == 0)
 				hash_internal::grow(h);
 
 			const uint32_t i = hash_internal::find_or_make(h, key);
@@ -294,18 +294,18 @@ namespace bowtie {
 
 		template<typename T> void clear(Hash<T> &h)
 		{
-			array::clear(h._data);
-			array::clear(h._hash);
+			vector::clear(h._data);
+			vector::clear(h._hash);
 		}
 
 		template<typename T> const typename Hash<T>::Entry *begin(const Hash<T> &h)
 		{
-			return array::begin(h._data);
+			return h._data.data;
 		}
 
 		template<typename T> const typename Hash<T>::Entry *end(const Hash<T> &h)
 		{
-			return array::end(h._data);
+			return vector::last(&h._data);
 		}
 	}
 
@@ -339,18 +339,18 @@ namespace bowtie {
 			return i;
 		}
 
-		template<typename T> void get(const Hash<T> &h, uint64_t key, Array<T> &items)
+		template<typename T> void get(const Hash<T> &h, uint64_t key, Vector<T> &items)
 		{
 			const typename Hash<T>::Entry *e = find_first(h, key);
 			while (e) {
-				array::push_back(items, e->value);
+				vector::push(items, e->value);
 				e = find_next(h, e);
 			}
 		}
 
 		template<typename T> void insert(Hash<T> &h, uint64_t key, const T &value)
 		{
-			if (array::size(h._hash) == 0)
+			if (h._hash.size == 0)
 				hash_internal::grow(h);
 
 			const uint32_t i = hash_internal::make(h, key);

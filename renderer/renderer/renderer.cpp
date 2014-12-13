@@ -5,7 +5,7 @@
 #include <engine/render_fence.h>
 #include <engine/shader_utils.h>
 #include <engine/entity/components/sprite_renderer_component.h>
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/file.h>
 #include <foundation/murmur_hash.h>
 #include <foundation/string_utils.h>
@@ -345,7 +345,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
 			r->allocator->dealloc(created_resources.resources);
 
 			std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-			array::push_back(r->_processed_memory, data->data);
+			vector::push(&r->_processed_memory, data->data);
 		} break;
 
 		case RendererCommand::UpdateResource:
@@ -378,7 +378,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
 			r->allocator->dealloc(updated_resources.old_resources);
 
 			std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-			array::push_back(r->_processed_memory, data->data);
+			vector::push(&r->_processed_memory, data->data);
 		} break;
 
 		case RendererCommand::Resize:
@@ -437,8 +437,8 @@ void consume_command_queue(Renderer* r)
 
 			if (!dont_free)
 			{
-				array::push_back(r->_processed_memory, command->data);
-				array::push_back(r->_processed_memory, command->dynamic_data);
+				vector::push(&r->_processed_memory, command->data);
+				vector::push(&r->_processed_memory, command->dynamic_data);
 			}
 		}
 
@@ -487,7 +487,7 @@ void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* ren
 	r->allocator = renderer_allocator;
 	r->active = false;
 	r->_concrete_renderer = *concrete_renderer;
-	array::init(r->_processed_memory, *r->allocator);
+	vector::init(&r->_processed_memory, r->allocator);
 	memset(r->_render_targets, 0, sizeof(RenderTarget) * max_render_targets);
 	memset(r->_resource_objects, 0, sizeof(RendererResourceObject) * render_resource_handle::num);
 	r->_unprocessed_commands_exist = false;
@@ -526,20 +526,20 @@ void deinit(Renderer* r)
 	}
 	
 	concurrent_ring_buffer::deinit(&r->_unprocessed_commands);
-	array::deinit(r->_processed_memory);
+	vector::deinit(&r->_processed_memory);
 }
 
 void deallocate_processed_commands(Renderer* r, Allocator* render_interface_allocator)
 {
 	std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
 
-	for (unsigned i = 0; i < array::size(r->_processed_memory); ++i)
+	for (unsigned i = 0; i < r->_processed_memory.size; ++i)
 	{
-		auto ptr = r->_processed_memory[i];
+		auto ptr = r->_processed_memory.data[i];
 		render_interface_allocator->dealloc(ptr);
 	}
 
-	array::clear(r->_processed_memory);
+	vector::clear(&r->_processed_memory);
 }
 
 void run(Renderer* r, PlatformRendererContextData* context_data, const Vector2u* resolution)

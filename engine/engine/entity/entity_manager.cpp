@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entity_manager.h"
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/memory.h>
 #include <cassert>
 
@@ -28,15 +28,15 @@ unsigned entity_generation(Entity e)
 
 unsigned get_next_index(EntityManager* m)
 {
-	if (array::size(m->index_holes) == 0) {
+	if (m->index_holes.size == 0) {
 		unsigned new_index = ++m->last_entity_index;;
 		assert(new_index < (1 << entity_generation_bits));
 		return new_index; 
 	}
 
-	unsigned hole_index = rand() % array::size(m->index_holes);
+	unsigned hole_index = rand() % m->index_holes.size;
 	unsigned index = m->index_holes[hole_index];
-	array::remove_at(m->index_holes, hole_index);
+	vector::remove_at(&m->index_holes, hole_index);
 	return index;
 }
 
@@ -48,14 +48,14 @@ namespace entity_manager
 void init(EntityManager* m, Allocator* allocator)
 {
 	m->last_entity_index = 0;
-	array::init(m->index_holes, *allocator);
-	array::init(m->generation, *allocator);
+	vector::init(&m->index_holes, allocator);
+	vector::init(&m->generation, allocator);
 }
 
 void deinit(EntityManager* m)
 {
-	array::deinit(m->index_holes);
-	array::deinit(m->generation);
+	vector::deinit(&m->index_holes);
+	vector::deinit(&m->generation);
 }
 
 Entity create(EntityManager* m)
@@ -64,7 +64,7 @@ Entity create(EntityManager* m)
 
 	if (index >= m->last_entity_index)
 	{
-		array::resize(m->generation, m->last_entity_index);
+		vector::resize(&m->generation, m->last_entity_index);
 		m->generation[index] = 1;
 	}
 	else
@@ -79,7 +79,7 @@ void destroy(EntityManager* m, Entity entity)
 	++m->generation[index];
 	
 	if (index <= m->last_entity_index)
-		array::push_back(m->index_holes, index);
+		vector::push(&m->index_holes, index);
 }
 
 bool is_alive(EntityManager* m, Entity entity)

@@ -1,6 +1,6 @@
 #include "opengl_renderer.h"
 #include <cassert>
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/matrix4.h>
 #include <engine/view.h>
 #include <engine/rect.h>
@@ -393,12 +393,12 @@ void draw_batch(unsigned start, unsigned size, RenderComponent** components, con
 
 void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* resolution, float time, const RenderResource* resource_table)
 {
-	if (render_world->components._size == 0)
+	if (render_world->components.size == 0)
 		return;
 
 	auto view_matrix = view::view_matrix(view);
 	auto view_projection_matrix = matrix4::mul(&view_matrix, &view::projection_matrix(view));
-	unsigned num_components = array::size(render_world->components);
+	unsigned num_components = render_world->components.size;
 	auto batch_material = render_world->components[0]->material;
 	auto batch_depth = render_world->components[0]->depth;
 	unsigned batch_start = 0;	
@@ -411,14 +411,14 @@ void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* res
 		if (batch_material == material && batch_depth == depth)
 			continue;
 
-		draw_batch(batch_start, i - batch_start, render_world->components._data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
+		draw_batch(batch_start, i - batch_start, render_world->components.data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
 		batch_start = i;
 		batch_material = material;
 		batch_depth = depth;
 	}
 
 	// Draw last batch.
-	draw_batch(batch_start, num_components - batch_start, render_world->components._data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
+	draw_batch(batch_start, num_components - batch_start, render_world->components.data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)

@@ -1,6 +1,6 @@
 #include <engine/engine.h>
 #include <engine/resource_store.h>
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/malloc_allocator.h>
 #include <foundation/memory.h>
 #include <opengl_renderer/opengl_renderer.h>

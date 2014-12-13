@@ -1,7 +1,7 @@
 #include "world.h"
 
 #include <cassert>
-#include <foundation/array.h>
+#include <foundation/vector.h>
 #include <foundation/quad.h>
 #include "material.h"
 #include "render_interface.h"

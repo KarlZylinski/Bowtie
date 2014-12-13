@@ -12,8 +12,8 @@ struct EntityManager
 {
 	unsigned last_entity_index;
 	// All free entity indices in the range (0, last_entity_id_index)
-	Array<unsigned> index_holes;
-	Array<unsigned> generation;
+	Vector<unsigned> index_holes;
+	Vector<unsigned> generation;
 };
 
 namespace entity_manager

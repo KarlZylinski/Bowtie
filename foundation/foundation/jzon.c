@@ -494,7 +494,7 @@ JzonParseResult jzon_parse_custom_allocator(const char* input, JzonAllocator* al
 	JzonValue* output = (JzonValue*)allocator->allocate(sizeof(JzonValue));
 	memset(output, 0, sizeof(JzonValue));
 	int error = parse_object(&input, output, true, allocator);
-	JzonParseResult result = {0};
+	JzonParseResult result = {};
 	result.output = output;
 	result.success = error == 0;
 	return result;

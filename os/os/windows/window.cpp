@@ -22,7 +22,7 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreat
 	w->_window_resized_callback = window_resized_callback;
 	w->_window_created_callback = window_created_callback;
 	w->resolution = *resolution;
-    WNDCLASS wc = {0}; 
+    WNDCLASS wc = {}; 
     wc.lpfnWndProc = window_proc;
     wc.hInstance = instance;
     wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
@@ -41,7 +41,7 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreat
 
 void dispatch_messages(Window*)
 {
-	MSG msg = {0};
+	MSG msg = {};
 
 	while(PeekMessage(&msg,nullptr,0,0,PM_REMOVE))
 	{
