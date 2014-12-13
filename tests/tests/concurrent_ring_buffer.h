@@ -8,7 +8,7 @@ struct Allocator;
 namespace tests
 {
 
-void test_concurrent_ring_buffer(Allocator& allocator);
+void test_concurrent_ring_buffer(Allocator* allocator);
 
 }
 

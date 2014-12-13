@@ -60,10 +60,10 @@ void consumer(ConcurrentRingBuffer* b)
 	}
 }
 
-void test_concurrent_ring_buffer(Allocator& allocator)
+void test_concurrent_ring_buffer(Allocator* allocator)
 {
 	ConcurrentRingBuffer b;
-	concurrent_ring_buffer::init(b, allocator, 8, sizeof(Haze));
+	concurrent_ring_buffer::init(b, *allocator, 8, sizeof(Haze));
 	std::thread w(&writer, &b);
 	std::thread c(&consumer, &b);
 	w.join();
