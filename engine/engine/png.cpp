@@ -504,12 +504,12 @@ UncompressedTexture load(const char* filename, Allocator* allocator)
 {
 	auto png_file_option = file::load(filename, allocator);
 	assert(png_file_option.is_some && "Failed loading texture");
-	auto& png_file = png_file_option.value;
+	auto png_file = &png_file_option.value;
 	std::vector<unsigned char> decoded_png;
 	unsigned long width, height;
-	decodePNG(decoded_png, width, height, png_file.data, png_file.size);
+	decodePNG(decoded_png, width, height, png_file->data, png_file->size);
 
-	allocator->dealloc(png_file.data);
+	allocator->dealloc(png_file->data);
 	
 	auto texture = UncompressedTexture();
 

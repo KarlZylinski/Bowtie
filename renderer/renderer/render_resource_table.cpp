@@ -18,7 +18,7 @@ void free(RenderResource* table, RenderResourceHandle handle)
 RenderResource lookup(const RenderResource* table, RenderResourceHandle handle)
 {
 	assert(handle < render_resource_handle::num && "Handle is out of range");
-	auto& resource = table[handle];
+	auto resource = table[handle];
 	assert(resource.type != RenderResourceType::NotInitialized && "Trying to lookup unused render resource.");
 	return resource;
 }

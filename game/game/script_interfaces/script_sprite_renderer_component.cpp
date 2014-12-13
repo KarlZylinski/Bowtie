@@ -25,9 +25,9 @@ int create(lua_State* lua)
 	auto e = script_interface::to_entity(lua, 1);
 	
 	{
-		auto& transform = e.world->transform_components;
-		if (!component::has_entity(&transform.header, e.entity))
-			transform_component::create(&transform, e.entity, s_allocator);
+		auto transform = &e.world->transform_components;
+		if (!component::has_entity(&transform->header, e.entity))
+			transform_component::create(transform, e.entity, s_allocator);
 	}
 
 	Vector2 position;

@@ -233,7 +233,7 @@ CreatedResources create_resources(Renderer* r, RenderResourceData::Type type, vo
 	}
 	case RenderResourceData::SpriteRenderer: {
 		auto sprite_data = (CreateSpriteRendererData*)data;
-		auto& rw = *(RenderWorld*)render_resource_table::lookup(r->resource_table, sprite_data->world).object;
+		auto rw = (RenderWorld*)render_resource_table::lookup(r->resource_table, sprite_data->world).object;
 		CreatedResources cr = create_created_resources(sprite_data->num, r->allocator);
 		auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
 
@@ -244,7 +244,7 @@ CreatedResources create_resources(Renderer* r, RenderResourceData::Type type, vo
 			component->material = sprite.material[i].render_handle;
 			component->geometry = sprite.geometry[i];
 			component->depth = sprite.depth[i];
-			render_world::add_component(&rw, component);
+			render_world::add_component(rw, component);
 
 			cr.handles[i] = sprite.render_handle[i];
 			cr.resources[i] = render_resource::create_object(component);
@@ -462,10 +462,10 @@ void thread(Renderer* r)
 	{
 		auto shader_source_option = file::load("rendered_world_combining.shader", r->allocator);
 		assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
-		auto& shader_source = shader_source_option.value;
-		auto split_shader = shader_utils::split_shader(&shader_source, r->allocator);
+		auto shader_source = &shader_source_option.value;
+		auto split_shader = shader_utils::split_shader(shader_source, r->allocator);
 		r->_rendered_worlds_combining_shader = r->_concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
-		r->allocator->dealloc(shader_source.data);
+		r->allocator->dealloc(shader_source->data);
 		r->allocator->dealloc(split_shader.vertex_source);
 		r->allocator->dealloc(split_shader.fragment_source);
 	}

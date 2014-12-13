@@ -45,27 +45,26 @@ void key_up_callback(platform::Key key)
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
 	auto callstack_capturer = windows::callstack_capturer::create();
-	auto& allocator = *(new MallocAllocator());
-	memory::init_allocator(&allocator, "default allocator", &callstack_capturer);
-	s_allocator = &allocator;
-	auto& renderer_allocator = *(new MallocAllocator());
-	memory::init_allocator(&renderer_allocator, "renederer allocator", &callstack_capturer);
+	auto allocator = new MallocAllocator();
+	memory::init_allocator(allocator, "default allocator", &callstack_capturer);
+	s_allocator = allocator;
+	auto renderer_allocator = new MallocAllocator();
+	memory::init_allocator(renderer_allocator, "renederer allocator", &callstack_capturer);
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer;
 		auto renderer_context = windows::opengl_context::create();
-		renderer::init(&renderer, &opengl_renderer, &renderer_allocator, &allocator, &renderer_context);
-		s_render_context_data = (PlatformRendererContextData*)allocator.alloc(sizeof(PlatformRendererContextData));
+		renderer::init(&renderer, &opengl_renderer, renderer_allocator, allocator, &renderer_context);
+		s_render_context_data = (PlatformRendererContextData*)allocator->alloc(sizeof(PlatformRendererContextData));
 		s_renderer = &renderer;
-		auto& render_interface = renderer.render_interface;
 
 		{
 			Timer timer = {};
 			timer.counter = windows::timer::counter;
 			timer.start = windows::timer::start;
 			Engine engine = {};
-			engine::init(&engine, &allocator, &render_interface, &timer);
+			engine::init(&engine, allocator, &renderer.render_interface, &timer);
 			s_engine = &engine;
 			auto resolution = vector2u::create(1280, 720);
 			windows::Window window = {};
@@ -75,16 +74,16 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				windows::window::dispatch_messages(&window);
 				engine::update_and_render(&engine);
-				renderer::deallocate_processed_commands(&renderer, &allocator);
+				renderer::deallocate_processed_commands(&renderer, allocator);
 			}
 
 			engine::deinit(&engine);
 		}
 		
-		renderer::stop(&renderer, &allocator);
+		renderer::stop(&renderer, allocator);
 		renderer::deinit(&renderer);
 	}
 
-	memory::deinit_allocator(&renderer_allocator);
-	memory::deinit_allocator(&allocator);
+	memory::deinit_allocator(renderer_allocator);
+	memory::deinit_allocator(allocator);
 }

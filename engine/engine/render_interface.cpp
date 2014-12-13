@@ -149,20 +149,16 @@ void free_handle(RenderInterface* ri, RenderResourceHandle handle)
 void create_texture(RenderInterface* ri, Texture* texture)
 {
 	assert(texture->render_handle == handle_not_initialized && "Trying to create already created texture");
-
-	Image& image = *texture->image;
-
+	auto image = texture->image;
 	auto texture_resource = render_resource_data::create(RenderResourceData::Texture);
-
 	auto trd = TextureResourceData();
 	trd.handle = internal::create_handle(ri->_free_handles, &ri->num_free_handles);
-	trd.resolution = image.resolution;
+	trd.resolution = image->resolution;
 	trd.texture_data_dynamic_data_offset = 0;
-	trd.texture_data_size = image.data_size;
-	trd.pixel_format = image.pixel_format;
-
+	trd.texture_data_size = image->data_size;
+	trd.pixel_format = image->pixel_format;
 	texture_resource.data = &trd;
-	internal::create_resource(ri, &texture_resource, image.data, image.data_size);
+	internal::create_resource(ri, &texture_resource, image->data, image->data_size);
 	texture->render_handle = trd.handle;
 }
 
@@ -240,10 +236,10 @@ void wait_until_idle(RenderInterface* ri)
 
 void resize(RenderInterface* ri, const Vector2u* resolution)
 {
-	ResizeData& rd = *(ResizeData*)ri->allocator->alloc(sizeof(ResizeData));
-	rd.resolution = *resolution;
+	auto rd = (ResizeData*)ri->allocator->alloc(sizeof(ResizeData));
+	rd->resolution = *resolution;
 	auto resize_command = internal::create_command(ri->allocator, RendererCommand::Resize);
-	resize_command.data = &rd;
+	resize_command.data = rd;
 	dispatch(ri, &resize_command);
 }
 

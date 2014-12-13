@@ -116,9 +116,9 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* al
 {
 	auto shader_source_option = file::load(filename, allocator);
 	assert(shader_source_option.is_some && "Failed loading shader source");
-	auto& shader_source = shader_source_option.value;
-	auto split_shader = shader_utils::split_shader(&shader_source, allocator);
-	allocator->dealloc(shader_source.data);
+	auto shader_source = &shader_source_option.value;
+	auto split_shader = shader_utils::split_shader(shader_source, allocator);
+	allocator->dealloc(shader_source->data);
 
 	ShaderResourceData srd;
 	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
@@ -200,10 +200,10 @@ Material* load_material(ResourceStore* rs, const char* filename)
 
 	auto material_file_option = file::load(filename, rs->allocator);
 	assert(material_file_option.is_some && "Failed loading material.");
-	auto& file = material_file_option.value;
-	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
+	auto file = &material_file_option.value;
+	auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
-	rs->allocator->dealloc(file.data);
+	rs->allocator->dealloc(file->data);
 
 	auto jzon = jzon_result.output;
 	auto shader_filename = jzon_get(jzon, "shader")->string_value;
@@ -298,10 +298,10 @@ Font* load_font(ResourceStore* rs, const char* filename)
 
 	auto font_option = file::load(filename, rs->allocator);
 	assert(font_option.is_some && "Failed loading font");
-	auto& file = font_option.value;
-	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
+	auto file = &font_option.value;
+	auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
 	assert(jzon_result.success && "Failed to parse font");
-	rs->allocator->dealloc(file.data);
+	rs->allocator->dealloc(file->data);
 	auto jzon = jzon_result.output;
 	auto texture_filename = jzon_get(jzon, "texture")->string_value;
 	auto columns = jzon_get(jzon, "columns")->int_value;
