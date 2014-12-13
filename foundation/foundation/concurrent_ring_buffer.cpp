@@ -8,22 +8,22 @@ namespace bowtie
 namespace internal
 {
 
-void write(char** buffer, const void* data, unsigned size)
+void write(char** buffer, const void* data, uint32 size)
 {
 	memcpy(*buffer, data, size);
 	*buffer += size;
 }
 
-unsigned used(ConcurrentRingBuffer* b)
+uint32 used(ConcurrentRingBuffer* b)
 {
 	if (b->write_head <= b->consume_head && b->has_wrapped)
 	{
 		auto end = (char*)memory::pointer_add(b->start, b->size * b->element_size);
-		auto used = (unsigned)(end - b->consume_head) + (unsigned)(b->write_head - b->start);
+		auto used = (uint32)(end - b->consume_head) + (uint32)(b->write_head - b->start);
 		return used;
 	}
 
-	auto used = (unsigned)(b->write_head - b->consume_head);
+	auto used = (uint32)(b->write_head - b->consume_head);
 	return used;
 }
 
@@ -32,7 +32,7 @@ unsigned used(ConcurrentRingBuffer* b)
 namespace concurrent_ring_buffer
 {
 
-void init(ConcurrentRingBuffer* b, Allocator* allocator, unsigned size, unsigned element_size)
+void init(ConcurrentRingBuffer* b, Allocator* allocator, uint32 size, uint32 element_size)
 {
 	b->size = size;
 	b->element_size = element_size;

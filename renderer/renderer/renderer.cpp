@@ -54,7 +54,7 @@ CreatedResources copy_single_resource(SingleCreatedResource resource, Allocator*
 	return cr;
 }
 
-CreatedResources create_created_resources(unsigned num, Allocator* allocator)
+CreatedResources create_created_resources(uint32 num, Allocator* allocator)
 {
 	CreatedResources cr;
 	cr.num = num;
@@ -86,7 +86,7 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
 	auto shader = render_resource_table::lookup(resource_table, data->shader);
 	auto uniforms_data = (UniformResourceData*)dynamic_data;
 	
-	for (unsigned i = 0; i < data->num_uniforms; ++i)
+	for (uint32 i = 0; i < data->num_uniforms; ++i)
 	{
 		auto uniform_data = uniforms_data + i;
 		auto uniform = create_uniform(concrete_renderer, shader, uniform_data, (char*)memory::pointer_add(dynamic_data, uniform_data->name_offset));
@@ -103,7 +103,7 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
 			case uniform::Texture1:
 			case uniform::Texture2:
 			case uniform::Texture3:
-				render_uniform::set_value(&uniform, allocator, value, sizeof(unsigned));
+				render_uniform::set_value(&uniform, allocator, value, sizeof(uint32));
 				break;
 			case uniform::Vec4:
 				render_uniform::set_value(&uniform, allocator, value, sizeof(Vector4));
@@ -122,7 +122,7 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
 
 RenderTarget* find_free_render_target_slot(RenderTarget* render_targets)
 {
-	for (unsigned i = 0; i < renderer::max_render_targets; ++i)
+	for (uint32 i = 0; i < renderer::max_render_targets; ++i)
 	{
 		if (render_targets[i].handle.type == RenderResourceType::NotInitialized)
 			return render_targets + i;
@@ -191,7 +191,7 @@ void raise_fence(RenderFence* fence)
 	fence->fence_processed.notify_all();
 }
 
-void draw(ConcreteRenderer* concrete_renderer, const Vector2u* resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld* render_world, const Rect* view, float time)
+void draw(ConcreteRenderer* concrete_renderer, const Vector2u* resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, uint32* num_rendered_worlds, RenderWorld* render_world, const Rect* view, float time)
 {
 	render_world::sort(render_world);
 	concrete_renderer->set_render_target(resolution, render_world->render_target.handle);
@@ -237,7 +237,7 @@ CreatedResources create_resources(Renderer* r, RenderResourceData::Type type, vo
 		CreatedResources cr = create_created_resources(sprite_data->num, r->allocator);
 		auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
 
-		for (unsigned i = 0; i < sprite_data->num; ++i)
+		for (uint32 i = 0; i < sprite_data->num; ++i)
 		{
 			auto component = (RenderComponent*)r->allocator->alloc(sizeof(RenderComponent));
 			component->color = sprite.color[i];
@@ -256,7 +256,7 @@ CreatedResources create_resources(Renderer* r, RenderResourceData::Type type, vo
 	}
 }
 
-UpdatedResources create_updated_resources(unsigned num, Allocator* allocator)
+UpdatedResources create_updated_resources(uint32 num, Allocator* allocator)
 {
 	UpdatedResources ur;
 	ur.num = num;
@@ -284,7 +284,7 @@ UpdatedResources update_resources(Renderer* r, RenderResourceData::Type type, vo
 			auto sprite_data = (UpdateSpriteRendererData*)data;
 			UpdatedResources ur = create_updated_resources(sprite_data->num, r->allocator);
 
-			for (unsigned i = 0; i < sprite_data->num; ++i)
+			for (uint32 i = 0; i < sprite_data->num; ++i)
 			{
 				auto sprite = sprite_renderer_component::create_data_from_buffer(dynamic_data, sprite_data->num);
 				auto component = (RenderComponent*)render_resource_table::lookup(r->resource_table, sprite.render_handle[i]).object;
@@ -326,7 +326,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
 
 			auto created_resources = create_resources(r, data->type, data->data, dynamic_data);
 
-			for (unsigned i = 0; i < created_resources.num; ++i)
+			for (uint32 i = 0; i < created_resources.num; ++i)
 			{
 				auto handle = created_resources.handles[i];
 				auto resource = created_resources.resources[i];
@@ -354,7 +354,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
 			void* dynamic_data = command->dynamic_data;
 			auto updated_resources = update_resources(r, data->type, data->data, dynamic_data);
 
-			for (unsigned i = 0; i < updated_resources.num; ++i)
+			for (uint32 i = 0; i < updated_resources.num; ++i)
 			{
 				auto handle = updated_resources.handles[i];
 				auto old_resource = updated_resources.old_resources[i];
@@ -500,7 +500,7 @@ void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* ren
 
 void deinit(Renderer* r)
 {	
-	for (unsigned i = 0; i < render_resource_handle::num; ++i)
+	for (uint32 i = 0; i < render_resource_handle::num; ++i)
 	{
 		auto resource_object = r->_resource_objects + i;
 
@@ -533,7 +533,7 @@ void deallocate_processed_commands(Renderer* r, Allocator* render_interface_allo
 {
 	std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
 
-	for (unsigned i = 0; i < r->_processed_memory.size; ++i)
+	for (uint32 i = 0; i < r->_processed_memory.size; ++i)
 	{
 		auto ptr = r->_processed_memory.data[i];
 		render_interface_allocator->dealloc(ptr);

@@ -33,13 +33,13 @@ struct RendererResourceObject
 };
 
 struct CreatedResources {
-	unsigned num;
+	uint32 num;
 	RenderResourceHandle* handles;
 	RenderResource* resources;
 };
 
 struct UpdatedResources {
-	unsigned num;
+	uint32 num;
 	RenderResourceHandle* handles;
 	RenderResource* old_resources;
 	RenderResource* new_resources;
@@ -59,7 +59,7 @@ struct Renderer
 	RenderResource resource_table[render_resource_handle::num];
 	RenderTarget _render_targets[renderer::max_render_targets];
 	RenderWorld* _rendered_worlds[renderer::max_rendered_worlds];
-	unsigned num_rendered_worlds;
+	uint32 num_rendered_worlds;
 	RendererResourceObject _resource_objects[render_resource_handle::num]; // Same amount of maximum resource objects as handles.
 	RenderResource _rendered_worlds_combining_shader;
 	std::thread _thread;

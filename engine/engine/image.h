@@ -15,7 +15,7 @@ enum class PixelFormat
 struct Image
 {
 	void* data;
-	unsigned data_size;
+	uint32 data_size;
 	PixelFormat pixel_format;
 	Vector2u resolution;
 };

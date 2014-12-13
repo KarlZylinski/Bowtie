@@ -5,16 +5,16 @@
 namespace bowtie
 {
 
-typedef unsigned Entity;
+typedef uint32 Entity;
 
 struct ComponentHeader
 {
 	// Maps entity id to component indices
-	Hash<unsigned> map;
-	unsigned num;
-	unsigned capacity;
-	unsigned last_dirty_index;
-	unsigned first_new;
+	Hash<uint32> map;
+	uint32 num;
+	uint32 capacity;
+	uint32 last_dirty_index;
+	uint32 first_new;
 };
 
 namespace component
@@ -22,18 +22,18 @@ namespace component
 	void init(ComponentHeader* h, Allocator* allocator);
 	void deinit(ComponentHeader* h);
 	bool has_entity(const ComponentHeader* h, Entity e);
-	unsigned num_dirty(const ComponentHeader* h);
+	uint32 num_dirty(const ComponentHeader* h);
 	void reset_dirty(ComponentHeader* h);
-	unsigned num_new(const ComponentHeader* h);
+	uint32 num_new(const ComponentHeader* h);
 	void reset_new(ComponentHeader* h);
 	
 	struct DirtyData
 	{
-		unsigned old_index;
-		unsigned new_index;
+		uint32 old_index;
+		uint32 new_index;
 	};
 
-	DirtyData mark_dirty(ComponentHeader* h, unsigned entity_index);
+	DirtyData mark_dirty(ComponentHeader* h, uint32 entity_index);
 }
 
 }

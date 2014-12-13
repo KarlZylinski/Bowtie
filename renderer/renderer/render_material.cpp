@@ -8,9 +8,9 @@ namespace bowtie
 namespace internal
 {
 
-void set_uniform_value(RenderMaterial* m, Allocator* allocator, uint64_t name, const void* value, unsigned value_size)
+void set_uniform_value(RenderMaterial* m, Allocator* allocator, uint64 name, const void* value, uint32 value_size)
 {
-	for (unsigned i = 0; i < m->num_uniforms; ++i)
+	for (uint32 i = 0; i < m->num_uniforms; ++i)
 	{
 		auto uniform = m->uniforms + i;
 
@@ -27,7 +27,7 @@ void set_uniform_value(RenderMaterial* m, Allocator* allocator, uint64_t name, c
 namespace render_material
 {
 
-void init(RenderMaterial* m, Allocator* allocator, unsigned num_uniforms, RenderResourceHandle shader)
+void init(RenderMaterial* m, Allocator* allocator, uint32 num_uniforms, RenderResourceHandle shader)
 {
 	m->shader = shader;
 	m->num_uniforms = num_uniforms;
@@ -36,23 +36,23 @@ void init(RenderMaterial* m, Allocator* allocator, unsigned num_uniforms, Render
 
 void deinit(RenderMaterial* m, Allocator* allocator)
 {
-	for (unsigned i = 0; i < m->num_uniforms; ++i)
+	for (uint32 i = 0; i < m->num_uniforms; ++i)
 		allocator->dealloc(m->uniforms[i].value);
 
 	allocator->dealloc(m->uniforms);
 }
 
-void set_uniform_vector4_value(RenderMaterial* m, Allocator* allocator, uint64_t name, const Vector4* value)
+void set_uniform_vector4_value(RenderMaterial* m, Allocator* allocator, uint64 name, const Vector4* value)
 {
 	internal::set_uniform_value(m, allocator, name, value, sizeof(Vector4));
 }
 
-void set_uniform_unsigned_value(RenderMaterial* m, Allocator* allocator, uint64_t name, unsigned value)
+void set_uniform_uint32_value(RenderMaterial* m, Allocator* allocator, uint64 name, uint32 value)
 {
-	internal::set_uniform_value(m, allocator, name, &value, sizeof(unsigned));
+	internal::set_uniform_value(m, allocator, name, &value, sizeof(uint32));
 }
 
-void set_uniform_float_value(RenderMaterial* m, Allocator* allocator, uint64_t name, float value)
+void set_uniform_float_value(RenderMaterial* m, Allocator* allocator, uint64 name, float value)
 {
 	internal::set_uniform_value(m, allocator, name, &value, sizeof(float));
 }

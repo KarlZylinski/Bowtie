@@ -20,7 +20,7 @@ namespace bowtie
 namespace internal
 {
 
-RendererCommand create_or_update_resource_renderer_command(Allocator* allocator, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size, RendererCommand::Type command_type)
+RendererCommand create_or_update_resource_renderer_command(Allocator* allocator, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size, RendererCommand::Type command_type)
 {
 	RendererCommand rc;
 
@@ -93,19 +93,19 @@ void dispatch(RenderInterface* ri, const RendererCommand* command)
 	ri->_wait_for_unprocessed_commands_to_exist->notify_all();
 }
 
-void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size)
+void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
 	auto command = create_or_update_resource_renderer_command(ri->allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource);
 	dispatch(ri, &command);
 }
 
-void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size)
+void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
 	auto command = create_or_update_resource_renderer_command(ri->allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource);
 	dispatch(ri, &command);
 }
 
-RenderResourceHandle create_handle(RenderResourceHandle* free_handles, unsigned* num_free_handles)
+RenderResourceHandle create_handle(RenderResourceHandle* free_handles, uint32* num_free_handles)
 {
 	assert(*num_free_handles > 0 && "Out of render resource handles!");
 	RenderResourceHandle handle = free_handles[*num_free_handles - 1];
@@ -128,7 +128,7 @@ void init(RenderInterface* ri, Allocator* allocator, ConcurrentRingBuffer* unpro
 	ri->_wait_for_unprocessed_commands_to_exist = wait_for_unprocessed_commands_to_exist;
 	auto num_handles = render_resource_handle::num;
 	
-	for (unsigned handle = num_handles; handle > 0; --handle)
+	for (uint32 handle = num_handles; handle > 0; --handle)
 		ri->_free_handles[num_handles - handle] = handle;
 
 	ri->num_free_handles = num_handles;
@@ -162,12 +162,12 @@ void create_texture(RenderInterface* ri, Texture* texture)
 	texture->render_handle = trd.handle;
 }
 
-void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size)
+void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
 	internal::create_resource(ri, resource, dynamic_data, dynamic_data_size);
 }
 
-void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size)
+void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
 	internal::update_resource(ri, resource, dynamic_data, dynamic_data_size);
 }
@@ -203,7 +203,7 @@ void dispatch(RenderInterface* ri, RendererCommand* command)
 	internal::dispatch(ri, command);
 }
 
-void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data, unsigned dynamic_data_size)
+void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data, uint32 dynamic_data_size)
 {
 	command->dynamic_data = ri->allocator->alloc_raw(dynamic_data_size);
 	command->dynamic_data_size = dynamic_data_size;

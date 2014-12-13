@@ -98,11 +98,11 @@ void push_entity(lua_State* lua, Entity entity, World* world)
 	lua_rawseti(lua, -2, 2);
 }
 
-void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, unsigned num_functions)
+void register_interface(lua_State* lua, const char* interface_name, const interface_function* functions, uint32 num_functions)
 {
 	lua_newtable(lua);
 
-	for (unsigned i = 0; i < num_functions; ++i)
+	for (uint32 i = 0; i < num_functions; ++i)
 	{
 		auto func = functions[i];
 
@@ -142,8 +142,8 @@ Vector2u to_vector2u(lua_State* lua, int index)
 {
 	assert(lua_istable(lua, index));
 
-	auto x_value = (unsigned)get_field(lua, index, "x");
-	auto y_value = (unsigned)get_field(lua, index, "y");
+	auto x_value = (uint32)get_field(lua, index, "x");
+	auto y_value = (uint32)get_field(lua, index, "y");
 
 	return vector2u::create(x_value, y_value);
 }
@@ -160,7 +160,7 @@ Vector4 to_vector4(lua_State* lua, int index)
 	return vector4::create(x_value, y_value, z_value, w_value);
 }
 
-uint64_t to_hash(lua_State* lua, int index)
+uint64 to_hash(lua_State* lua, int index)
 {
 	assert(lua_isstring(lua, index));
 

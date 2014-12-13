@@ -14,7 +14,7 @@ Option<LoadedFile> load(const char* filename, Allocator* allocator)
 {
 	FILE* fp;
 	size_t filesize;
-	unsigned char* data;
+	uint8* data;
 	
 	char full_filename[512];
 	strcpy(full_filename, resource_path());
@@ -29,7 +29,7 @@ Option<LoadedFile> load(const char* filename, Allocator* allocator)
 	filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	data = (unsigned char*)allocator->alloc_raw(unsigned(filesize) + 1);
+	data = (uint8*)allocator->alloc_raw(uint32(filesize) + 1);
 
 	if (!data)
 		return option::none<LoadedFile>();
@@ -41,7 +41,7 @@ Option<LoadedFile> load(const char* filename, Allocator* allocator)
 	LoadedFile lf;
 
 	lf.data = data;
-	lf.size = (unsigned)filesize + 1;
+	lf.size = (uint32)filesize + 1;
 
 	return option::some(lf);
 }

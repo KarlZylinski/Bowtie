@@ -17,12 +17,12 @@ inline bool strequal(const char* str1, const char* str2)
 	return strlen(str1) == strlen(str2) && strcmp(str1, str2) == 0;
 }
 
-inline unsigned strlen32(const char* str)
+inline uint32 strlen32(const char* str)
 {
 	if (str == 0)
 		return 0;
 
-	return unsigned(strlen(str));
+	return uint32(strlen(str));
 }
 
 inline Vector<char*> split(Allocator* allocator, const char* str, char delimiter)
@@ -35,9 +35,9 @@ inline Vector<char*> split(Allocator* allocator, const char* str, char delimiter
 		return words;
 
 	auto len = len_str + 1;
-	unsigned current_word_len = 0;
+	uint32 current_word_len = 0;
 
-	for (unsigned i = 0; i < len; ++i)
+	for (uint32 i = 0; i < len; ++i)
 	{
 		if (str[i] == delimiter || i == len - 1)
 		{
@@ -59,12 +59,12 @@ inline float float_from_str(const char* str)
 	return (float)strtod(str, nullptr);
 }
 
-inline unsigned unsigned_from_str(const char* str)
+inline uint32 uint32_from_str(const char* str)
 {
-	return (unsigned)strtoul(str, nullptr, 10);
+	return (uint32)strtoul(str, nullptr, 10);
 }
 
-inline char* copy_str(Allocator& allocator, const char* str, unsigned len)
+inline char* copy_str(Allocator& allocator, const char* str, uint32 len)
 {
 	auto size = len + 1;
 	auto new_str = (char*)allocator.alloc_raw(size);
@@ -77,7 +77,7 @@ inline char* copy_str(Allocator& allocator, const char* str)
 	return copy_str(allocator, str, strlen32(str));
 }
 
-inline char* concat_str(Allocator& allocator, const char* str1, unsigned str1_len, const char* str2, unsigned str2_len)
+inline char* concat_str(Allocator& allocator, const char* str1, uint32 str1_len, const char* str2, uint32 str2_len)
 {
 	auto size = str1_len + str2_len + 1;
 	auto new_str = (char*)allocator.alloc_raw(size);

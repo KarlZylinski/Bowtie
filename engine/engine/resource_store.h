@@ -1,12 +1,8 @@
 #pragma once
-
 #include <cassert>
-#include <stdint.h>
-
 #include <foundation/hash.h>
 #include <foundation/murmur_hash.h>
 #include <foundation/string_utils.h>
-
 #include "render_resource_handle.h"
 #include "resource_type.h"
 
@@ -24,7 +20,7 @@ struct ResourceStore
 	Allocator* allocator;
 	RenderInterface* render_interface;
 	Hash<void*> _resources;
-	Option<void*> _default_resources[(unsigned)ResourceType::NumResourceTypes];
+	Option<void*> _default_resources[(uint32)ResourceType::NumResourceTypes];
 };
 
 namespace resource_store
@@ -35,7 +31,7 @@ namespace resource_store
 	void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_interface);
 	void deinit(ResourceStore* rs);
 	Option<void*> load(ResourceStore* rs, ResourceType type, const char* filename);
-	Option<void*> get(const ResourceStore* rs, ResourceType type, uint64_t name);
+	Option<void*> get(const ResourceStore* rs, ResourceType type, uint64 name);
 	void reload(ResourceStore* rs, ResourceType type, const char* filename);
 	void reload_all(ResourceStore* rs);
 	void set_default(ResourceStore* rs, ResourceType type, void* resource);

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
 #if defined(_MSC_VER) && !defined(_ALLOW_KEYWORD_MACROS)
 	#define _ALLOW_KEYWORD_MACROS
 #endif
@@ -21,4 +19,6 @@ typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
 typedef unsigned long long uint64;
+typedef float real32;
+typedef double real64;
 }

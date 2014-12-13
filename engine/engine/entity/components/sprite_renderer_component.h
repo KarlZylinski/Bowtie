@@ -35,7 +35,7 @@ struct SpriteRendererComponent
 
 namespace sprite_renderer_component
 {
-	extern unsigned component_size;
+	extern uint32 component_size;
 	void init(SpriteRendererComponent* c, Allocator* allocator);
 	void deinit(SpriteRendererComponent* c, Allocator* allocator);
 	void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Rect* rect, const Color* color);
@@ -53,7 +53,7 @@ namespace sprite_renderer_component
 	void set_depth(SpriteRendererComponent* c, Entity e, int depth);
 	void* copy_dirty_data(SpriteRendererComponent* c, Allocator* allocator);
 	void* copy_new_data(SpriteRendererComponent* c, Allocator* allocator);
-	SpriteRendererComponentData create_data_from_buffer(void* buffer, unsigned num);
+	SpriteRendererComponentData create_data_from_buffer(void* buffer, uint32 num);
 }
 
 }

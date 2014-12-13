@@ -8,11 +8,11 @@ namespace bowtie
 template<typename T> struct Vector
 {
 	Allocator* allocator;
-	unsigned size;
-	unsigned capacity;
+	uint32 size;
+	uint32 capacity;
 	T* data;
-	T &operator[](uint32_t i);
-	const T &operator[](uint32_t i) const;
+	T &operator[](uint32 i);
+	const T &operator[](uint32 i) const;
 };
 
 template<typename T> struct Hash
@@ -23,7 +23,7 @@ template<typename T> struct Hash
 		T value;
 	};
 
-	Vector<unsigned> _hash;
+	Vector<uint32> _hash;
 	Vector<Entry> _data;
 };
 }

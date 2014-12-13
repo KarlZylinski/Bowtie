@@ -80,7 +80,7 @@ namespace bowtie {
 				
 		template <typename T, typename F> void remove(Vector<T>* a, const F& predicate)
 		{
-			for (unsigned i = 0; i < a->size; ++i)
+			for (uint32 i = 0; i < a->size; ++i)
 			{
 				auto& element = a[i];
 
@@ -94,7 +94,7 @@ namespace bowtie {
 
 		template <typename T> void remove(Vector<T>* a, const T& element)
 		{
-			for (unsigned i = 0; i < a->size; ++i)
+			for (uint32 i = 0; i < a->size; ++i)
 			{
 				auto& element_from_list = a[i];
 
@@ -106,7 +106,7 @@ namespace bowtie {
 			}
 		}
 
-		template<typename T> void set_capacity(Vector<T>* a, uint32_t new_capacity)
+		template<typename T> void set_capacity(Vector<T>* a, uint32 new_capacity)
 		{
 			if (new_capacity == a->capacity)
 				return;
@@ -126,9 +126,9 @@ namespace bowtie {
 			a->capacity = new_capacity;
 		}
 
-		template<typename T> void grow(Vector<T>* a, uint32_t min_capacity)
+		template<typename T> void grow(Vector<T>* a, uint32 min_capacity)
 		{
-			uint32_t new_capacity = a->capacity*2 + 8;
+			uint32 new_capacity = a->capacity*2 + 8;
 
 			if (new_capacity < min_capacity)
 				new_capacity = min_capacity;
@@ -161,13 +161,13 @@ namespace bowtie {
 	}
 
 	template <typename T>
-	inline T& Vector<T>::operator[](uint32_t i)
+	inline T& Vector<T>::operator[](uint32 i)
 	{
 		return data[i];
 	}
 
 	template <typename T>
-	inline const T& Vector<T>::operator[](uint32_t i) const
+	inline const T& Vector<T>::operator[](uint32 i) const
 	{
 		return data[i];
 	}

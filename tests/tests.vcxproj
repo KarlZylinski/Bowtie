@@ -137,6 +137,7 @@
       <AdditionalOptions>/wd4530 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/foundation/foundation/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

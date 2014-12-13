@@ -1,5 +1,4 @@
 #pragma once
-
 #include <mutex>
 #include <foundation/option.h>
 
@@ -10,8 +9,8 @@ struct Allocator;
 
 struct ConcurrentRingBuffer
 {
-	unsigned size;
-	unsigned element_size;
+	uint32 size;
+	uint32 element_size;
 	char* start;
 	char* write_head;
 	bool has_wrapped;
@@ -23,12 +22,12 @@ struct ConcurrentRingBuffer
 struct ConsumedRingBufferData
 {
 	void* data;
-	unsigned size;
+	uint32 size;
 };
 
 namespace concurrent_ring_buffer
 {
-	void init(ConcurrentRingBuffer* b, Allocator* allocator, unsigned size, unsigned element_size);
+	void init(ConcurrentRingBuffer* b, Allocator* allocator, uint32 size, uint32 element_size);
 	void deinit(ConcurrentRingBuffer* b);
 	void write_one(ConcurrentRingBuffer* b, const void* data);
 	void* peek(ConcurrentRingBuffer* b);

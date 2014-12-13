@@ -5,7 +5,7 @@ namespace bowtie
 namespace vector2u
 {
 
-Vector2u create(unsigned x, unsigned y)
+Vector2u create(uint32 x, uint32 y)
 {
 	Vector2u v = {x, y};
 	return v;
@@ -47,13 +47,13 @@ Vector2u sub(const Vector2u* v1, const Vector2u* v2)
 	return v1v2;
 }
 
-void scale(Vector2u* v1, unsigned scalar)
+void scale(Vector2u* v1, uint32 scalar)
 {
 	v1->x *= scalar;
 	v1->y *= scalar;
 }
 
-Vector2u mul(const Vector2u* v1, unsigned scalar)
+Vector2u mul(const Vector2u* v1, uint32 scalar)
 {
 	Vector2u v1s = {
 		v1->x * scalar,
@@ -79,7 +79,7 @@ Vector2u mul(const Vector2u* v1, const Vector2u* v2)
 	return v1v2;
 }
 
-unsigned dot(const Vector2u* v1, const Vector2u* v2)
+uint32 dot(const Vector2u* v1, const Vector2u* v2)
 {
 	return v1->x * v2->x + v1->y * v2->y;
 }

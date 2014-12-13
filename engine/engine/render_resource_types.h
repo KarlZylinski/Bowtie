@@ -24,22 +24,22 @@ struct MaterialResourceData
 {
 	RenderResourceHandle handle;
 	RenderResourceHandle shader;
-	unsigned num_uniforms;
+	uint32 num_uniforms;
 };
 	
 struct ShaderResourceData
 {
 	RenderResourceHandle handle;
-	unsigned vertex_shader_source_offset;
-	unsigned fragment_shader_source_offset;
+	uint32 vertex_shader_source_offset;
+	uint32 fragment_shader_source_offset;
 };
 
 struct TextureResourceData
 {
 	RenderResourceHandle handle;
 	PixelFormat pixel_format;
-	unsigned texture_data_size;
-	unsigned texture_data_dynamic_data_offset;
+	uint32 texture_data_size;
+	uint32 texture_data_dynamic_data_offset;
 	Vector2u resolution;
 };
 
@@ -47,19 +47,19 @@ struct UniformResourceData
 {
 	uniform::AutomaticValue automatic_value;
 	uniform::Type type;
-	unsigned name_offset;
-	unsigned value_offset;
+	uint32 name_offset;
+	uint32 value_offset;
 };
 
 struct CreateSpriteRendererData
 {
 	RenderResourceHandle world;
-	unsigned num;
+	uint32 num;
 };
 
 struct UpdateSpriteRendererData
 {
-	unsigned num;
+	uint32 num;
 };
 
 struct RenderWorldResourceData

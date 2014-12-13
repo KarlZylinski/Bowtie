@@ -47,11 +47,11 @@ const float* TextGeometry::data() const
 	return _data;
 }
 
-unsigned TextGeometry::data_size() const
+uint32 TextGeometry::data_size() const
 {
 	auto text_len = strlen32(_text);
 	auto size_of_char_geometry = sizeof(float) * 9 * 6;
-	return text_len * (unsigned)size_of_char_geometry;
+	return text_len * (uint32)size_of_char_geometry;
 }
 
 bool TextGeometry::has_changed() const
@@ -98,11 +98,11 @@ float* update_geometry(Allocator& allocator, const Color& color, const Font& fon
 	if (text_len == 0)
 		return nullptr;
 
-	auto data = (float*)allocator.allocate((unsigned)size_of_char_geometry * text_len);
+	auto data = (float*)allocator.allocate((uint32)size_of_char_geometry * text_len);
 	
 	auto size = font::char_size(font);
 	auto pos = Vector2u();
-	for (unsigned i = 0; i < text_len; ++i)
+	for (uint32 i = 0; i < text_len; ++i)
 	{
 		char c = text[i];
 		auto uv = font::char_uv(font, c);
@@ -140,7 +140,7 @@ float* update_geometry(Allocator& allocator, const Color& color, const Font& fon
 		};
 
 		pos.x += size.x;
-		memcpy(memory::pointer_add(data, i * (unsigned)size_of_char_geometry), geometry, size_of_char_geometry);
+		memcpy(memory::pointer_add(data, i * (uint32)size_of_char_geometry), geometry, size_of_char_geometry);
 	}
 
 	return data;

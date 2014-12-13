@@ -14,7 +14,7 @@ namespace bowtie
 namespace
 {
 
-SpriteRendererComponentData initialize_data(void* buffer, unsigned size)
+SpriteRendererComponentData initialize_data(void* buffer, uint32 size)
 {
 	SpriteRendererComponentData new_data;
 	new_data.entity = (Entity*)buffer;
@@ -27,7 +27,7 @@ SpriteRendererComponentData initialize_data(void* buffer, unsigned size)
 	return new_data;
 }
 
-void copy_offset(SpriteRendererComponentData* from, SpriteRendererComponentData* to, unsigned num, unsigned from_offset, unsigned to_offset)
+void copy_offset(SpriteRendererComponentData* from, SpriteRendererComponentData* to, uint32 num, uint32 from_offset, uint32 to_offset)
 {
 	memcpy(to->entity + to_offset, from->entity + from_offset, num * sizeof(Entity));
 	memcpy(to->color + to_offset, from->color + from_offset, num * sizeof(Color));
@@ -38,17 +38,17 @@ void copy_offset(SpriteRendererComponentData* from, SpriteRendererComponentData*
 	memcpy(to->depth + to_offset, from->depth + from_offset, num * sizeof(int));
 }
 
-void copy(SpriteRendererComponentData* from, SpriteRendererComponentData* to, unsigned num)
+void copy(SpriteRendererComponentData* from, SpriteRendererComponentData* to, uint32 num)
 {
 	copy_offset(from, to, num, 0, 0);
 }
 
-void internal_copy(SpriteRendererComponentData* c, unsigned from, unsigned to)
+void internal_copy(SpriteRendererComponentData* c, uint32 from, uint32 to)
 {
 	copy_offset(c, c, 1, from, to);
 }
 
-void swap(SpriteRendererComponent* c, unsigned i1, unsigned i2)
+void swap(SpriteRendererComponent* c, uint32 i1, uint32 i2)
 {
 	hash::set(c->header.map, c->data.entity[i1], i2);
 	hash::set(c->header.map, c->data.entity[i2], i1);
@@ -59,8 +59,8 @@ void swap(SpriteRendererComponent* c, unsigned i1, unsigned i2)
 
 void grow(SpriteRendererComponent* c, Allocator* allocator)
 {
-	const unsigned new_capacity = c->header.capacity == 0 ? 8 : c->header.capacity * 2;
-	const unsigned bytes = new_capacity * sprite_renderer_component::component_size;
+	const uint32 new_capacity = c->header.capacity == 0 ? 8 : c->header.capacity * 2;
+	const uint32 bytes = new_capacity * sprite_renderer_component::component_size;
 	void* buffer = allocator->alloc_raw(bytes);
 
 	auto new_data = initialize_data(buffer, new_capacity);
@@ -72,7 +72,7 @@ void grow(SpriteRendererComponent* c, Allocator* allocator)
 	c->header.capacity = new_capacity;
 }
 
-void mark_dirty(SpriteRendererComponent* c, unsigned index)
+void mark_dirty(SpriteRendererComponent* c, uint32 index)
 {
 	auto dd = component::mark_dirty(&c->header, index);
 
@@ -87,7 +87,7 @@ void mark_dirty(SpriteRendererComponent* c, unsigned index)
 namespace sprite_renderer_component
 {
 
-unsigned component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(Material) + sizeof(RenderResourceHandle) + sizeof(Quad) + sizeof(int));
+uint32 component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(Material) + sizeof(RenderResourceHandle) + sizeof(Quad) + sizeof(int));
 
 void init(SpriteRendererComponent* c, Allocator* allocator)
 {
@@ -106,23 +106,23 @@ void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Re
 	if (c->header.num >= c->header.capacity)
 		grow(c, allocator);
 
-	unsigned i = c->header.num++;
+	uint32 i = c->header.num++;
 	hash::set(c->header.map, e, i);
 	c->data.entity[i] = e;
 	c->data.color[i] = *color;
 	c->data.rect[i] = *rect;
-	c->data.material[i].render_handle = (unsigned)-1;
+	c->data.material[i].render_handle = (uint32)-1;
 	c->data.render_handle[i] = handle_not_initialized;
 	memset(c->data.geometry + i, 0, sizeof(Quad));
 	c->data.depth[i] = 0;
 	
-	if (c->header.first_new == (unsigned)-1)
+	if (c->header.first_new == (uint32)-1)
 		c->header.first_new = i;
 }
 
 void destroy(SpriteRendererComponent* c, Entity e)
 {
-	unsigned i = hash::get(c->header.map, e, 0u);
+	uint32 i = hash::get(c->header.map, e, 0u);
 	hash::remove(c->header.map, e);
 	--c->header.num;
 
@@ -215,7 +215,7 @@ void* copy_new_data(SpriteRendererComponent* c, Allocator* allocator)
 	return buffer;
 }
 
-SpriteRendererComponentData create_data_from_buffer(void* buffer, unsigned num)
+SpriteRendererComponentData create_data_from_buffer(void* buffer, uint32 num)
 {
 	return initialize_data(buffer, num);
 }

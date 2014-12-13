@@ -15,10 +15,10 @@ struct TransformComponentData
 	Vector2* position;
 	float* rotation;
 	Vector2* pivot;
-	unsigned* parent;
-	unsigned* first_child;
-	unsigned* next_sibling;
-	unsigned* previous_sibling;
+	uint32* parent;
+	uint32* first_child;
+	uint32* next_sibling;
+	uint32* previous_sibling;
 	Matrix4* world_transform;
 };
 
@@ -31,8 +31,8 @@ struct TransformComponent
 
 namespace transform_component
 {
-	const unsigned not_assigned = (unsigned)-1;
-	extern unsigned component_size;
+	const uint32 not_assigned = (uint32)-1;
+	extern uint32 component_size;
 	void init(TransformComponent* c, Allocator* allocator);
 	void deinit(TransformComponent* c, Allocator* allocator);
 	void create(TransformComponent* c, Entity e, Allocator* allocator);

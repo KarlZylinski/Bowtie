@@ -11,45 +11,45 @@ namespace bowtie
 namespace
 {
 
-TransformComponentData initialize_data(void* buffer, unsigned size)
+TransformComponentData initialize_data(void* buffer, uint32 size)
 {
 	TransformComponentData new_data;
 	new_data.entity = (Entity*)buffer;
 	new_data.position = (Vector2*)(new_data.entity + size);
 	new_data.rotation = (float*)(new_data.position + size);
 	new_data.pivot = (Vector2*)(new_data.rotation + size);
-	new_data.parent = (unsigned*)(new_data.pivot + size);
-	new_data.first_child = (unsigned*)(new_data.parent + size);
-	new_data.next_sibling = (unsigned*)(new_data.first_child + size);
-	new_data.previous_sibling = (unsigned*)(new_data.next_sibling + size);
+	new_data.parent = (uint32*)(new_data.pivot + size);
+	new_data.first_child = (uint32*)(new_data.parent + size);
+	new_data.next_sibling = (uint32*)(new_data.first_child + size);
+	new_data.previous_sibling = (uint32*)(new_data.next_sibling + size);
 	new_data.world_transform = (Matrix4*)(new_data.previous_sibling + size);
 	return new_data;
 }
 
-void copy_offset(TransformComponentData* from, TransformComponentData* to, unsigned num, unsigned from_offset, unsigned to_offset)
+void copy_offset(TransformComponentData* from, TransformComponentData* to, uint32 num, uint32 from_offset, uint32 to_offset)
 {
 	memcpy(to->entity + to_offset, from->entity + from_offset, num * sizeof(Entity));
 	memcpy(to->position + to_offset, from->position + from_offset, num * sizeof(Vector2));
 	memcpy(to->rotation + to_offset, from->rotation + from_offset, num * sizeof(float));
 	memcpy(to->pivot + to_offset, from->pivot + from_offset, num * sizeof(Vector2));
-	memcpy(to->parent + to_offset, from->parent + from_offset, num * sizeof(unsigned));
-	memcpy(to->first_child + to_offset, from->first_child + from_offset, num * sizeof(unsigned));
-	memcpy(to->next_sibling + to_offset, from->next_sibling + from_offset, num * sizeof(unsigned));
-	memcpy(to->previous_sibling + to_offset, from->previous_sibling + from_offset, num * sizeof(unsigned));
+	memcpy(to->parent + to_offset, from->parent + from_offset, num * sizeof(uint32));
+	memcpy(to->first_child + to_offset, from->first_child + from_offset, num * sizeof(uint32));
+	memcpy(to->next_sibling + to_offset, from->next_sibling + from_offset, num * sizeof(uint32));
+	memcpy(to->previous_sibling + to_offset, from->previous_sibling + from_offset, num * sizeof(uint32));
 	memcpy(to->world_transform + to_offset, from->world_transform + from_offset, num * sizeof(Matrix4));
 }
 
-void copy(TransformComponentData* from, TransformComponentData* to, unsigned num)
+void copy(TransformComponentData* from, TransformComponentData* to, uint32 num)
 {
 	copy_offset(from, to, num, 0, 0);
 }
 
-void internal_copy(TransformComponentData* c, unsigned from, unsigned to)
+void internal_copy(TransformComponentData* c, uint32 from, uint32 to)
 {
 	copy_offset(c, c, 1, from, to);
 }
 
-void set_parent_internal(TransformComponentData* d, unsigned index, unsigned parent_index)
+void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_index)
 {
 	if (d->parent[index] == parent_index)
 		return;
@@ -108,18 +108,18 @@ void set_parent_internal(TransformComponentData* d, unsigned index, unsigned par
 	d->parent[index] = parent_index;
 }
 
-void update_child_parent_indices(TransformComponent* c, unsigned parent)
+void update_child_parent_indices(TransformComponent* c, uint32 parent)
 {
 	auto child = c->data.first_child[parent];
 
-	while (child != (unsigned)-1)
+	while (child != (uint32)-1)
 	{
 		c->data.parent[child] = parent;
 		child = c->data.next_sibling[child];
 	}
 }
 
-void swap(TransformComponent* c, unsigned i1, unsigned i2)
+void swap(TransformComponent* c, uint32 i1, uint32 i2)
 {
 	auto i1_parent = c->data.parent[i1];
 	auto i2_parent = c->data.parent[i2];
@@ -148,8 +148,8 @@ void swap(TransformComponent* c, unsigned i1, unsigned i2)
 
 void grow(TransformComponent* c, Allocator* allocator)
 {
-	const unsigned new_capacity = (c->header.capacity == 0 ? 8 : c->header.capacity * 2) + 1; // One extra so last index always can be used for swapping.
-	const unsigned bytes = new_capacity * transform_component::component_size;
+	const uint32 new_capacity = (c->header.capacity == 0 ? 8 : c->header.capacity * 2) + 1; // One extra so last index always can be used for swapping.
+	const uint32 bytes = new_capacity * transform_component::component_size;
 	void* buffer = allocator->alloc_raw(bytes);
 	auto new_data = initialize_data(buffer, new_capacity);
 	copy(&c->data, &new_data, c->header.num);
@@ -159,7 +159,7 @@ void grow(TransformComponent* c, Allocator* allocator)
 	c->header.capacity = new_capacity;
 }
 
-void mark_dirty(TransformComponent* c, unsigned index)
+void mark_dirty(TransformComponent* c, uint32 index)
 {
 	auto dd = component::mark_dirty(&c->header, index);
 
@@ -192,8 +192,8 @@ void mark_dirty(TransformComponent* c, unsigned index)
 namespace transform_component
 {
 
-unsigned component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2)
-							+ sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned)
+uint32 component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2)
+							+ sizeof(uint32) + sizeof(uint32) + sizeof(uint32) + sizeof(uint32)
 							+ sizeof(Matrix4);
 
 void init(TransformComponent* c, Allocator* allocator)
@@ -213,7 +213,7 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
 	if (c->header.num >= c->header.capacity)
 		grow(c, allocator);
 
-	unsigned i = c->header.num++;
+	uint32 i = c->header.num++;
 	hash::set(c->header.map, e, i);
 	c->data.entity[i] = e;
 	c->data.position[i] = vector2::create(0, 0);
@@ -231,7 +231,7 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
 
 void destroy(TransformComponent* c, Entity e)
 {
-	unsigned i = hash::get(c->header.map, e, 0u);
+	uint32 i = hash::get(c->header.map, e, 0u);
 	hash::remove(c->header.map, e);
 	--c->header.num;
 

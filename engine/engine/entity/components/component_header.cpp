@@ -26,19 +26,19 @@ bool has_entity(const ComponentHeader* h, Entity e)
 	return hash::has(h->map, e);
 }
 
-unsigned num_dirty(const ComponentHeader* h)
+uint32 num_dirty(const ComponentHeader* h)
 {
 	return h->last_dirty_index + 1;
 }
 
 void reset_dirty(ComponentHeader* h)
 {
-	h->last_dirty_index = (unsigned)-1;
+	h->last_dirty_index = (uint32)-1;
 }
 
-unsigned num_new(const ComponentHeader* h)
+uint32 num_new(const ComponentHeader* h)
 {
-	if (h->first_new == (unsigned)-1)
+	if (h->first_new == (uint32)-1)
 		return 0;
 
 	return h->num - h->first_new;
@@ -46,20 +46,20 @@ unsigned num_new(const ComponentHeader* h)
 
 void reset_new(ComponentHeader* h)
 {
-	h->first_new = (unsigned)-1;
+	h->first_new = (uint32)-1;
 }
 
-DirtyData mark_dirty(ComponentHeader* h, unsigned index)
+DirtyData mark_dirty(ComponentHeader* h, uint32 index)
 {
 	DirtyData dd = {
 		index,
 		index
 	};
 
-	if (h->last_dirty_index != (unsigned)-1 && index <= h->last_dirty_index)
+	if (h->last_dirty_index != (uint32)-1 && index <= h->last_dirty_index)
 		return dd;
 
-	if (h->first_new != (unsigned)-1 && index >= h->first_new)
+	if (h->first_new != (uint32)-1 && index >= h->first_new)
 		return dd;
 
 	dd.new_index = ++h->last_dirty_index;

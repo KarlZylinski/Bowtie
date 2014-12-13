@@ -9,9 +9,9 @@ struct LoadedFile;
 struct SplitShader
 {
 	char* vertex_source;
-	unsigned vertex_source_len;
+	uint32 vertex_source_len;
 	char* fragment_source;
-	unsigned fragment_source_len;
+	uint32 fragment_source_len;
 };
 
 namespace shader_utils

@@ -23,7 +23,7 @@ static JzonAllocator jzon_allocator;
 
 static void* jzon_static_allocate(size_t size)
 {
-	return static_allocator->alloc_raw((uint32_t)size);
+	return static_allocator->alloc_raw((bowtie::uint32)size);
 }
 
 static void jzon_static_deallocate(void* ptr)
@@ -37,26 +37,26 @@ namespace bowtie
 namespace internal
 {
 
-uint64_t hash_name(const char* name)
+uint64 hash_name(const char* name)
 {
 	return hash_str(name);
 }
 
-uint64_t get_name(uint64_t name, ResourceType type)
+uint64 get_name(uint64 name, ResourceType type)
 {
 	char name_str[30];
-	sprintf(name_str, "%u%llu", (unsigned)type, name);
-	::uint64_t name_with_type;
+	sprintf(name_str, "%u%llu", (uint32)type, name);
+	uint64 name_with_type;
 	sscanf(name_str, "%llu", &name_with_type);
 	return name_with_type;
 }
 
-Option<void*> get(const Hash<void*>* resources, ResourceType type, uint64_t name)
+Option<void*> get(const Hash<void*>* resources, ResourceType type, uint64 name)
 {
 	return hash::try_get<void*>(*resources, get_name(name, type));
 }
 
-void add(Hash<void*>* resources, uint64_t name, ResourceType type, void* resource)
+void add(Hash<void*>* resources, uint64 name, ResourceType type, void* resource)
 {
 	hash::set(*resources, get_name(name, type), resource);
 }
@@ -65,7 +65,7 @@ uniform::Type get_uniform_type_from_str(const char* str)
 {
 	static const char* types_as_str[] = { "float", "vec2", "vec3", "vec4", "mat3", "mat4", "texture1", "texture2", "texture3" };
 
-	for (unsigned i = 0; i < uniform::NumUniformTypes; ++i)
+	for (uint32 i = 0; i < uniform::NumUniformTypes; ++i)
 	{
 		if (!strcmp(str, types_as_str[i]))
 			return (uniform::Type)i;
@@ -79,7 +79,7 @@ uniform::AutomaticValue get_automatic_value_from_str(const char* str)
 {
 	static const char* types_as_str[] = { "none", "mvp", "mv", "m", "time", "view_resolution", "view_resolution_ratio", "resolution" };
 
-	for (unsigned i = 0; i < uniform::NumAutomaticValues; ++i)
+	for (uint32 i = 0; i < uniform::NumAutomaticValues; ++i)
 	{
 		if (!strcmp(str, types_as_str[i]))
 			return (uniform::AutomaticValue)i;
@@ -103,13 +103,13 @@ RenderResourceData get_update_render_resource_data(RenderResourceData::Type type
 
 template<typename T> struct RenderResourcePackage
 {
-	RenderResourcePackage(const T& data, void* dynamic_data, unsigned dynamic_data_size)
+	RenderResourcePackage(const T& data, void* dynamic_data, uint32 dynamic_data_size)
 		: data(data), dynamic_data(dynamic_data), dynamic_data_size(dynamic_data_size)
 	{}
 
 	T data;
 	void* dynamic_data;
-	unsigned dynamic_data_size;
+	uint32 dynamic_data_size;
 };
 
 RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* allocator, const char* filename)
@@ -121,8 +121,8 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* al
 	allocator->dealloc(shader_source->data);
 
 	ShaderResourceData srd;
-	unsigned shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
-	unsigned shader_dynamic_data_offset = 0;
+	uint32 shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
+	uint32 shader_dynamic_data_offset = 0;
 	void* shader_resource_dynamic_data = allocator->alloc_raw(shader_dynamic_data_size);
 
 	srd.vertex_shader_source_offset = shader_dynamic_data_offset;
@@ -210,11 +210,11 @@ Material* load_material(ResourceStore* rs, const char* filename)
 	auto shader = load_shader(rs, shader_filename);
 	auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
-	unsigned uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
+	uint32 uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
 	auto uniforms = (UniformResourceData*)rs->allocator->alloc(uniforms_size);
 	Stream dynamic_uniform_data = { 0 };
 
-	for (unsigned i = 0; i < uniforms_jzon->size; ++i)
+	for (uint32 i = 0; i < uniforms_jzon->size; ++i)
 	{
 		auto uniform_json = uniforms_jzon->array_values[i];
 		auto uniform_str = uniform_json->string_value;
@@ -228,7 +228,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 		auto name = split_uniform[1];
 		auto name_len = strlen32(name) + 1;
 		stream::write(&dynamic_uniform_data, name, name_len, rs->allocator);
-		uniform.value_offset = (unsigned)-1;
+		uniform.value_offset = (uint32)-1;
 
 		if (split_uniform.size > 2)
 		{
@@ -250,14 +250,14 @@ Material* load_material(ResourceStore* rs, const char* filename)
 				case uniform::Texture3:
 				{
 					auto texture = load_texture(rs, value_str);
-					stream::write(&dynamic_uniform_data, &texture->render_handle, sizeof(unsigned), rs->allocator);
+					stream::write(&dynamic_uniform_data, &texture->render_handle, sizeof(uint32), rs->allocator);
 				}
 					break;
 				}
 			}
 		}
 
-		for (unsigned j = 0; j < split_uniform.size; ++j)
+		for (uint32 j = 0; j < split_uniform.size; ++j)
 			rs->allocator->dealloc(split_uniform[j]);
 
 		vector::deinit(&split_uniform);
@@ -324,7 +324,7 @@ namespace resource_store
 
 ResourceType resource_type_from_string(const char* type)
 {
-	for (unsigned i = 0; i < (unsigned)ResourceType::NumResourceTypes; ++i)
+	for (uint32 i = 0; i < (uint32)ResourceType::NumResourceTypes; ++i)
 	{
 		if (strequal(type, resource_type_names[i]))
 			return (ResourceType)i;
@@ -338,7 +338,7 @@ void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_inter
 {
 	rs->allocator = allocator;
 	rs->render_interface = render_interface;
-	memset(rs->_default_resources, 0, sizeof(Option<void*>) * (unsigned)ResourceType::NumResourceTypes);
+	memset(rs->_default_resources, 0, sizeof(Option<void*>) * (uint32)ResourceType::NumResourceTypes);
 	hash::init<void*>(rs->_resources, *rs->allocator);
 	static_allocator = allocator;
 	jzon_allocator.allocate = jzon_static_allocate;
@@ -353,7 +353,7 @@ void deinit(ResourceStore* rs)
 	hash::deinit(rs->_resources);
 }
 
-Option<void*> get(const ResourceStore* rs, ResourceType type, uint64_t name)
+Option<void*> get(const ResourceStore* rs, ResourceType type, uint64 name)
 {
 	return internal::get(&rs->_resources, type, name);
 }
@@ -399,12 +399,12 @@ void reload_all(ResourceStore*)
 
 void set_default(ResourceStore* rs, ResourceType type, void* resource)
 {
-	rs->_default_resources[(unsigned)type] = option::some(resource);
+	rs->_default_resources[(uint32)type] = option::some(resource);
 }
 
 Option<void*> get_default(const ResourceStore* rs, ResourceType type)
 {
-	return rs->_default_resources[(unsigned)type];
+	return rs->_default_resources[(uint32)type];
 }
 
 } // namespace resource_store

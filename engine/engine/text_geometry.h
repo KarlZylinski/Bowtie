@@ -18,7 +18,7 @@ public:
 	IDrawableGeometry& clone(Allocator& allocator);
 	const Vector4& color() const;
 	const float* data() const;
-	unsigned data_size() const;
+	uint32 data_size() const;
 	bool has_changed() const;
 	void reset_has_changed();
 	void set_color(const Vector4& color);

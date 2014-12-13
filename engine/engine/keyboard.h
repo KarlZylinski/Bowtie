@@ -12,7 +12,7 @@ namespace bowtie
 
 struct Keyboard
 {
-	static const unsigned num_keys = 120;
+	static const uint32 num_keys = 120;
 	bool keys_held[num_keys];
 	bool keys_pressed[num_keys];
 	bool keys_released[num_keys];

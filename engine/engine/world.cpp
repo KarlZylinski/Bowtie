@@ -14,7 +14,7 @@ namespace bowtie
 namespace
 {
 
-Matrix4 world_matrix(const TransformComponentData* c, unsigned i)
+Matrix4 world_matrix(const TransformComponentData* c, uint32 i)
 {
 	auto parent_index = c->parent[i];
 
@@ -45,9 +45,9 @@ Matrix4 world_matrix(const TransformComponentData* c, unsigned i)
 	}
 }
 
-void update_transforms(TransformComponentData* transform, unsigned start, unsigned end, SpriteRendererComponent* sprite_renderer)
+void update_transforms(TransformComponentData* transform, uint32 start, uint32 end, SpriteRendererComponent* sprite_renderer)
 {
-	for (unsigned i = start; i < end; ++i)
+	for (uint32 i = start; i < end; ++i)
 	{
 		auto entity = transform->entity[i];
 		auto world_transform = world_matrix(transform, i);
@@ -74,11 +74,11 @@ void update_transforms(TransformComponentData* transform, unsigned start, unsign
 	}
 }
 
-void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent* sprite_renderer, unsigned num)
+void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent* sprite_renderer, uint32 num)
 {
 	auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
 
-	for (unsigned i = sprite_renderer->header.first_new; i < sprite_renderer->header.num; ++i)
+	for (uint32 i = sprite_renderer->header.first_new; i < sprite_renderer->header.num; ++i)
 	{
 		sprite_renderer->data.render_handle[i] = render_interface::create_handle(ri);
 
@@ -93,7 +93,7 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
 	render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
-void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererComponent* sprite_renderer, unsigned num)
+void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererComponent* sprite_renderer, uint32 num)
 {
 	auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
 	UpdateSpriteRendererData data;

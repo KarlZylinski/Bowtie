@@ -6,8 +6,8 @@ namespace bowtie
 namespace renderer
 {
 
-const unsigned max_render_targets = 32;
-const unsigned max_rendered_worlds = 16;
+const uint32 max_render_targets = 32;
+const uint32 max_rendered_worlds = 16;
 
 }
 

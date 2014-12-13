@@ -22,7 +22,7 @@ struct RenderInterface
 	std::mutex* _unprocessed_commands_exist_mutex;
 	std::condition_variable* _wait_for_unprocessed_commands_to_exist;
 	RenderResourceHandle _free_handles[render_resource_handle::num];
-	unsigned num_free_handles;
+	uint32 num_free_handles;
 };
 
 namespace render_interface
@@ -34,10 +34,10 @@ namespace render_interface
 	void create_texture(RenderInterface* ri, Texture* texture);
 	void create_render_world(RenderInterface* ri, World* world);
 	RendererCommand create_command(RenderInterface* ri, RendererCommand::Type type);
-	void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data, unsigned dynamic_data_size);
+	void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data, uint32 dynamic_data_size);
 	void dispatch(RenderInterface* ri, RendererCommand* command);
-	void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size);
-	void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, unsigned dynamic_data_size);
+	void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size);
+	void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size);
 	void create_resource(RenderInterface* ri, RenderResourceData* resource);
 	void update_resource(RenderInterface* ri, RenderResourceData* resource);
 	RenderFence* create_fence(RenderInterface* ri);

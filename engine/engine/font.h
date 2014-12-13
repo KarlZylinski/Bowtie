@@ -9,8 +9,8 @@ namespace bowtie
 struct Texture;
 struct Font
 {
-	unsigned columns;
-	unsigned rows;
+	uint32 columns;
+	uint32 rows;
 	const Texture* texture;
 };
 

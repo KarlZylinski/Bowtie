@@ -14,13 +14,13 @@ struct RenderResource
 	union
 	{
 		void* object;
-		unsigned handle;
+		uint32 handle;
 	};
 };
 
 namespace render_resource
 {
-	inline RenderResource create_handle(unsigned h)
+	inline RenderResource create_handle(uint32 h)
 	{
 		RenderResource rr;
 		rr.type = RenderResourceType::Handle;

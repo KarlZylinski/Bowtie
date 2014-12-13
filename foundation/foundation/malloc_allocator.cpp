@@ -12,7 +12,7 @@ namespace bowtie
 namespace internal
 {
 
-inline void* alloc(Allocator* a, unsigned size, unsigned align)
+inline void* alloc(Allocator* a, uint32 size, uint32 align)
 {
 	const auto ts = allocator_helpers::size_with_padding(size, align);
 	auto h = (Header *)memory::align_forward(malloc(ts), memory::default_align);
@@ -55,14 +55,14 @@ inline void dealloc(Allocator* a, void* p)
 
 } // namespace internal
 
-void* MallocAllocator::alloc(unsigned size, unsigned align)
+void* MallocAllocator::alloc(uint32 size, uint32 align)
 {
 	auto p = internal::alloc(this, size, align);
 	memset(p, 0, size);
 	return p;
 }
 
-void* MallocAllocator::alloc_raw(unsigned size, unsigned align)
+void* MallocAllocator::alloc_raw(uint32 size, uint32 align)
 {
 	return internal::alloc(this, size, align);
 }

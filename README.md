@@ -91,7 +91,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
     * [ ] Update geometry when text or font changes
 * [x] Make sure to remove hacks from combine_rendered_worlds and split it into multiple methods. Seems to be  some haze with arrays of textures...
 * [x] Change render resource handles in render_world to drawables
-* [x] Make ResourceHandle::handle -> RenderResourceHandle (unsigned typedef ?). RenderResourceHandle -> RenderResource (remove render_ prefix). Move void* in ResourceHandle to Resource struct.
+* [x] Make ResourceHandle::handle -> RenderResourceHandle (uint32 typedef ?). RenderResourceHandle -> RenderResource (remove render_ prefix). Move void* in ResourceHandle to Resource struct.
 * [x] Shader refreshing
 * [x] Remove bad lambdas
 * [x] Depth sorting

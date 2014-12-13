@@ -1,7 +1,7 @@
 #include "jzon.h"
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
 
 // String helpers
 

@@ -52,7 +52,7 @@ void clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-GLuint create_geometry_internal(void* data, unsigned data_size)
+GLuint create_geometry_internal(void* data, uint32 data_size)
 {
 	GLuint geometry_buffer;
 	glGenBuffers(1, &geometry_buffer);
@@ -66,7 +66,7 @@ void destroy_geometry_internal(GLuint handle)
 	glDeleteBuffers(1, &handle);
 }
 
-void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, RenderWorld** rendered_worlds, unsigned num_rendered_worlds)
+void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, RenderWorld** rendered_worlds, uint32 num_rendered_worlds)
 {
 	auto shader = rendered_worlds_combining_shader.handle;
 
@@ -84,7 +84,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, Re
 	assert(num_rendered_worlds <= renderer::max_rendered_worlds);
 	GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_samplers");
 
-	for (unsigned i = 0; i < num_rendered_worlds; ++i)
+	for (uint32 i = 0; i < num_rendered_worlds; ++i)
 	{
 		auto rw = rendered_worlds[i];
 
@@ -112,7 +112,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, Re
 	destroy_geometry_internal(quad);
 }
 
-RenderResource create_geometry(void* data, unsigned data_size)
+RenderResource create_geometry(void* data, uint32 data_size)
 {
 	return render_resource::create_handle(create_geometry_internal(data, data_size));
 }
@@ -239,7 +239,7 @@ void destroy_render_target(RenderResource render_target)
 }
 
 
-void draw_batch(unsigned start, unsigned size, RenderComponent** components, const Vector2u* resolution, const Rect* view,
+void draw_batch(uint32 start, uint32 size, RenderComponent** components, const Vector2u* resolution, const Rect* view,
 			    const Matrix4* view_matrix, const Matrix4* view_projection_matrix, float time, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
@@ -253,7 +253,7 @@ void draw_batch(unsigned start, unsigned size, RenderComponent** components, con
 	auto ident = matrix4::indentity();
 
 	auto uniforms = material->uniforms;
-	for (unsigned i = 0; i < material->num_uniforms; ++i)
+	for (uint32 i = 0; i < material->num_uniforms; ++i)
 	{
 		auto uniform = uniforms + i;
 		auto value = uniform->value;
@@ -307,14 +307,14 @@ void draw_batch(unsigned start, unsigned size, RenderComponent** components, con
 		}
 	}
 
-	static const unsigned draw_buffer_size = 864000;
+	static const uint32 draw_buffer_size = 864000;
 	static float draw_buffer[draw_buffer_size];
-	const unsigned rect_buffer_num_elements = 54;
-	const unsigned rect_buffer_size = rect_buffer_num_elements * sizeof(float);
-	const unsigned total_buffer_size = rect_buffer_size * size;
+	const uint32 rect_buffer_num_elements = 54;
+	const uint32 rect_buffer_size = rect_buffer_num_elements * sizeof(float);
+	const uint32 total_buffer_size = rect_buffer_size * size;
 	assert(total_buffer_size <= draw_buffer_size && "Draw buffer size exceeded limit. Increase in opengl_renderer.cpp");
 
-	for (unsigned i = start; i < start + size; ++i)
+	for (uint32 i = start; i < start + size; ++i)
 	{
 		float* current_buffer = draw_buffer + rect_buffer_num_elements * (i - start);
 		auto v1 = &components[i]->geometry.v1;
@@ -398,12 +398,12 @@ void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* res
 
 	auto view_matrix = view::view_matrix(view);
 	auto view_projection_matrix = matrix4::mul(&view_matrix, &view::projection_matrix(view));
-	unsigned num_components = render_world->components.size;
+	uint32 num_components = render_world->components.size;
 	auto batch_material = render_world->components[0]->material;
 	auto batch_depth = render_world->components[0]->depth;
-	unsigned batch_start = 0;	
+	uint32 batch_start = 0;	
 
-	for (unsigned i = 0; i < num_components; ++i)
+	for (uint32 i = 0; i < num_components; ++i)
 	{
 		auto material = render_world->components[i]->material;
 		auto depth = render_world->components[i]->depth;
@@ -421,7 +421,7 @@ void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* res
 	draw_batch(batch_start, num_components - batch_start, render_world->components.data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
 }
 
-unsigned get_uniform_location(RenderResource shader, const char* name)
+uint32 get_uniform_location(RenderResource shader, const char* name)
 {
 	return glGetUniformLocation(shader.handle, name);
 }
@@ -444,7 +444,7 @@ void resize(const Vector2u* resolution, RenderTarget* render_targets)
 {
 	glViewport(0, 0, resolution->x, resolution->y);
 
-	for (unsigned i = 0; i < renderer::max_render_targets; ++i)
+	for (uint32 i = 0; i < renderer::max_render_targets; ++i)
 	{
 		auto rt = render_targets + i;
 

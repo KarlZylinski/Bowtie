@@ -1,5 +1,4 @@
 #pragma once
-
 #include "option.h"
 
 namespace bowtie
@@ -9,8 +8,8 @@ struct Allocator;
 
 struct LoadedFile
 {
-	unsigned char* data;
-	unsigned size;
+	uint8* data;
+	uint32 size;
 };
 
 namespace file

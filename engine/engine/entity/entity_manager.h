@@ -10,10 +10,10 @@ struct Allocator;
 
 struct EntityManager
 {
-	unsigned last_entity_index;
+	uint32 last_entity_index;
 	// All free entity indices in the range (0, last_entity_id_index)
-	Vector<unsigned> index_holes;
-	Vector<unsigned> generation;
+	Vector<uint32> index_holes;
+	Vector<uint32> generation;
 };
 
 namespace entity_manager

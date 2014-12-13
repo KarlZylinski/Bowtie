@@ -11,11 +11,11 @@ namespace bowtie
 namespace internal
 {
 
-CapturedCallstack capture(unsigned frames_to_skip, void* p)
+CapturedCallstack capture(uint32 frames_to_skip, void* p)
 {
 	#if defined(_WIN32)
-		const unsigned long frames_to_capture = 64;
-		unsigned long back_trace_hash = 0; 
+		const uint32 frames_to_capture = 64;
+		DWORD back_trace_hash = 0; 
 		CapturedCallstack cc;
 		cc.num_frames = CaptureStackBackTrace(frames_to_skip + 2, frames_to_capture, cc.frames, &back_trace_hash);
 		cc.ptr = p;
@@ -34,8 +34,8 @@ void print_callstack(const char* caption, const CapturedCallstack* captured_call
 		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
 		char* callstack_str = (char*)malloc(symbol->MaxNameLen * 64);
-		unsigned callstack_str_size = 0;
-		for (unsigned i = 0; i < captured_callstack->num_frames; i++ )
+		uint32 callstack_str_size = 0;
+		for (uint32 i = 0; i < captured_callstack->num_frames; i++ )
 		{
 			SymFromAddr(process, (DWORD64)(captured_callstack->frames[i]), 0, symbol);
 			memcpy(callstack_str + callstack_str_size, symbol->Name, symbol->NameLen);

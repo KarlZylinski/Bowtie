@@ -167,7 +167,7 @@ namespace {
 	void test_pointer_arithmetic()
 	{
 		const char check = (char)0xfe;
-		const unsigned test_size = 128;
+		const uint32 test_size = 128;
 
 		TempAllocator512 ta;
 		Array<char> buffer(ta);
@@ -175,7 +175,7 @@ namespace {
 		memset(array::begin(buffer), 0, array::size(buffer));
 
 		void* data = array::begin(buffer);
-		for (unsigned i = 0; i != test_size; ++i) {
+		for (uint32 i = 0; i != test_size; ++i) {
 			buffer[i] = check;
 			char* value = (char*)memory::pointer_add(data, i);
 			ASSERT(*value == buffer[i]);
