@@ -19,13 +19,13 @@ struct ComponentHeader
 
 namespace component
 {
-	void init(ComponentHeader& h, Allocator& allocator);
-	void deinit(ComponentHeader& h);
-	bool has_entity(const ComponentHeader& h, Entity e);
-	unsigned num_dirty(const ComponentHeader& h);
-	void reset_dirty(ComponentHeader& h);
-	unsigned num_new(const ComponentHeader& h);
-	void reset_new(ComponentHeader& h);
+	void init(ComponentHeader* h, Allocator* allocator);
+	void deinit(ComponentHeader* h);
+	bool has_entity(const ComponentHeader* h, Entity e);
+	unsigned num_dirty(const ComponentHeader* h);
+	void reset_dirty(ComponentHeader* h);
+	unsigned num_new(const ComponentHeader* h);
+	void reset_new(ComponentHeader* h);
 	
 	struct DirtyData
 	{
@@ -33,7 +33,7 @@ namespace component
 		unsigned new_index;
 	};
 
-	DirtyData mark_dirty(ComponentHeader& h, unsigned entity_index);
+	DirtyData mark_dirty(ComponentHeader* h, unsigned entity_index);
 }
 
 }

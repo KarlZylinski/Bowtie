@@ -53,7 +53,7 @@ void update_transforms(TransformComponentData* transform, unsigned start, unsign
 		auto world_transform = world_matrix(transform, i);
 		transform->world_transform[i] = world_transform;
 
-		if (!component::has_entity(sprite_renderer->header, entity))
+		if (!component::has_entity(&sprite_renderer->header, entity))
 			continue;
 
 		auto sprite_index = hash::get(sprite_renderer->header.map, transform->entity[i]);
@@ -70,7 +70,7 @@ void update_transforms(TransformComponentData* transform, unsigned start, unsign
 			vector2::create(v4.x, v4.y)
 		};
 
-		sprite_renderer_component::set_geometry(*sprite_renderer, entity, geometry);
+		sprite_renderer_component::set_geometry(sprite_renderer, entity, &geometry);
 	}
 }
 
@@ -90,7 +90,7 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
 	data.num = num;
 	data.world = render_world;
 	rrd.data = &data;
-	render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
 void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererComponent* sprite_renderer, unsigned num)
@@ -99,7 +99,7 @@ void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererCom
 	UpdateSpriteRendererData data;
 	data.num = num;
 	rrd.data = &data;
-	render_interface::update_resource(ri, &rrd, sprite_renderer_component::copy_dirty_data(*sprite_renderer, *allocator), sprite_renderer_component::component_size * data.num);
+	render_interface::update_resource(ri, &rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
 }
 
 } // anonymous namespace
@@ -115,50 +115,50 @@ void init(World* w, Allocator* allocator, RenderInterface* render_interface, Res
 	auto default_material = resource_store::load(resource_store, ResourceType::Material, "default.material");
 	assert(default_material.is_some && "Default material default.material is missing.");
 	w->default_material = ((Material*)default_material.value)->render_handle;
-	sprite_renderer_component::init(w->sprite_renderer_components, *allocator);
-	transform_component::init(w->transform_components, *allocator);
+	sprite_renderer_component::init(&w->sprite_renderer_components, allocator);
+	transform_component::init(&w->transform_components, allocator);
 }
 
 void deinit(World* w)
 {
-	sprite_renderer_component::deinit(w->sprite_renderer_components, *w->allocator);
-	transform_component::deinit(w->transform_components, *w->allocator);
+	sprite_renderer_component::deinit(&w->sprite_renderer_components, w->allocator);
+	transform_component::deinit(&w->transform_components, w->allocator);
 }
 
 void update(World* w)
 {
 	{
-		if (component::num_new(w->transform_components.header) > 0)
+		if (component::num_new(&w->transform_components.header) > 0)
 			update_transforms(&w->transform_components.data, w->transform_components.header.first_new, w->transform_components.header.num, &w->sprite_renderer_components);
 	
-		component::reset_new(w->transform_components.header);
+		component::reset_new(&w->transform_components.header);
 	}
 
 	{
-		const auto num_dirty_transforms = component::num_dirty(w->transform_components.header);
+		const auto num_dirty_transforms = component::num_dirty(&w->transform_components.header);
 
 		if (num_dirty_transforms > 0)
 			update_transforms(&w->transform_components.data, 0, num_dirty_transforms, &w->sprite_renderer_components);
 
-		component::reset_dirty(w->transform_components.header);
+		component::reset_dirty(&w->transform_components.header);
 	}
 	
 	{
-		const auto num_new_sprites = component::num_new(w->sprite_renderer_components.header);
+		const auto num_new_sprites = component::num_new(&w->sprite_renderer_components.header);
 
 		if (num_new_sprites > 0)
 			create_sprites(w->allocator, w->render_interface, w->default_material, w->render_handle, &w->sprite_renderer_components, num_new_sprites);
 
-		component::reset_new(w->sprite_renderer_components.header);
+		component::reset_new(&w->sprite_renderer_components.header);
 	}
 
 	{
-		const auto num_dirty_sprites = component::num_dirty(w->sprite_renderer_components.header);
+		const auto num_dirty_sprites = component::num_dirty(&w->sprite_renderer_components.header);
 
 		if (num_dirty_sprites > 0)
 			update_sprites(w->allocator, w->render_interface, &w->sprite_renderer_components, num_dirty_sprites);
 	
-		component::reset_dirty(w->sprite_renderer_components.header);
+		component::reset_dirty(&w->sprite_renderer_components.header);
 	}
 }
 

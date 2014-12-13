@@ -26,17 +26,17 @@ unsigned entity_generation(Entity e)
 	return (e >> entity_index_bits) & entity_generation_mask;
 }
 
-unsigned get_next_index(EntityManager& manager)
+unsigned get_next_index(EntityManager* m)
 {
-	if (array::size(manager.index_holes) == 0) {
-		unsigned new_index = ++manager.last_entity_index;;
+	if (array::size(m->index_holes) == 0) {
+		unsigned new_index = ++m->last_entity_index;;
 		assert(new_index < (1 << entity_generation_bits));
 		return new_index; 
 	}
 
-	unsigned hole_index = rand() % array::size(manager.index_holes);
-	unsigned index = manager.index_holes[hole_index];
-	array::remove_at(manager.index_holes, hole_index);
+	unsigned hole_index = rand() % array::size(m->index_holes);
+	unsigned index = m->index_holes[hole_index];
+	array::remove_at(m->index_holes, hole_index);
 	return index;
 }
 
@@ -45,46 +45,46 @@ unsigned get_next_index(EntityManager& manager)
 namespace entity_manager
 {
 
-void init(EntityManager& manager, Allocator& allocator)
+void init(EntityManager* m, Allocator* allocator)
 {
-	manager.last_entity_index = 0;
-	array::init(manager.index_holes, allocator);
-	array::init(manager.generation, allocator);
+	m->last_entity_index = 0;
+	array::init(m->index_holes, *allocator);
+	array::init(m->generation, *allocator);
 }
 
-void deinit(EntityManager& manager)
+void deinit(EntityManager* m)
 {
-	array::deinit(manager.index_holes);
-	array::deinit(manager.generation);
+	array::deinit(m->index_holes);
+	array::deinit(m->generation);
 }
 
-Entity create(EntityManager& manager)
+Entity create(EntityManager* m)
 {
-	unsigned index = get_next_index(manager);
+	unsigned index = get_next_index(m);
 
-	if (index >= manager.last_entity_index)
+	if (index >= m->last_entity_index)
 	{
-		array::resize(manager.generation, manager.last_entity_index);
-		manager.generation[index] = 1;
+		array::resize(m->generation, m->last_entity_index);
+		m->generation[index] = 1;
 	}
 	else
-		++manager.generation[index];
+		++m->generation[index];
 
-	return (manager.generation[index] << entity_index_bits) | index;
+	return (m->generation[index] << entity_index_bits) | index;
 }
 
-void destroy(EntityManager& manager, Entity entity)
+void destroy(EntityManager* m, Entity entity)
 {
 	unsigned index = entity_index(entity);
-	++manager.generation[index];
+	++m->generation[index];
 	
-	if (index <= manager.last_entity_index)
-		array::push_back(manager.index_holes, index);
+	if (index <= m->last_entity_index)
+		array::push_back(m->index_holes, index);
 }
 
-bool is_alive(EntityManager& manager, Entity entity)
+bool is_alive(EntityManager* m, Entity entity)
 {
-	return manager.generation[entity_index(entity)] == entity_generation(entity);
+	return m->generation[entity_index(entity)] == entity_generation(entity);
 }
 
 } // namespace entity_manager

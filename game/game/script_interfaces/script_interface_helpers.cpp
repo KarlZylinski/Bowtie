@@ -46,45 +46,45 @@ bool check_errors(lua_State* lua, int error)
 	return false;
 }
 
-void push_color(lua_State* lua, const Color& c)
+void push_color(lua_State* lua, const Color* c)
 {
 	push_vector4(lua, c);
 }
 
-void push_vector2(lua_State* lua, const Vector2& v)
+void push_vector2(lua_State* lua, const Vector2* v)
 {
 	lua_getglobal(lua, "Vector2");
-	lua_pushnumber(lua, v.x);
-	lua_pushnumber(lua, v.y);
+	lua_pushnumber(lua, v->x);
+	lua_pushnumber(lua, v->y);
 	int error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
-void push_vector2(lua_State* lua, const Vector2i& v)
+void push_vector2(lua_State* lua, const Vector2i* v)
 {
 	lua_getglobal(lua, "Vector2");
-	lua_pushnumber(lua, v.x);
-	lua_pushnumber(lua, v.y);
+	lua_pushnumber(lua, v->x);
+	lua_pushnumber(lua, v->y);
 	int error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
-void push_vector2(lua_State* lua, const Vector2u& v)
+void push_vector2(lua_State* lua, const Vector2u* v)
 {
 	lua_getglobal(lua, "Vector2");
-	lua_pushnumber(lua, v.x);
-	lua_pushnumber(lua, v.y);
+	lua_pushnumber(lua, v->x);
+	lua_pushnumber(lua, v->y);
 	int error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
-void push_vector4(lua_State* lua, const Vector4& v)
+void push_vector4(lua_State* lua, const Vector4* v)
 {
 	lua_getglobal(lua, "Vector4");
-	lua_pushnumber(lua, v.x);
-	lua_pushnumber(lua, v.y);
-	lua_pushnumber(lua, v.z);
-	lua_pushnumber(lua, v.w);
+	lua_pushnumber(lua, v->x);
+	lua_pushnumber(lua, v->y);
+	lua_pushnumber(lua, v->z);
+	lua_pushnumber(lua, v->w);
 	int error = lua_pcall(lua, 4, 1, 0);
 	script_interface::check_errors(lua, error);
 }

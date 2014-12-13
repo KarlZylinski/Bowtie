@@ -8,61 +8,61 @@ namespace bowtie
 namespace component
 {
 
-void init(ComponentHeader& h, Allocator& allocator)
+void init(ComponentHeader* h, Allocator* allocator)
 {
-	memset(&h, 0, sizeof(ComponentHeader));
-	hash::init(h.map, allocator);
+	memset(h, 0, sizeof(ComponentHeader));
+	hash::init(h->map, *allocator);
 	reset_dirty(h);
 	reset_new(h);
 }
 
-void deinit(ComponentHeader& h)
+void deinit(ComponentHeader* h)
 {
-	hash::deinit(h.map);
+	hash::deinit(h->map);
 }
 
-bool has_entity(const ComponentHeader& h, Entity e)
+bool has_entity(const ComponentHeader* h, Entity e)
 {
-	return hash::has(h.map, e);
+	return hash::has(h->map, e);
 }
 
-unsigned num_dirty(const ComponentHeader& h)
+unsigned num_dirty(const ComponentHeader* h)
 {
-	return h.last_dirty_index + 1;
+	return h->last_dirty_index + 1;
 }
 
-void reset_dirty(ComponentHeader& h)
+void reset_dirty(ComponentHeader* h)
 {
-	h.last_dirty_index = (unsigned)-1;
+	h->last_dirty_index = (unsigned)-1;
 }
 
-unsigned num_new(const ComponentHeader& h)
+unsigned num_new(const ComponentHeader* h)
 {
-	if (h.first_new == (unsigned)-1)
+	if (h->first_new == (unsigned)-1)
 		return 0;
 
-	return h.num - h.first_new;
+	return h->num - h->first_new;
 }
 
-void reset_new(ComponentHeader& h)
+void reset_new(ComponentHeader* h)
 {
-	h.first_new = (unsigned)-1;
+	h->first_new = (unsigned)-1;
 }
 
-DirtyData mark_dirty(ComponentHeader& h, unsigned index)
+DirtyData mark_dirty(ComponentHeader* h, unsigned index)
 {
 	DirtyData dd = {
 		index,
 		index
 	};
 
-	if (h.last_dirty_index != (unsigned)-1 && index <= h.last_dirty_index)
+	if (h->last_dirty_index != (unsigned)-1 && index <= h->last_dirty_index)
 		return dd;
 
-	if (h.first_new != (unsigned)-1 && index >= h.first_new)
+	if (h->first_new != (unsigned)-1 && index >= h->first_new)
 		return dd;
 
-	dd.new_index = ++h.last_dirty_index;
+	dd.new_index = ++h->last_dirty_index;
 	return dd;
 }
 

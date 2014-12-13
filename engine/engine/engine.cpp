@@ -23,7 +23,7 @@ void init(Engine* e, Allocator* allocator, RenderInterface* render_interface, Ti
 	e->render_interface = render_interface;
 	e->timer = timer;
 	resource_store::init(&e->resource_store, allocator, render_interface);
-	entity_manager::init(e->entity_manager, *allocator);
+	entity_manager::init(&e->entity_manager, allocator);
 	memset(&e->keyboard, 0, sizeof(Keyboard));
 	e->timer->start();
 	game::init(&e->_game, allocator, e, render_interface);
@@ -32,7 +32,7 @@ void init(Engine* e, Allocator* allocator, RenderInterface* render_interface, Ti
 void deinit(Engine* e)
 {
 	game::deinit(&e->_game);
-	entity_manager::deinit(e->entity_manager);
+	entity_manager::deinit(&e->entity_manager);
 	resource_store::deinit(&e->resource_store);
 }
 
