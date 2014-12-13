@@ -130,9 +130,9 @@ GLuint create_render_target_internal(GLuint texture_id)
 	return fb;
 }
 
-RenderResource create_render_target(const RenderTexture& texture)
+RenderResource create_render_target(const RenderTexture* texture)
 {
-	return RenderResource(create_render_target_internal(texture.render_handle.handle));
+	return RenderResource(create_render_target_internal(texture->render_handle.handle));
 }
 
 GLuint compile_glsl(const char* shader_source, GLenum shader_type)
@@ -200,19 +200,19 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 	return RenderResource(program);
 }
 
-GLuint create_texture_internal(PixelFormat pf, const Vector2u& resolution, void* data)
+GLuint create_texture_internal(PixelFormat pf, const Vector2u* resolution, void* data)
 {
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	auto pixel_format = gl_pixel_format(pf);
-	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format.internal_format, resolution.x, resolution.y, 0, pixel_format.format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format.internal_format, resolution->x, resolution->y, 0, pixel_format.format, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	return texture_id;
 }
 
-RenderResource create_texture(PixelFormat pf, const Vector2u& resolution, void* data)
+RenderResource create_texture(PixelFormat pf, const Vector2u* resolution, void* data)
 {
 	return RenderResource(create_texture_internal(pf, resolution, data));
 }
@@ -228,33 +228,33 @@ void destroy_texture(RenderResource texture)
 	glDeleteTextures(1, &rt->render_handle.handle);
 }
 
-void destroy_render_target_internal(const RenderTarget& render_target)
+void destroy_render_target_internal(const RenderTarget* render_target)
 {
-	glDeleteTextures(1, &render_target.texture.render_handle.handle);
-	glDeleteFramebuffers(1, &render_target.handle.handle);
+	glDeleteTextures(1, &render_target->texture.render_handle.handle);
+	glDeleteFramebuffers(1, &render_target->handle.handle);
 }
 
 void destroy_render_target(RenderResource render_target)
 {
-	destroy_render_target_internal(*(RenderTarget*)render_target.object);
+	destroy_render_target_internal((RenderTarget*)render_target.object);
 }
 
 
-void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view,
-			    const Matrix4& view_matrix, const Matrix4& view_projection_matrix, float time, const RenderResource* resource_table)
+void draw_batch(unsigned start, unsigned size, RenderComponent** components, const Vector2u* resolution, const Rect* view,
+			    const Matrix4* view_matrix, const Matrix4* view_projection_matrix, float time, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
-	auto& material = *(RenderMaterial*)render_resource_table::lookup(resource_table, components[start]->material).object;
-	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
+	auto material = (RenderMaterial*)render_resource_table::lookup(resource_table, components[start]->material).object;
+	auto shader = render_resource_table::lookup(resource_table, material->shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
-	auto view_resolution_ratio = view.size.y / resolution.y;
-	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
+	auto view_resolution_ratio = view->size.y / resolution->y;
+	auto resoultion_float = Vector2((float)resolution->x, (float)resolution->y);
 	Matrix4 ident;
 
-	auto uniforms = material.uniforms;
-	for (unsigned i = 0; i < material.num_uniforms; ++i)
+	auto uniforms = material->uniforms;
+	for (unsigned i = 0; i < material->num_uniforms; ++i)
 	{
 		const auto& uniform = uniforms[i];
 		auto value = uniform.value;
@@ -262,10 +262,10 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 		switch (uniform.automatic_value)
 		{
 		case uniform::ModelViewProjectionMatrix:
-			value = (void*)&model_view_projection_matrix[0][0];
+			value = (void*)&(*model_view_projection_matrix)[0][0];
 			break;
 		case uniform::ModelViewMatrix:
-			value = (void*)&model_view_matrix[0][0];
+			value = (void*)&(*model_view_matrix)[0][0];
 			break;
 		case uniform::ModelMatrix:
 			value = (void*)&ident[0][0];
@@ -274,7 +274,7 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 			value = &time;
 			break;
 		case uniform::ViewResolution:
-			value = (void*)&view.size;
+			value = (void*)&view->size;
 			break;
 		case uniform::ViewResolutionRatio:
 			value = (void*)&view_resolution_ratio;
@@ -392,34 +392,34 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 	destroy_geometry_internal(geometry);
 }
 
-void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, float time, const RenderResource* resource_table)
+void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* resolution, float time, const RenderResource* resource_table)
 {
-	if (render_world.components._size == 0)
+	if (render_world->components._size == 0)
 		return;
 
-	auto view_matrix = view::view_matrix(&view);
-	auto view_projection_matrix = view_matrix * view::projection_matrix(&view);
-	unsigned num_components = array::size(render_world.components);
-	auto batch_material = render_world.components[0]->material;
-	auto batch_depth = render_world.components[0]->depth;
+	auto view_matrix = view::view_matrix(view);
+	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
+	unsigned num_components = array::size(render_world->components);
+	auto batch_material = render_world->components[0]->material;
+	auto batch_depth = render_world->components[0]->depth;
 	unsigned batch_start = 0;	
 
 	for (unsigned i = 0; i < num_components; ++i)
 	{
-		auto material = render_world.components[i]->material;
-		auto depth = render_world.components[i]->depth;
+		auto material = render_world->components[i]->material;
+		auto depth = render_world->components[i]->depth;
 
 		if (batch_material == material && batch_depth == depth)
 			continue;
 
-		draw_batch(ta, batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, time, resource_table);
+		draw_batch(batch_start, i - batch_start, render_world->components._data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
 		batch_start = i;
 		batch_material = material;
 		batch_depth = depth;
 	}
 
 	// Draw last batch.
-	draw_batch(ta, batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, time, resource_table);
+	draw_batch(batch_start, num_components - batch_start, render_world->components._data, resolution, view, &view_matrix, &view_projection_matrix, time, resource_table);
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)
@@ -441,29 +441,29 @@ void initialize_thread()
 	glDisable(GL_DEPTH_TEST);
 }
 
-void resize(const Vector2u& resolution, RenderTarget* render_targets)
+void resize(const Vector2u* resolution, RenderTarget* render_targets)
 {
-	glViewport(0, 0, resolution.x, resolution.y);
+	glViewport(0, 0, resolution->x, resolution->y);
 
 	for (unsigned i = 0; i < renderer::max_render_targets; ++i)
 	{
-		auto& rt = render_targets[i];
+		auto rt = render_targets + i;
 
-		if (rt.handle.type == RenderResource::NotInitialized)
+		if (rt->handle.type == RenderResource::NotInitialized)
 			continue;
 
 		destroy_render_target_internal(rt);
-		auto texture = create_texture_internal(rt.texture.pixel_format, resolution, 0);
+		auto texture = create_texture_internal(rt->texture.pixel_format, resolution, 0);
 		auto new_rt = create_render_target_internal(texture);
-		rt.handle = RenderResource(new_rt);
-		rt.texture.render_handle = RenderResource(texture);
+		rt->handle = RenderResource(new_rt);
+		rt->texture.render_handle = RenderResource(texture);
 	}
 }
 
-void set_render_target(const Vector2u& resolution, RenderResource render_target)
+void set_render_target(const Vector2u* resolution, RenderResource render_target)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, render_target.handle);
-	glViewport(0, 0, resolution.x, resolution.y);
+	glViewport(0, 0, resolution->x, resolution->y);
 }
 
 void destroy_shader(RenderResource handle)
@@ -471,14 +471,14 @@ void destroy_shader(RenderResource handle)
 	glDeleteProgram(handle.handle);
 }
 
-void unset_render_target(const Vector2u& resolution)
+void unset_render_target(const Vector2u* resolution)
 {
 	set_render_target(resolution, RenderResource(0u));
 }
 
-RenderResource update_shader(const RenderResource& shader, const char* vertex_source, const char* fragment_source)
+RenderResource update_shader(const RenderResource* shader, const char* vertex_source, const char* fragment_source)
 {
-	glDeleteProgram(shader.handle);
+	glDeleteProgram(shader->handle);
 	return RenderResource(create_shader(vertex_source, fragment_source));
 }
 

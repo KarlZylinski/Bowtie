@@ -129,7 +129,7 @@ RenderTarget* find_free_render_target_slot(RenderTarget* render_targets)
 
 RenderTarget create_render_target(ConcreteRenderer& concrete_renderer, const RenderTexture& texture, RenderTarget* render_targets)
 {
-	auto render_target_resource = concrete_renderer.create_render_target(texture);
+	auto render_target_resource = concrete_renderer.create_render_target(&texture);
 	auto rt = find_free_render_target_slot(render_targets);
 	rt->handle = render_target_resource;
 	rt->texture = texture;
@@ -152,7 +152,7 @@ SingleCreatedResource create_shader(ConcreteRenderer& concrete_renderer, void* d
 
 RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
-	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
+	auto texture_resource = concrete_renderer.create_texture(pixel_format, &resolution, data);
 	RenderTexture render_texture;
 	render_texture.pixel_format = pixel_format;
 	render_texture.render_handle = texture_resource;
@@ -162,7 +162,7 @@ RenderTexture create_texture(ConcreteRenderer& concrete_renderer, PixelFormat pi
 
 RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allocator& allocator, PixelFormat pixel_format, const Vector2u& resolution, void* data)
 {
-	auto texture_resource = concrete_renderer.create_texture(pixel_format, resolution, data);
+	auto texture_resource = concrete_renderer.create_texture(pixel_format, &resolution, data);
 	RenderTexture* render_texture = (RenderTexture*)allocator.alloc(sizeof(RenderTexture));
 	*render_texture = create_texture(concrete_renderer, pixel_format, resolution, data);
 	return RenderResource(render_texture);
@@ -187,12 +187,12 @@ void raise_fence(RenderFence& fence)
 	fence.fence_processed.notify_all();
 }
 
-void draw(Allocator& ta, ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld& render_world, const Rect& view, float time)
+void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld& render_world, const Rect& view, float time)
 {
 	render_world::sort(render_world);
-	concrete_renderer.set_render_target(resolution, render_world.render_target.handle);
+	concrete_renderer.set_render_target(&resolution, render_world.render_target.handle);
 	concrete_renderer.clear();
-	concrete_renderer.draw(ta, view, render_world, resolution, time, resource_table);
+	concrete_renderer.draw(&view, &render_world, &resolution, time, resource_table);
 	assert(*num_rendered_worlds < renderer::max_rendered_worlds);
 	rendered_worlds[*num_rendered_worlds] = &render_world;
 	++(*num_rendered_worlds);
@@ -203,7 +203,7 @@ SingleUpdatedResource update_shader(ConcreteRenderer& concrete_renderer, const R
 	RenderResource old_resource = render_resource_table::lookup(resource_table, data.handle);
 	const char* vertex_source = (const char*)memory::pointer_add(dynamic_data, data.vertex_shader_source_offset);
 	const char* fragment_source = (const char*)memory::pointer_add(dynamic_data, data.fragment_shader_source_offset);
-	RenderResource new_resource = concrete_renderer.update_shader(old_resource, vertex_source, fragment_source);
+	RenderResource new_resource = concrete_renderer.update_shader(&old_resource, vertex_source, fragment_source);
 	SingleUpdatedResource sur;
 	sur.handle = data.handle;
 	sur.old_resource = old_resource;
@@ -309,7 +309,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 		case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			draw(*r.allocator, r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, &r.num_rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view, rwd.time);
+			draw(r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, &r.num_rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view, rwd.time);
 		} break;
 
 		// Rename to CreateResource
@@ -377,14 +377,14 @@ void execute_command(Renderer& r, const RendererCommand& command)
 
 		case RendererCommand::Resize:
 		{
-			ResizeData& data = *(ResizeData*)command.data;
-			r.resolution = data.resolution;
-			r._concrete_renderer.resize(data.resolution, r._render_targets);
+			auto data = (ResizeData*)command.data;
+			r.resolution = data->resolution;
+			r._concrete_renderer.resize(&data->resolution, r._render_targets);
 		} break;
 
 		case RendererCommand::CombineRenderedWorlds:
 		{
-			r._concrete_renderer.unset_render_target(r.resolution);
+			r._concrete_renderer.unset_render_target(&r.resolution);
 			r._concrete_renderer.clear();
 			r._concrete_renderer.combine_rendered_worlds(r._rendered_worlds_combining_shader, r._rendered_worlds, r.num_rendered_worlds);
 			r.num_rendered_worlds = 0;
