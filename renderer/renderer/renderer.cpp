@@ -175,7 +175,7 @@ RenderResource create_texture_resource(ConcreteRenderer& concrete_renderer, Allo
 SingleCreatedResource create_world(Allocator& allocator, const RenderWorldResourceData& data, const RenderTarget& render_target)
 {
 	auto rw = (RenderWorld*)allocator.alloc(sizeof(RenderWorld));
-	render_world::init(*rw, render_target, allocator);
+	render_world::init(rw, &render_target, &allocator);
 	return single_resource(data.handle, render_resource::create_object(rw));
 }
 
@@ -193,7 +193,7 @@ void raise_fence(RenderFence& fence)
 
 void draw(ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld& render_world, const Rect& view, float time)
 {
-	render_world::sort(render_world);
+	render_world::sort(&render_world);
 	concrete_renderer.set_render_target(&resolution, render_world.render_target.handle);
 	concrete_renderer.clear();
 	concrete_renderer.draw(&view, &render_world, &resolution, time, resource_table);
@@ -242,7 +242,7 @@ CreatedResources create_resources(Renderer& r, RenderResourceData::Type type, vo
 			component->material = sprite.material[i].render_handle;
 			component->geometry = sprite.geometry[i];
 			component->depth = sprite.depth[i];
-			render_world::add_component(rw, component);
+			render_world::add_component(&rw, component);
 
 			cr.handles[i] = sprite.render_handle[i];
 			cr.resources[i] = render_resource::create_object(component);
@@ -332,7 +332,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 				assert(resource.type != RenderResourceType::NotInitialized && "Failed to load resource!");
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-				render_resource_table::set(r.resource_table, handle, resource);
+				render_resource_table::set(r.resource_table, handle, &resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (resource.type == RenderResourceType::Object)
@@ -364,7 +364,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 					memset(r._resource_objects + handle, 0, sizeof(RendererResourceObject));
 
 				// Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
-				render_resource_table::set(r.resource_table, handle, new_resource);
+				render_resource_table::set(r.resource_table, handle, &new_resource);
 
 				// Save dynamically allocated render resources in _resource_objects for deallocation on shutdown.
 				if (new_resource.type == RenderResourceType::Object)
@@ -511,7 +511,7 @@ void deinit(Renderer& r)
 		switch (resource_object.type)
 		{
 		case RenderResourceData::World:
-			render_world::deinit(*(RenderWorld*)object);
+			render_world::deinit((RenderWorld*)object);
 			break;
 		case RenderResourceData::RenderTarget:
 			r.allocator->dealloc((RenderTarget*)object);

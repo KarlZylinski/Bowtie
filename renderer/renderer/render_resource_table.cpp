@@ -15,7 +15,7 @@ void free(RenderResource* table, RenderResourceHandle handle)
 	table[handle] = RenderResource();
 }
 
-const RenderResource& lookup(const RenderResource* table, RenderResourceHandle handle)
+RenderResource lookup(const RenderResource* table, RenderResourceHandle handle)
 {
 	assert(handle < render_resource_handle::num && "Handle is out of range");
 	auto& resource = table[handle];
@@ -23,9 +23,9 @@ const RenderResource& lookup(const RenderResource* table, RenderResourceHandle h
 	return resource;
 }
 
-void set(RenderResource* table, RenderResourceHandle handle, const RenderResource& resource)
+void set(RenderResource* table, RenderResourceHandle handle, const RenderResource* resource)
 {
-	table[handle] = resource;
+	table[handle] = *resource;
 }
 
 } // namespace render_resource_lookup_table
