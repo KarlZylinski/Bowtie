@@ -48,40 +48,40 @@ platform::Key key_from_string(const char* key_str)
 	return platform::Key::Up;
 }
 
-void reset_pressed_released(Keyboard& keyboard)
+void reset_pressed_released(Keyboard* keyboard)
 {
-	memset(keyboard.keys_pressed, 0, sizeof(bool) * Keyboard::num_keys);
-	memset(keyboard.keys_released, 0, sizeof(bool) * Keyboard::num_keys);
+	memset(keyboard->keys_pressed, 0, sizeof(bool) * Keyboard::num_keys);
+	memset(keyboard->keys_released, 0, sizeof(bool) * Keyboard::num_keys);
 }
 
-bool key_held(const Keyboard& keyboard, platform::Key key)
+bool key_held(const Keyboard* keyboard, platform::Key key)
 {
-	return keyboard.keys_held[(unsigned)key];
+	return keyboard->keys_held[(unsigned)key];
 }
 
-bool key_pressed(const Keyboard& keyboard, platform::Key key)
+bool key_pressed(const Keyboard* keyboard, platform::Key key)
 {
-	return keyboard.keys_pressed[(unsigned)key];
+	return keyboard->keys_pressed[(unsigned)key];
 }
 
-bool key_released(const Keyboard& keyboard, platform::Key key)
+bool key_released(const Keyboard* keyboard, platform::Key key)
 {
-	return keyboard.keys_released[(unsigned)key];
+	return keyboard->keys_released[(unsigned)key];
 }
 
-void set_key_pressed(Keyboard& keyboard, platform::Key key)
+void set_key_pressed(Keyboard* keyboard, platform::Key key)
 {
-	if (keyboard.keys_held[(unsigned)key])
+	if (keyboard->keys_held[(unsigned)key])
         return;
 
-    keyboard.keys_pressed[(unsigned)key] = true;
-    keyboard.keys_held[(unsigned)key] = true;
+    keyboard->keys_pressed[(unsigned)key] = true;
+    keyboard->keys_held[(unsigned)key] = true;
 }
 
-void set_key_released(Keyboard& keyboard, platform::Key key)
+void set_key_released(Keyboard* keyboard, platform::Key key)
 {
-	keyboard.keys_released[(unsigned)key] = true;
-    keyboard.keys_held[(unsigned)key] = false;
+	keyboard->keys_released[(unsigned)key] = true;
+    keyboard->keys_held[(unsigned)key] = false;
 }
 
 } // namespace keyboard

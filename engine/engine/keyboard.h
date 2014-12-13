@@ -21,12 +21,12 @@ struct Keyboard
 namespace keyboard
 {
 	platform::Key key_from_string(const char* key_str);
-	void reset_pressed_released(Keyboard& keyboard);
-	bool key_held(const Keyboard& keyboard, platform::Key key);
-	bool key_pressed(const Keyboard& keyboard, platform::Key key);
-	bool key_released(const Keyboard& keyboard, platform::Key key);
-	void set_key_pressed(Keyboard& keyboard, platform::Key key);
-	void set_key_released(Keyboard& keyboard, platform::Key key);
+	void reset_pressed_released(Keyboard* keyboard);
+	bool key_held(const Keyboard* keyboard, platform::Key key);
+	bool key_pressed(const Keyboard* keyboard, platform::Key key);
+	bool key_released(const Keyboard* keyboard, platform::Key key);
+	void set_key_pressed(Keyboard* keyboard, platform::Key key);
+	void set_key_released(Keyboard* keyboard, platform::Key key);
 }
 
 }

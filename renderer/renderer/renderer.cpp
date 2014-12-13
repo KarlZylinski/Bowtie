@@ -455,7 +455,7 @@ void thread(Renderer* renderer)
 	r.active = true;
 
 	{
-		auto shader_source_option = file::load("rendered_world_combining.shader", *r.allocator);
+		auto shader_source_option = file::load("rendered_world_combining.shader", r.allocator);
 		assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
 		auto& shader_source = shader_source_option.value;
 		auto split_shader = shader_utils::split_shader(shader_source, *r.allocator);

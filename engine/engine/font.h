@@ -16,8 +16,8 @@ struct Font
 
 namespace font
 {
-	Vector2u char_size(const Font& font);
-	Rect char_uv(const Font& font, char c);
+	Vector2u char_size(const Font* font);
+	Rect char_uv(const Font* font, char c);
 }
 
 }

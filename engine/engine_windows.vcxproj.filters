@@ -22,6 +22,7 @@
     <ClCompile Include="engine\entity\components\sprite_renderer_component.cpp">
       <Filter>entity\components</Filter>
     </ClCompile>
+    <ClCompile Include="engine\rect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />

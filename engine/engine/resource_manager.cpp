@@ -115,7 +115,7 @@ template<typename T> struct RenderResourcePackage
 
 RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator& allocator, const char* filename)
 {
-	auto shader_source_option = file::load(filename, allocator);
+	auto shader_source_option = file::load(filename, &allocator);
 	assert(shader_source_option.is_some && "Failed loading shader source");
 	auto& shader_source = shader_source_option.value;
 	auto split_shader = shader_utils::split_shader(shader_source, allocator);
@@ -164,7 +164,7 @@ Image* load_image(ResourceManager& rm, const char* filename)
 	if (existing.is_some)
 		return (Image*)existing.value;
 
-	UncompressedTexture tex = png::load(filename, *rm.allocator);
+	UncompressedTexture tex = png::load(filename, rm.allocator);
 	auto image = (Image*)rm.allocator->alloc(sizeof(Image));
 	image->resolution = Vector2u(tex.width, tex.height);
 	image->data = tex.data;
@@ -199,7 +199,7 @@ Material* load_material(ResourceManager& rm, const char* filename)
 	if (existing.is_some)
 		return (Material*)existing.value;
 
-	auto material_file_option = file::load(filename, *rm.allocator);
+	auto material_file_option = file::load(filename, rm.allocator);
 	assert(material_file_option.is_some && "Failed loading material.");
 	auto& file = material_file_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);
@@ -297,7 +297,7 @@ Font* load_font(ResourceManager& rm, const char* filename)
 	if (existing.is_some)
 		return (Font*)existing.value;
 
-	auto font_option = file::load(filename, *rm.allocator);
+	auto font_option = file::load(filename, rm.allocator);
 	assert(font_option.is_some && "Failed loading font");
 	auto& file = font_option.value;
 	auto jzon_result = jzon_parse_custom_allocator((char*)file.data, &jzon_allocator);

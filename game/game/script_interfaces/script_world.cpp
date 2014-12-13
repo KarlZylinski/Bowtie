@@ -43,7 +43,8 @@ int draw(lua_State* lua)
 	auto world = (World*)lua_touserdata(lua, 1);
 	auto view_pos = script_interface::to_vector2(lua, 2);
 	auto view_size = script_interface::to_vector2(lua, 3);
-	auto view_rect = Rect(view_pos, view_size);
+	Rect view_rect;
+	rect::init(&view_rect, &view_pos, &view_size);
 	world::draw(world, &view_rect, s_engine->timer->counter());
 	return 0;
 }

@@ -52,12 +52,12 @@ void destroy_world(Engine* e, World* world)
 
 void key_pressed(Engine* e, platform::Key key)
 {
-	keyboard::set_key_pressed(e->keyboard, key);
+	keyboard::set_key_pressed(&e->keyboard, key);
 }
 
 void key_released(Engine* e, platform::Key key)
 {
-	keyboard::set_key_released(e->keyboard, key);
+	keyboard::set_key_released(&e->keyboard, key);
 }
 
 void resize(Engine* e, const Vector2u* resolution)
@@ -83,10 +83,10 @@ void update_and_render(Engine* e)
 
 	render_interface::dispatch(*e->render_interface, render_interface::create_command(*e->render_interface, RendererCommand::CombineRenderedWorlds));
 
-	if (keyboard::key_pressed(e->keyboard, platform::Key::F5))
+	if (keyboard::key_pressed(&e->keyboard, platform::Key::F5))
 		resource_manager::reload_all(e->resource_manager);
 
-	keyboard::reset_pressed_released(e->keyboard);
+	keyboard::reset_pressed_released(&e->keyboard);
 }
 
 } // namespace engine

@@ -45,7 +45,8 @@ int create(lua_State* lua)
 	if (script_interface::is_color(lua, 4))
 		color = script_interface::to_color(lua, 4);
 
-	Rect rect(position, size);
+	Rect rect;
+	rect::init(&rect, &position, &size);
 	sprite_renderer_component::create(e.world->sprite_renderer_components, e.entity, *s_allocator, rect, color);
 	return 0;
 }
@@ -69,7 +70,10 @@ int rect(lua_State* lua)
 int set_rect(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	Rect rect(script_interface::to_vector2(lua, 2), script_interface::to_vector2(lua, 3));
+	auto position = script_interface::to_vector2(lua, 2);
+	auto size = script_interface::to_vector2(lua, 3);
+	Rect rect;
+	rect::init(&rect, &position, &size);
 	sprite_renderer_component::set_rect(e.world->sprite_renderer_components, e.entity, rect);
 	return 0;
 }
