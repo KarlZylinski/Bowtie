@@ -24,7 +24,7 @@ namespace
 void create_render_context_callback(HWND hwnd, const Vector2u* resolution)
 {
 	windows::opengl_context::init(s_render_context_data, hwnd);
-	renderer::run(*s_renderer, s_render_context_data, *resolution);
+	renderer::run(s_renderer, s_render_context_data, resolution);
 }
 
 void window_resized_callback(const Vector2u* resolution)
@@ -55,7 +55,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
 		Renderer renderer;
 		auto renderer_context = windows::opengl_context::create();
-		renderer::init(renderer, opengl_renderer, renderer_allocator, allocator, &renderer_context);
+		renderer::init(&renderer, &opengl_renderer, &renderer_allocator, &allocator, &renderer_context);
 		s_render_context_data = (PlatformRendererContextData*)allocator.alloc(sizeof(PlatformRendererContextData));
 		s_renderer = &renderer;
 		auto& render_interface = renderer.render_interface;
@@ -75,14 +75,14 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			{
 				windows::window::dispatch_messages(&window);
 				engine::update_and_render(&engine);
-				renderer::deallocate_processed_commands(renderer, allocator);
+				renderer::deallocate_processed_commands(&renderer, &allocator);
 			}
 
 			engine::deinit(&engine);
 		}
 		
-		renderer::stop(renderer, allocator);
-		renderer::deinit(renderer);
+		renderer::stop(&renderer, &allocator);
+		renderer::deinit(&renderer);
 	}
 
 	memory::deinit_allocator(renderer_allocator);
