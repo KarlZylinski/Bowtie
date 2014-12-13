@@ -12,7 +12,7 @@ struct RenderComponent
 	RenderResourceHandle material;
 	Color color;
 	Quad geometry;
-	int depth;
+	int32 depth;
 };
 
 }

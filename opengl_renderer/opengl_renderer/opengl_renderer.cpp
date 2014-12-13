@@ -149,9 +149,9 @@ GLuint compile_glsl(const char* shader_source, GLenum shader_type)
 	return result;
 }
 
-GLuint link_glsl(const GLuint* shaders, int shader_count, bool delete_shaders)
+GLuint link_glsl(const GLuint* shaders, uint32 shader_count, bool delete_shaders)
 {
-	int i;
+	uint32 i;
 	GLuint program = glCreateProgram();
 
 	for (i = 0; i < shader_count; i++)
@@ -189,7 +189,7 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 	if (program == 0)
 	{
 		char buf[1000];
-		int len;
+		int32 len;
 		glGetShaderInfoLog(program, 1000, &len, buf);
 		printf("%s", buf);
 	}
@@ -237,7 +237,6 @@ void destroy_render_target(RenderResource render_target)
 {
 	destroy_render_target_internal((RenderTarget*)render_target.object);
 }
-
 
 void draw_batch(uint32 start, uint32 size, RenderComponent** components, const Vector2u* resolution, const Rect* view,
 			    const Matrix4* view_matrix, const Matrix4* view_projection_matrix, float time, const RenderResource* resource_table)

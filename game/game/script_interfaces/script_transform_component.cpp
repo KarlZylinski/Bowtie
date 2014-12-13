@@ -20,63 +20,63 @@ namespace
 	Allocator* s_allocator = nullptr;
 }
 
-int create(lua_State* lua)
+int32 create(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	transform_component::create(&e.world->transform_components, e.entity, s_allocator);
 	return 0;
 }
 
-int destroy(lua_State* lua)
+int32 destroy(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	transform_component::destroy(&e.world->transform_components, e.entity);
 	return 0;
 }
 
-int position(lua_State* lua)
+int32 position(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	script_interface::push_vector2(lua, transform_component::position(&e.world->transform_components, e.entity));
 	return 1;
 }
 
-int set_position(lua_State* lua)
+int32 set_position(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	transform_component::set_position(&e.world->transform_components, e.entity, &script_interface::to_vector2(lua, 2));
 	return 0;
 }
 
-int rotation(lua_State* lua)
+int32 rotation(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	lua_pushnumber(lua, transform_component::rotation(&e.world->transform_components, e.entity));
 	return 1;
 }
 
-int set_rotation(lua_State* lua)
+int32 set_rotation(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	transform_component::set_rotation(&e.world->transform_components, e.entity, (float)lua_tonumber(lua, 2));
 	return 0;
 }
 
-int pivot(lua_State* lua)
+int32 pivot(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	script_interface::push_vector2(lua, transform_component::pivot(&e.world->transform_components, e.entity));
 	return 1;
 }
 
-int set_pivot(lua_State* lua)
+int32 set_pivot(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	transform_component::set_pivot(&e.world->transform_components, e.entity, &script_interface::to_vector2(lua, 2));
 	return 0;
 }
 
-int parent(lua_State* lua)
+int32 parent(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto parent = transform_component::parent(&e.world->transform_components, e.entity);
@@ -84,7 +84,7 @@ int parent(lua_State* lua)
 	return 1;
 }
 
-int set_parent(lua_State* lua)
+int32 set_parent(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto parent = script_interface::to_entity(lua, 2);

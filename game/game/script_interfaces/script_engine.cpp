@@ -17,26 +17,26 @@ namespace
 	Engine* s_engine = nullptr;
 }
 
-int engine(lua_State* lua)
+int32 engine(lua_State* lua)
 {
 	lua_pushlightuserdata(lua, s_engine);
 	return 1;
 }
 
-int load_resource(lua_State* lua)
+int32 load_resource(lua_State* lua)
 {
 	auto resource = resource_store::load(&s_engine->resource_store, resource_store::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	lua_pushlightuserdata(lua, option::get_value_or_null(resource));
 	return 1;
 }
 
-int reload_resource(lua_State* lua)
+int32 reload_resource(lua_State* lua)
 {
 	resource_store::reload(&s_engine->resource_store, resource_store::resource_type_from_string(lua_tostring(lua, 1)), lua_tostring(lua, 2));
 	return 0;
 }
 
-int set_default_resource(lua_State* lua)
+int32 set_default_resource(lua_State* lua)
 {
 	auto resource_type_str = lua_tostring(lua, 1);
 	auto resource_type = resource_store::resource_type_from_string(resource_type_str);
@@ -52,19 +52,19 @@ int set_default_resource(lua_State* lua)
 	return 0;
 }
 
-int keyboard_pressed(lua_State* lua)
+int32 keyboard_pressed(lua_State* lua)
 {
 	lua_pushboolean(lua, keyboard::key_pressed(&s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
-int keyboard_released(lua_State* lua)
+int32 keyboard_released(lua_State* lua)
 {
 	lua_pushboolean(lua, keyboard::key_released(&s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;
 }
 
-int keyboard_held(lua_State* lua)
+int32 keyboard_held(lua_State* lua)
 {
 	lua_pushboolean(lua, keyboard::key_held(&s_engine->keyboard, keyboard::key_from_string(lua_tostring(lua, 1))));
 	return 1;

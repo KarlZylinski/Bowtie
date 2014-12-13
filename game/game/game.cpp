@@ -19,14 +19,14 @@ namespace bowtie
 
 void load_main(lua_State* lua)
 {
-	int error = luaL_dofile(lua, "main.lua");
+	int32 error = luaL_dofile(lua, "main.lua");
 	script_interface::check_errors(lua, error);
 }
 
 void init_game(lua_State* lua)
 {
 	lua_getglobal(lua, "init");
-	int error = lua_pcall(lua, 0, 0, 0);
+	int32 error = lua_pcall(lua, 0, 0, 0);
 	script_interface::check_errors(lua, error);
 }
 
@@ -34,21 +34,21 @@ void update_game(lua_State* lua, float dt)
 {
 	lua_getglobal(lua, "update");
 	lua_pushnumber(lua, dt);
-	int error = lua_pcall(lua, 1, 0, 0);
+	int32 error = lua_pcall(lua, 1, 0, 0);
 	script_interface::check_errors(lua, error);
 }
 
 void draw_game(lua_State* lua)
 {
 	lua_getglobal(lua, "draw");
-	int error = lua_pcall(lua, 0, 0, 0);
+	int32 error = lua_pcall(lua, 0, 0, 0);
 	script_interface::check_errors(lua, error);
 }
 
 void deinit_game(lua_State* lua)
 {
 	lua_getglobal(lua, "deinit");
-	int error = lua_pcall(lua, 0, 0, 0);
+	int32 error = lua_pcall(lua, 0, 0, 0);
 	script_interface::check_errors(lua, error);
 }
 

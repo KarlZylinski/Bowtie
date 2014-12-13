@@ -15,7 +15,7 @@ namespace
 namespace time_script_interface
 {
 
-int time(lua_State* lua)
+int32 time(lua_State* lua)
 {
 	auto counter = s_engine->timer->counter();
 	lua_pushnumber(lua, counter);

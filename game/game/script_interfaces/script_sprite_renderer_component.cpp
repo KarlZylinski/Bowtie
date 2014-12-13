@@ -20,7 +20,7 @@ namespace
 	Allocator* s_allocator = nullptr;
 }
 
-int create(lua_State* lua)
+int32 create(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	
@@ -51,14 +51,14 @@ int create(lua_State* lua)
 	return 0;
 }
 
-int destroy(lua_State* lua)
+int32 destroy(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	sprite_renderer_component::destroy(&e.world->sprite_renderer_components, e.entity);
 	return 0;
 }
 
-int rect(lua_State* lua)
+int32 rect(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto rect = sprite_renderer_component::rect(&e.world->sprite_renderer_components, e.entity);
@@ -67,7 +67,7 @@ int rect(lua_State* lua)
 	return 2;
 }
 
-int set_rect(lua_State* lua)
+int32 set_rect(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto position = script_interface::to_vector2(lua, 2);
@@ -78,7 +78,7 @@ int set_rect(lua_State* lua)
 	return 0;
 }
 
-int color(lua_State* lua)
+int32 color(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto color = sprite_renderer_component::color(&e.world->sprite_renderer_components, e.entity);
@@ -86,7 +86,7 @@ int color(lua_State* lua)
 	return 1;
 }
 
-int set_color(lua_State* lua)
+int32 set_color(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto color = script_interface::to_color(lua, 2);
@@ -94,7 +94,7 @@ int set_color(lua_State* lua)
 	return 0;
 }
 
-int set_material(lua_State* lua)
+int32 set_material(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	auto material = (Material*)lua_touserdata(lua, 2);
@@ -102,7 +102,7 @@ int set_material(lua_State* lua)
 	return 0;
 }
 
-int set_depth(lua_State* lua)
+int32 set_depth(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
 	sprite_renderer_component::set_depth(&e.world->sprite_renderer_components, e.entity, (int)lua_tonumber(lua, 2));

@@ -23,7 +23,7 @@ struct SpriteRendererComponentData
 	Material* material;
 	RenderResourceHandle* render_handle;
 	Quad* geometry;
-	int* depth;
+	int32* depth;
 };
 
 struct SpriteRendererComponent
@@ -50,7 +50,7 @@ namespace sprite_renderer_component
 	RenderResourceHandle render_handle(SpriteRendererComponent* c, Entity e);
 	void set_geometry(SpriteRendererComponent* c, Entity e, const Quad* geometry);
 	const Quad* geometry(SpriteRendererComponent* c, Entity e);
-	void set_depth(SpriteRendererComponent* c, Entity e, int depth);
+	void set_depth(SpriteRendererComponent* c, Entity e, int32 depth);
 	void* copy_dirty_data(SpriteRendererComponent* c, Allocator* allocator);
 	void* copy_new_data(SpriteRendererComponent* c, Allocator* allocator);
 	SpriteRendererComponentData create_data_from_buffer(void* buffer, uint32 num);

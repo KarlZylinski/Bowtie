@@ -11,10 +11,10 @@ struct ConcurrentRingBuffer
 {
 	uint32 size;
 	uint32 element_size;
-	char* start;
-	char* write_head;
+	uint8* start;
+	uint8* write_head;
 	bool has_wrapped;
-	char* consume_head;
+	uint8* consume_head;
 	std::mutex mutex;
 	Allocator* allocator; 
 };

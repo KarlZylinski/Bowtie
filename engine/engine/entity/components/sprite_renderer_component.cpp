@@ -23,7 +23,7 @@ SpriteRendererComponentData initialize_data(void* buffer, uint32 size)
 	new_data.material = (Material*)(new_data.rect + size);
 	new_data.render_handle = (RenderResourceHandle*)(new_data.material + size);
 	new_data.geometry = (Quad*)(new_data.render_handle + size);
-	new_data.depth = (int*)(new_data.geometry + size);
+	new_data.depth = (int32*)(new_data.geometry + size);
 	return new_data;
 }
 
@@ -190,7 +190,7 @@ const Quad* transform(SpriteRendererComponent* c, Entity e)
 	return &c->data.geometry[hash::get(c->header.map, e)];
 }
 
-void set_depth(SpriteRendererComponent* c, Entity e, int depth)
+void set_depth(SpriteRendererComponent* c, Entity e, int32 depth)
 {
 	auto i = hash::get(c->header.map, e);
 	c->data.depth[i] = depth;

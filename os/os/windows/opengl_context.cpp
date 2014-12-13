@@ -8,7 +8,7 @@ namespace internal
 
 void enable_vsync()
 {
-	typedef bool (APIENTRY *PFNWGLSWAPINTERVALEXTPROC) (int interval);
+	typedef bool (APIENTRY *PFNWGLSWAPINTERVALEXTPROC) (int32 interval);
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) wglGetProcAddress("wglSwapIntervalEXT");
 	wglSwapIntervalEXT(-1); 
 }
@@ -55,7 +55,7 @@ void init(PlatformRendererContextData* context, HWND hwnd)
     };
 	
     HDC device_context = GetDC(hwnd);
-    int pixel_format = ChoosePixelFormat(device_context, &pfd); 
+    int32 pixel_format = ChoosePixelFormat(device_context, &pfd); 
     SetPixelFormat(device_context, pixel_format, &pfd);
     HGLRC rendering_context = wglCreateContext(device_context);
 	context->device_context = device_context;

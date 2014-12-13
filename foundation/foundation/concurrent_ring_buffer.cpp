@@ -8,7 +8,7 @@ namespace bowtie
 namespace internal
 {
 
-void write(char** buffer, const void* data, uint32 size)
+void write(uint8** buffer, const void* data, uint32 size)
 {
 	memcpy(*buffer, data, size);
 	*buffer += size;
@@ -18,7 +18,7 @@ uint32 used(ConcurrentRingBuffer* b)
 {
 	if (b->write_head <= b->consume_head && b->has_wrapped)
 	{
-		auto end = (char*)memory::pointer_add(b->start, b->size * b->element_size);
+		auto end = (uint8*)memory::pointer_add(b->start, b->size * b->element_size);
 		auto used = (uint32)(end - b->consume_head) + (uint32)(b->write_head - b->start);
 		return used;
 	}
@@ -36,7 +36,7 @@ void init(ConcurrentRingBuffer* b, Allocator* allocator, uint32 size, uint32 ele
 {
 	b->size = size;
 	b->element_size = element_size;
-	b->start = (char*)allocator->alloc_raw(element_size * size);
+	b->start = (uint8*)allocator->alloc_raw(element_size * size);
 	b->write_head = b->start;
 	b->has_wrapped = false;
 	b->consume_head = b->start;
@@ -51,7 +51,7 @@ void deinit(ConcurrentRingBuffer* b)
 void write_one(ConcurrentRingBuffer* b, const void* data)
 {
 	std::lock_guard<std::mutex> lock(b->mutex);
-	auto end = (char*)memory::pointer_add(b->start, b->size * b->element_size);
+	auto end = (uint8*)memory::pointer_add(b->start, b->size * b->element_size);
 	internal::write(&b->write_head, data, b->element_size);
 	
 	if (b->write_head == end)
@@ -74,7 +74,7 @@ void* peek(ConcurrentRingBuffer* b)
 void consume_one(ConcurrentRingBuffer* b)
 {
 	std::lock_guard<std::mutex> lock(b->mutex);
-	auto end = (char*)memory::pointer_add(b->start, b->size * b->element_size);
+	auto end = (uint8*)memory::pointer_add(b->start, b->size * b->element_size);
 	memset(b->consume_head, 0, b->element_size);
 	b->consume_head += b->element_size;
 

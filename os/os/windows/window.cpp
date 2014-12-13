@@ -30,10 +30,10 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreat
     wc.style = CS_OWNDC;
     assert(RegisterClass(&wc) && "Failed to register windows window class");
     w->is_open = true;
-	int border_width = GetSystemMetrics(SM_CXFIXEDFRAME);
-	int h_border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) + border_width;
-	int v_border_thickness = GetSystemMetrics(SM_CYSIZEFRAME) + border_width;
-	int caption_thickness = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER);
+	int32 border_width = GetSystemMetrics(SM_CXFIXEDFRAME);
+	int32 h_border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) + border_width;
+	int32 v_border_thickness = GetSystemMetrics(SM_CYSIZEFRAME) + border_width;
+	int32 caption_thickness = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER);
 	HWND hwnd = CreateWindow("Bowtie", "Bowtie", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, resolution->x + 2 * h_border_thickness, resolution->y + 2 * v_border_thickness + caption_thickness, 0, 0, instance, w);
 	w->hwnd = hwnd;
 	SetWindowLong(hwnd, GWLP_USERDATA, (long)w);

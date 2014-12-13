@@ -9,8 +9,8 @@ struct Stream
 {
 	uint32 size;
 	uint32 capacity;
-	char* start;
-	char* write_head;
+	uint8* start;
+	uint8* write_head;
 };
 
 namespace stream

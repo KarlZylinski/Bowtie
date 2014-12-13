@@ -10,7 +10,7 @@ namespace bowtie
 
 namespace
 {
-double get_field(lua_State* lua, int index, const char *key)
+double get_field(lua_State* lua, int32 index, const char *key)
 {
     lua_pushstring(lua, key);
     lua_gettable(lua, index);
@@ -23,7 +23,7 @@ double get_field(lua_State* lua, int index, const char *key)
     return result;
 }
 
-bool is_field(lua_State* lua, int index, const char *key)
+bool is_field(lua_State* lua, int32 index, const char *key)
 {
 	lua_pushstring(lua, key);
 	lua_gettable(lua, index);
@@ -36,7 +36,7 @@ bool is_field(lua_State* lua, int index, const char *key)
 namespace script_interface
 {
 
-bool check_errors(lua_State* lua, int error)
+bool check_errors(lua_State* lua, int32 error)
 {
 	if (error == 0)
 		return true;
@@ -56,7 +56,7 @@ void push_vector2(lua_State* lua, const Vector2* v)
 	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v->x);
 	lua_pushnumber(lua, v->y);
-	int error = lua_pcall(lua, 2, 1, 0);
+	int32 error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
@@ -65,7 +65,7 @@ void push_vector2(lua_State* lua, const Vector2i* v)
 	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v->x);
 	lua_pushnumber(lua, v->y);
-	int error = lua_pcall(lua, 2, 1, 0);
+	int32 error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
@@ -74,7 +74,7 @@ void push_vector2(lua_State* lua, const Vector2u* v)
 	lua_getglobal(lua, "Vector2");
 	lua_pushnumber(lua, v->x);
 	lua_pushnumber(lua, v->y);
-	int error = lua_pcall(lua, 2, 1, 0);
+	int32 error = lua_pcall(lua, 2, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
@@ -85,7 +85,7 @@ void push_vector4(lua_State* lua, const Vector4* v)
 	lua_pushnumber(lua, v->y);
 	lua_pushnumber(lua, v->z);
 	lua_pushnumber(lua, v->w);
-	int error = lua_pcall(lua, 4, 1, 0);
+	int32 error = lua_pcall(lua, 4, 1, 0);
 	script_interface::check_errors(lua, error);
 }
 
@@ -113,12 +113,12 @@ void register_interface(lua_State* lua, const char* interface_name, const interf
 	lua_setglobal(lua, interface_name);
 }
 
-Color to_color(lua_State* lua, int index)
+Color to_color(lua_State* lua, int32 index)
 {
 	return to_vector4(lua, index);
 }
 
-Vector2 to_vector2(lua_State* lua, int index)
+Vector2 to_vector2(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
@@ -128,7 +128,7 @@ Vector2 to_vector2(lua_State* lua, int index)
 	return vector2::create(x_value, y_value);
 }
 
-Vector2i to_vector2i(lua_State* lua, int index)
+Vector2i to_vector2i(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
@@ -138,7 +138,7 @@ Vector2i to_vector2i(lua_State* lua, int index)
 	return vector2i::create(x_value, y_value);
 }
 
-Vector2u to_vector2u(lua_State* lua, int index)
+Vector2u to_vector2u(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
@@ -148,7 +148,7 @@ Vector2u to_vector2u(lua_State* lua, int index)
 	return vector2u::create(x_value, y_value);
 }
 
-Vector4 to_vector4(lua_State* lua, int index)
+Vector4 to_vector4(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
@@ -160,14 +160,14 @@ Vector4 to_vector4(lua_State* lua, int index)
 	return vector4::create(x_value, y_value, z_value, w_value);
 }
 
-uint64 to_hash(lua_State* lua, int index)
+uint64 to_hash(lua_State* lua, int32 index)
 {
 	assert(lua_isstring(lua, index));
 
 	return hash_str(lua_tostring(lua, index));
 }
 
-SpawnedEntity to_entity(lua_State* lua, int index)
+SpawnedEntity to_entity(lua_State* lua, int32 index)
 {
 	SpawnedEntity e;
 	lua_pushnumber(lua, 1);
@@ -181,19 +181,19 @@ SpawnedEntity to_entity(lua_State* lua, int index)
 	return e;
 }
 
-bool is_color(lua_State* lua, int index)
+bool is_color(lua_State* lua, int32 index)
 {
 	return is_vector4(lua, index);
 }
 
-bool is_vector2(lua_State* lua, int index)
+bool is_vector2(lua_State* lua, int32 index)
 {
 	return lua_istable(lua, index)
 		&& is_field(lua, index, "x")
 		&& is_field(lua, index, "y");
 }
 
-bool is_vector4(lua_State* lua, int index)
+bool is_vector4(lua_State* lua, int32 index)
 {
 	return lua_istable(lua, index)
 		&& is_field(lua, index, "x")

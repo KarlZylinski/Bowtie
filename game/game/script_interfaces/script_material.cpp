@@ -17,7 +17,7 @@ namespace
 	RenderInterface* s_render_interface = nullptr;
 }
 
-int set_uniform_value(lua_State* lua)
+int32 set_uniform_value(lua_State* lua)
 {
 	auto material = (Material*)lua_touserdata(lua, 1);
 	auto name = hash_str(lua_tostring(lua, 2));

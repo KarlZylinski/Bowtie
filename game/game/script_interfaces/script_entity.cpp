@@ -19,14 +19,14 @@ namespace
 	EntityManager* s_manager = nullptr;
 }
 
-int create(lua_State* lua)
+int32 create(lua_State* lua)
 {
 	auto world = (World*)lua_touserdata(lua, 1);
 	script_interface::push_entity(lua, entity_manager::create(s_manager), world);
 	return 1;
 }
 
-int destroy(lua_State* lua)
+int32 destroy(lua_State* lua)
 {
 	auto entity = script_interface::to_entity(lua, 1);
 	entity_manager::destroy(s_manager, entity.entity);

@@ -18,27 +18,27 @@ namespace
 namespace world_script_interface
 {
 
-int create(lua_State* lua)
+int32 create(lua_State* lua)
 {
 	auto world = engine::create_world(s_engine);
 	lua_pushlightuserdata(lua, world);
 	return 1;
 }
 
-int destroy(lua_State* lua)
+int32 destroy(lua_State* lua)
 {
 	auto world = (World*)lua_touserdata(lua, 1);
 	engine::destroy_world(s_engine, world);
 	return 0;
 }
 
-int update(lua_State* lua)
+int32 update(lua_State* lua)
 {
 	world::update((World*)lua_touserdata(lua, 1));
 	return 0;
 }
 
-int draw(lua_State* lua)
+int32 draw(lua_State* lua)
 {
 	auto world = (World*)lua_touserdata(lua, 1);
 	auto view_pos = script_interface::to_vector2(lua, 2);
