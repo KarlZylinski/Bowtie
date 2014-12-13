@@ -8,6 +8,8 @@
 #include <os/windows/callstack_capturer.h>
 #include <os/windows/window.h>
 #include <renderer/renderer.h>
+#include <engine/timer.h>
+#include <os/windows/timer.h>
 
 using namespace bowtie;
 
@@ -19,30 +21,30 @@ namespace
 	Allocator* s_allocator;
 }
 
-void create_render_context_callback(HWND hwnd, const Vector2u& resolution)
+void create_render_context_callback(HWND hwnd, const Vector2u* resolution)
 {
 	s_context->create(hwnd);
-	renderer::run(*s_renderer, s_context, resolution);
+	renderer::run(*s_renderer, s_context, *resolution);
 }
 
-void window_resized_callback(const Vector2u& resolution)
+void window_resized_callback(const Vector2u* resolution)
 {
-	engine::resize(*s_engine, resolution);
+	engine::resize(s_engine, resolution);
 }
 
-void key_down_callback(keyboard::Key key)
+void key_down_callback(platform::Key key)
 {
-	engine::key_pressed(*s_engine, key);
+	engine::key_pressed(s_engine, key);
 }
 
-void key_up_callback(keyboard::Key key)
+void key_up_callback(platform::Key key)
 {
-	engine::key_released(*s_engine, key);
+	engine::key_released(s_engine, key);
 }
 
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
-	auto callstack_capturer = callstack_capturer::create();
+	auto callstack_capturer = windows::callstack_capturer::create();
 	auto& allocator = *(new MallocAllocator());
 	memory::init_allocator(allocator, "default allocator", &callstack_capturer);
 	s_allocator = &allocator;
@@ -59,21 +61,24 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		auto& render_interface = renderer.render_interface;
 
 		{
-			Engine engine = {0};
-			engine::init(engine, allocator, render_interface);
+			Timer timer = {};
+			timer.counter = windows::timer::counter;
+			timer.start = windows::timer::start;
+			Engine engine = {};
+			engine::init(&engine, &allocator, &render_interface, &timer);
 			s_engine = &engine;
 			auto resolution = Vector2u(1280, 720);
-			Window window = {0};
-			window::init(window, instance, resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);	
+			windows::Window window = {};
+			windows::window::init(&window, instance, &resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);	
 				
 			while(window.is_open)
 			{
-				window::dispatch_messages(window);
-				engine::update(engine);
+				windows::window::dispatch_messages(&window);
+				engine::update_and_render(&engine);
 				renderer::deallocate_processed_commands(renderer, allocator);
 			}
 
-			engine::deinit(engine);
+			engine::deinit(&engine);
 		}
 		
 		renderer::stop(renderer, allocator);

@@ -8,12 +8,15 @@
 namespace bowtie
 {
 
+namespace windows
+{
+
 namespace window
 {
-	typedef void(*WindowCreatedCallback)(HWND hwnd, const Vector2u& resolution);
-	typedef void(*WindowResizedCallback)(const Vector2u& resolution);
-	typedef void(*KeyDownCallback)(keyboard::Key key);
-	typedef void(*KeyUpCallback)(keyboard::Key key);
+	typedef void(*WindowCreatedCallback)(HWND hwnd, const Vector2u* resolution);
+	typedef void(*WindowResizedCallback)(const Vector2u* resolution);
+	typedef void(*KeyDownCallback)(platform::Key key);
+	typedef void(*KeyUpCallback)(platform::Key key);
 }
 
 struct Window
@@ -29,14 +32,16 @@ struct Window
 
 namespace window
 {
-	void init(Window& w, HINSTANCE instance, const Vector2u& resolution, window::WindowCreatedCallback window_created_callback, window::WindowResizedCallback window_resized_callback,
-		window::KeyDownCallback key_down_callback, window::KeyUpCallback key_up_callback);
-	void dispatch_messages(Window& w);
-	void invoke_window_created_callback(Window& w, HWND hwnd, const Vector2u& resolution);
-	void invoke_window_resized_callback(Window& w, const Vector2u& resolution);
-	void invoke_key_down_callback(Window& w, keyboard::Key key);
-	void invoke_key_up_callback(Window& w, keyboard::Key key);
-	void close(Window& w);
+	void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreatedCallback window_created_callback, WindowResizedCallback window_resized_callback,
+		KeyDownCallback key_down_callback, KeyUpCallback key_up_callback);
+	void dispatch_messages(Window* w);
+	void invoke_window_created_callback(Window* w, HWND hwnd, const Vector2u* resolution);
+	void invoke_window_resized_callback(Window* w, const Vector2u* resolution);
+	void invoke_key_down_callback(Window* w, platform::Key key);
+	void invoke_key_up_callback(Window* w, platform::Key key);
+	void close(Window* w);
+}
+
 }
 
 } // namespace bowtie

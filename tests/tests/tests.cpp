@@ -7,7 +7,7 @@ using namespace bowtie;
 
 int WINAPI WinMain(__in HINSTANCE, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
-	auto callstack_capturer = callstack_capturer::create();
+	auto callstack_capturer = windows::callstack_capturer::create();
 	MallocAllocator allocator;
 	memory::init_allocator(allocator, "default allocator", &callstack_capturer);
 	tests::test_concurrent_ring_buffer(allocator);

@@ -58,7 +58,6 @@
     <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
-    <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\view.cpp" />
     <ClCompile Include="engine\world.cpp" />
   </ItemGroup>

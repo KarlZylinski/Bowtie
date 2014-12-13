@@ -43,7 +43,7 @@ void ensure_captured_callstacks_unused(CallstackCapturer* callstack_capturer, Ca
 		if (!callstacks[i].used)
 			continue;
 
-		callstack_capturer->print_callstack("Memory leak stack trace", callstacks[i]);
+		callstack_capturer->print_callstack("Memory leak stack trace", callstacks + i);
 	}
 }
 

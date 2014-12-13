@@ -8,9 +8,6 @@
 namespace bowtie
 {
 
-typedef unsigned Entity;
-struct Vector4;
-struct Font;
 struct Rect;
 struct Material;
 struct RenderInterface;
@@ -28,10 +25,10 @@ struct World
 
 namespace world
 {
-	void init(World& w, Allocator& allocator, RenderInterface& render_interface, ResourceManager& resource_manager);
-	void deinit(World& w);
-	void update(World& w);
-	void draw(World& w, const Rect& view);
+	void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceManager* resource_manager);
+	void deinit(World* w);
+	void update(World* w);
+	void draw(World* w, const Rect* view, float time);
 }
 
 };

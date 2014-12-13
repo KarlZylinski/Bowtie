@@ -24,7 +24,7 @@ CapturedCallstack capture(unsigned frames_to_skip, void* p)
 	#endif
 }	
 
-void print_callstack(const char* caption, const CapturedCallstack& captured_callstack)
+void print_callstack(const char* caption, const CapturedCallstack* captured_callstack)
 {
 	#if defined(_WIN32)
 		HANDLE process = GetCurrentProcess();
@@ -35,9 +35,9 @@ void print_callstack(const char* caption, const CapturedCallstack& captured_call
 
 		char* callstack_str = (char*)malloc(symbol->MaxNameLen * 64);
 		unsigned callstack_str_size = 0;
-		for (unsigned i = 0; i < captured_callstack.num_frames; i++ )
+		for (unsigned i = 0; i < captured_callstack->num_frames; i++ )
 		{
-			SymFromAddr(process, (DWORD64)(captured_callstack.frames[i]), 0, symbol);
+			SymFromAddr(process, (DWORD64)(captured_callstack->frames[i]), 0, symbol);
 			memcpy(callstack_str + callstack_str_size, symbol->Name, symbol->NameLen);
 			callstack_str[callstack_str_size + symbol->NameLen] = '\n';
 			callstack_str_size += symbol->NameLen + 1;
@@ -49,6 +49,9 @@ void print_callstack(const char* caption, const CapturedCallstack& captured_call
 
 } // namespace internal
 
+
+namespace windows
+{
 
 namespace callstack_capturer
 {
@@ -62,5 +65,7 @@ CallstackCapturer create()
 }
 
 } // namespace captured_callstack
+
+} // namespace windows
 
 } //namespace bowtie

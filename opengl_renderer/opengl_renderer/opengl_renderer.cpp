@@ -240,7 +240,8 @@ void destroy_render_target(RenderResource render_target)
 }
 
 
-void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view, const Matrix4& view_matrix, const Matrix4& view_projection_matrix, const RenderResource* resource_table)
+void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderComponent*>& components, const Vector2u& resolution, const Rect& view,
+			    const Matrix4& view_matrix, const Matrix4& view_projection_matrix, float time, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
@@ -248,7 +249,6 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 	auto shader = render_resource_table::lookup(resource_table, material.shader).handle;
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
-	auto time = timer::counter();
 	auto view_resolution_ratio = view.size.y / resolution.y;
 	auto resoultion_float = Vector2((float)resolution.x, (float)resolution.y);
 	Matrix4 ident;
@@ -392,7 +392,7 @@ void draw_batch(Allocator&, unsigned start, unsigned size, const Array<RenderCom
 	destroy_geometry_internal(geometry);
 }
 
-void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, const RenderResource* resource_table)
+void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, const Vector2u& resolution, float time, const RenderResource* resource_table)
 {
 	if (render_world.components._size == 0)
 		return;
@@ -412,14 +412,14 @@ void draw(Allocator& ta, const Rect& view, const RenderWorld& render_world, cons
 		if (batch_material == material && batch_depth == depth)
 			continue;
 
-		draw_batch(ta, batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
+		draw_batch(ta, batch_start, i - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, time, resource_table);
 		batch_start = i;
 		batch_material = material;
 		batch_depth = depth;
 	}
 
 	// Draw last batch.
-	draw_batch(ta, batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, resource_table);
+	draw_batch(ta, batch_start, num_components - batch_start, render_world.components, resolution, view, view_matrix, view_projection_matrix, time, resource_table);
 }
 
 unsigned get_uniform_location(RenderResource shader, const char* name)

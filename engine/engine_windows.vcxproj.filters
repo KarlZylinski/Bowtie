@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\view.cpp" />
-    <ClCompile Include="engine\timer.cpp" />
     <ClCompile Include="engine\resource_manager.cpp" />
     <ClCompile Include="engine\world.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />

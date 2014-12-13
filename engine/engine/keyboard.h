@@ -1,10 +1,11 @@
 #pragma once
 
+#include <os/keyboard.h>
+#include "render_resource_handle.h"
+
 #ifdef _WIN32
 	#include <os/windows/keyboard.h>
 #endif
-
-#include "render_resource_handle.h"
 
 namespace bowtie
 {
@@ -19,13 +20,13 @@ struct Keyboard
 
 namespace keyboard
 {
-	keyboard::Key key_from_string(const char* key_str);
+	platform::Key key_from_string(const char* key_str);
 	void reset_pressed_released(Keyboard& keyboard);
-	bool key_held(const Keyboard& keyboard, keyboard::Key key);
-	bool key_pressed(const Keyboard& keyboard, keyboard::Key key);
-	bool key_released(const Keyboard& keyboard, keyboard::Key key);
-	void set_key_pressed(Keyboard& keyboard, keyboard::Key key);
-	void set_key_released(Keyboard& keyboard, keyboard::Key key);
+	bool key_held(const Keyboard& keyboard, platform::Key key);
+	bool key_pressed(const Keyboard& keyboard, platform::Key key);
+	bool key_released(const Keyboard& keyboard, platform::Key key);
+	void set_key_pressed(Keyboard& keyboard, platform::Key key);
+	void set_key_released(Keyboard& keyboard, platform::Key key);
 }
 
 }

@@ -2,11 +2,11 @@
 
 namespace bowtie
 {
-namespace timer
+
+struct Timer
 {
+	void (*start)();
+	float (*counter)();
+};
 
-void start();
-float counter();
-
-}
 }

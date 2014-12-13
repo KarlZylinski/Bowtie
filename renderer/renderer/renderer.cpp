@@ -187,12 +187,12 @@ void raise_fence(RenderFence& fence)
 	fence.fence_processed.notify_all();
 }
 
-void draw(Allocator& ta, ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld& render_world, const Rect& view)
+void draw(Allocator& ta, ConcreteRenderer& concrete_renderer, const Vector2u& resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, unsigned* num_rendered_worlds, RenderWorld& render_world, const Rect& view, float time)
 {
 	render_world::sort(render_world);
 	concrete_renderer.set_render_target(resolution, render_world.render_target.handle);
 	concrete_renderer.clear();
-	concrete_renderer.draw(ta, view, render_world, resolution, resource_table);
+	concrete_renderer.draw(ta, view, render_world, resolution, time, resource_table);
 	assert(*num_rendered_worlds < renderer::max_rendered_worlds);
 	rendered_worlds[*num_rendered_worlds] = &render_world;
 	++(*num_rendered_worlds);
@@ -309,7 +309,7 @@ void execute_command(Renderer& r, const RendererCommand& command)
 		case RendererCommand::RenderWorld:
 		{
 			RenderWorldData& rwd = *(RenderWorldData*)command.data;
-			draw(*r.allocator, r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, &r.num_rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view);
+			draw(*r.allocator, r._concrete_renderer, r.resolution, r.resource_table, r._rendered_worlds, &r.num_rendered_worlds, *(RenderWorld*)render_resource_table::lookup(r.resource_table, rwd.render_world).object, rwd.view, rwd.time);
 		} break;
 
 		// Rename to CreateResource

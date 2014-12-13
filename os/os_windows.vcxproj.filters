@@ -6,21 +6,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="os\windows\callstack_capturer.cpp">
+      <Filter>windows</Filter>
+    </ClCompile>
     <ClCompile Include="os\windows\window.cpp">
       <Filter>windows</Filter>
     </ClCompile>
-    <ClCompile Include="os\windows\callstack_capturer.cpp">
+    <ClCompile Include="os\windows\timer.cpp">
       <Filter>windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="os\windows\window.h">
-      <Filter>windows</Filter>
-    </ClInclude>
     <ClInclude Include="os\windows\callstack_capturer.h">
       <Filter>windows</Filter>
     </ClInclude>
     <ClInclude Include="os\windows\keyboard.h">
+      <Filter>windows</Filter>
+    </ClInclude>
+    <ClInclude Include="os\windows\window.h">
+      <Filter>windows</Filter>
+    </ClInclude>
+    <ClInclude Include="os\keyboard.h" />
+    <ClInclude Include="os\windows\timer.h">
       <Filter>windows</Filter>
     </ClInclude>
   </ItemGroup>

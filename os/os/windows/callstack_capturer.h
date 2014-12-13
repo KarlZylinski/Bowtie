@@ -5,10 +5,15 @@
 namespace bowtie
 {
 
+namespace windows
+{
+
 namespace callstack_capturer
 {
 
 CallstackCapturer create();
+
+}
 
 }
 
