@@ -91,7 +91,7 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 		{
 		WORD width = LOWORD(lparam);
 		WORD height = HIWORD(lparam);
-		window->resolution = Vector2u(width, height);
+		window->resolution = vector2u::create(width, height);
 		invoke_window_resized_callback(window, &window->resolution);
 		}
 		return 0;

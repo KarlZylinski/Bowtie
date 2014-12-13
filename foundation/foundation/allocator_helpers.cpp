@@ -9,13 +9,13 @@ namespace bowtie
 namespace allocator_helpers
 {
 
-void add_captured_callstack(CapturedCallstack* callstacks, const CapturedCallstack& cc)
+void add_captured_callstack(CapturedCallstack* callstacks, const CapturedCallstack* cc)
 {
 	for (unsigned i = 0; i < memory::max_callstacks; ++i)
 	{
 		if (!callstacks[i].used)
 		{
-			callstacks[i] = cc;
+			callstacks[i] = *cc;
 			return;
 		}
 	}

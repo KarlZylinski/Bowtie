@@ -41,6 +41,7 @@
     <ClInclude Include="foundation\types.h" />
     <ClInclude Include="foundation\vector2.h" />
     <ClInclude Include="foundation\vector2i.h" />
+    <ClInclude Include="foundation\vector2u.h" />
     <ClInclude Include="foundation\vector4.h" />
     <ClInclude Include="resource_path.h" />
   </ItemGroup>
@@ -50,9 +51,14 @@
     <ClCompile Include="foundation\file.cpp" />
     <ClCompile Include="foundation\jzon.c" />
     <ClCompile Include="foundation\malloc_allocator.cpp" />
+    <ClCompile Include="foundation\matrix4.cpp" />
     <ClCompile Include="foundation\memory.cpp" />
     <ClCompile Include="foundation\murmur_hash.cpp" />
     <ClCompile Include="foundation\stream.cpp" />
+    <ClCompile Include="foundation\vector2.cpp" />
+    <ClCompile Include="foundation\vector2i.cpp" />
+    <ClCompile Include="foundation\vector2u.cpp" />
+    <ClCompile Include="foundation\vector4.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>
   <ItemGroup>

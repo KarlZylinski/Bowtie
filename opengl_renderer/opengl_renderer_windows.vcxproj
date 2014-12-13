@@ -74,7 +74,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\renderer;$(BOWTIE_SOURCE)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
-      <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/wd4530  /wd4127 /wd4238 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>

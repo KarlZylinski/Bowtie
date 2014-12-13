@@ -25,7 +25,7 @@ void writer(ConcurrentRingBuffer* b)
 
 	while (i < 200000)
 	{
-		if (!concurrent_ring_buffer::fits_one(*b))
+		if (!concurrent_ring_buffer::fits_one(b))
 			continue;
 
 		auto r = rand() % 3;
@@ -36,7 +36,7 @@ void writer(ConcurrentRingBuffer* b)
 			? h2
 			: h3;
 
-		concurrent_ring_buffer::write_one(*b, &h);
+		concurrent_ring_buffer::write_one(b, &h);
 
 		++i;
 	}
@@ -48,13 +48,13 @@ void consumer(ConcurrentRingBuffer* b)
 
 	while (i < 200000)
 	{
-		auto h = (Haze*)concurrent_ring_buffer::peek(*b);
+		auto h = (Haze*)concurrent_ring_buffer::peek(b);
 
 		if (h != nullptr)
 		{
 			assert(h->lax == 1);
 			assert(h->bulgur == 3 || h->bulgur == 5 || h->bulgur == 7);
-			concurrent_ring_buffer::consume_one(*b);
+			concurrent_ring_buffer::consume_one(b);
 			++i;
 		}
 	}
@@ -63,12 +63,12 @@ void consumer(ConcurrentRingBuffer* b)
 void test_concurrent_ring_buffer(Allocator* allocator)
 {
 	ConcurrentRingBuffer b;
-	concurrent_ring_buffer::init(b, *allocator, 8, sizeof(Haze));
+	concurrent_ring_buffer::init(&b, allocator, 8, sizeof(Haze));
 	std::thread w(&writer, &b);
 	std::thread c(&consumer, &b);
 	w.join();
 	c.join();
-	concurrent_ring_buffer::deinit(b);
+	concurrent_ring_buffer::deinit(&b);
 }
 
 }

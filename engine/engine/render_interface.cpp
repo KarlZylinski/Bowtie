@@ -80,10 +80,10 @@ RendererCommand create_command(Allocator* allocator, RendererCommand::Type type)
 
 void dispatch(RenderInterface* ri, const RendererCommand* command)
 {
-	if (!concurrent_ring_buffer::fits_one(*ri->_unprocessed_commands))
+	if (!concurrent_ring_buffer::fits_one(ri->_unprocessed_commands))
 		render_interface::wait_until_idle(ri);
 	
-	concurrent_ring_buffer::write_one(*ri->_unprocessed_commands, command);
+	concurrent_ring_buffer::write_one(ri->_unprocessed_commands, command);
 
 	{
 		std::lock_guard<std::mutex> unprocessed_commands_exists_lock(*ri->_unprocessed_commands_exist_mutex);

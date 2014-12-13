@@ -18,29 +18,31 @@ Matrix4 world_matrix(const TransformComponentData* c, unsigned i)
 {
 	auto parent_index = c->parent[i];
 
-	auto p = Matrix4();
-	p[3][0] = -c->pivot[i].x;
-	p[3][1] = -c->pivot[i].y;
+	auto p = matrix4::indentity();
+	p.w.x = -c->pivot[i].x;
+	p.w.y = -c->pivot[i].y;
 
 	if (parent_index != transform_component::not_assigned)
 	{
-		p[3][0] += c->pivot[parent_index].x;
-		p[3][1] += c->pivot[parent_index].y;
+		p.w.x += c->pivot[parent_index].x;
+		p.w.y += c->pivot[parent_index].y;
 	}
-
-	auto t = Matrix4();
-	t[0][0] = cos(c->rotation[i]);
-	t[1][0] = -sin(c->rotation[i]);
-	t[0][1] = sin(c->rotation[i]);
-	t[1][1] = cos(c->rotation[i]);
-	t[3][0] = c->position[i].x;
-	t[3][1] = c->position[i].y;
-
+	
+	auto t = matrix4::indentity();
+	t.x.x = cos(c->rotation[i]);
+	t.y.x = -sin(c->rotation[i]);
+	t.x.y = sin(c->rotation[i]);
+	t.y.y = cos(c->rotation[i]);
+	t.w.x = c->position[i].x;
+	t.w.y = c->position[i].y;
 
 	if (parent_index == transform_component::not_assigned)
-		return p * t;
+		return matrix4::mul(&p, &t);
 	else
-		return p * t * c->world_transform[parent_index];
+	{
+		auto ct = matrix4::mul(&t, &c->world_transform[parent_index]);
+		return matrix4::mul(&p, &ct);
+	}
 }
 
 void update_transforms(TransformComponentData* transform, unsigned start, unsigned end, SpriteRendererComponent* sprite_renderer)
@@ -56,16 +58,16 @@ void update_transforms(TransformComponentData* transform, unsigned start, unsign
 
 		auto sprite_index = hash::get(sprite_renderer->header.map, transform->entity[i]);
 		auto rect = sprite_renderer->data.rect[sprite_index];
-		auto v1 = world_transform * Vector4(rect.position.x, rect.position.y, 0, 1);
-		auto v2 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y, 0, 1);
-		auto v3 = world_transform * Vector4(rect.position.x, rect.position.y + rect.size.y, 0, 1);
-		auto v4 = world_transform * Vector4(rect.position.x + rect.size.x, rect.position.y + rect.size.y, 0, 1);
+		auto v1 = matrix4::mul(&world_transform, &vector4::create(rect.position.x, rect.position.y, 0, 1));
+		auto v2 = matrix4::mul(&world_transform, &vector4::create(rect.position.x + rect.size.x, rect.position.y, 0, 1));
+		auto v3 = matrix4::mul(&world_transform, &vector4::create(rect.position.x, rect.position.y + rect.size.y, 0, 1));
+		auto v4 = matrix4::mul(&world_transform, &vector4::create(rect.position.x + rect.size.x, rect.position.y + rect.size.y, 0, 1));
 
 		Quad geometry = {
-			Vector2(v1.x, v1.y),
-			Vector2(v2.x, v2.y),
-			Vector2(v3.x, v3.y),
-			Vector2(v4.x, v4.y)
+			vector2::create(v1.x, v1.y),
+			vector2::create(v2.x, v2.y),
+			vector2::create(v3.x, v3.y),
+			vector2::create(v4.x, v4.y)
 		};
 
 		sprite_renderer_component::set_geometry(*sprite_renderer, entity, geometry);

@@ -1,5 +1,4 @@
 #pragma once
-#include <foundation/vector2u.h>
 #include <game/game.h>
 #include "keyboard.h"
 #include "resource_store.h"
@@ -12,6 +11,7 @@ struct Allocator;
 struct RenderInterface;
 struct World;
 struct Timer;
+struct Vector2u;
 
 struct Engine
 {

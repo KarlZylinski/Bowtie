@@ -40,7 +40,7 @@ int create(lua_State* lua)
 	if (script_interface::is_vector2(lua, 3))
 		size = script_interface::to_vector2(lua, 3);
 
-	Color color(1, 1, 1, 1);
+	Color color = {1, 1, 1, 1};
 
 	if (script_interface::is_color(lua, 4))
 		color = script_interface::to_color(lua, 4);

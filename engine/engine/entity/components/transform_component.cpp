@@ -216,14 +216,14 @@ void create(TransformComponent& c, Entity e, Allocator& allocator)
 	unsigned i = c.header.num++;
 	hash::set(c.header.map, e, i);
 	c.data.entity[i] = e;
-	c.data.position[i] = Vector2(0, 0);
+	c.data.position[i] = vector2::create(0, 0);
 	c.data.rotation[i] = 0;
-	c.data.pivot[i] = Vector2(0, 0);
+	c.data.pivot[i] = vector2::create(0, 0);
 	c.data.parent[i] = not_assigned;
 	c.data.first_child[i] = not_assigned;
 	c.data.next_sibling[i] = not_assigned;
 	c.data.previous_sibling[i] = not_assigned;
-	c.data.world_transform[i] = Matrix4();
+	c.data.world_transform[i] = matrix4::indentity();
 
 	if (c.header.first_new == not_assigned)
 		c.header.first_new = i;

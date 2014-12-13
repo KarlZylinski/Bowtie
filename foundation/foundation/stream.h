@@ -15,7 +15,7 @@ struct Stream
 
 namespace stream
 {
-	void write(Stream& s, void* data, unsigned data_size, Allocator& allocator);
+	void write(Stream* s, void* data, unsigned data_size, Allocator* allocator);
 }
 
 }

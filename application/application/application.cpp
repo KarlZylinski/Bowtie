@@ -46,10 +46,10 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 {
 	auto callstack_capturer = windows::callstack_capturer::create();
 	auto& allocator = *(new MallocAllocator());
-	memory::init_allocator(allocator, "default allocator", &callstack_capturer);
+	memory::init_allocator(&allocator, "default allocator", &callstack_capturer);
 	s_allocator = &allocator;
 	auto& renderer_allocator = *(new MallocAllocator());
-	memory::init_allocator(renderer_allocator, "renederer allocator", &callstack_capturer);
+	memory::init_allocator(&renderer_allocator, "renederer allocator", &callstack_capturer);
 
 	{
 		ConcreteRenderer opengl_renderer = opengl_renderer::create();
@@ -67,7 +67,7 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 			Engine engine = {};
 			engine::init(&engine, &allocator, &render_interface, &timer);
 			s_engine = &engine;
-			auto resolution = Vector2u(1280, 720);
+			auto resolution = vector2u::create(1280, 720);
 			windows::Window window = {};
 			windows::window::init(&window, instance, &resolution, &create_render_context_callback, &window_resized_callback, &key_down_callback, &key_up_callback);	
 				
@@ -85,6 +85,6 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
 		renderer::deinit(&renderer);
 	}
 
-	memory::deinit_allocator(renderer_allocator);
-	memory::deinit_allocator(allocator);
+	memory::deinit_allocator(&renderer_allocator);
+	memory::deinit_allocator(&allocator);
 }

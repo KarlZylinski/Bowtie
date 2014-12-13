@@ -165,7 +165,7 @@ Image* load_image(ResourceStore* rs, const char* filename)
 
 	UncompressedTexture tex = png::load(filename, rs->allocator);
 	auto image = (Image*)rs->allocator->alloc(sizeof(Image));
-	image->resolution = Vector2u(tex.width, tex.height);
+	image->resolution = vector2u::create(tex.width, tex.height);
 	image->data = tex.data;
 	image->data_size = tex.data_size;
 	image->pixel_format = PixelFormat::RGBA;
@@ -218,7 +218,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 	{
 		auto uniform_json = uniforms_jzon->array_values[i];
 		auto uniform_str = uniform_json->string_value;
-		auto split_uniform = split(*rs->allocator, uniform_str, ' ');
+		auto split_uniform = split(rs->allocator, uniform_str, ' ');
 		assert(array::size(split_uniform) >= 2 && "Uniform definition must contain at least type and name.");
 		auto type = get_uniform_type_from_str(split_uniform[0]);
 
@@ -227,7 +227,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
 		uniform.name_offset = uniforms_size + dynamic_uniform_data.size;
 		auto name = split_uniform[1];
 		auto name_len = strlen32(name) + 1;
-		stream::write(dynamic_uniform_data, name, name_len, *rs->allocator);
+		stream::write(&dynamic_uniform_data, name, name_len, rs->allocator);
 		uniform.value_offset = (unsigned)-1;
 
 		if (array::size(split_uniform) > 2)
@@ -243,14 +243,14 @@ Material* load_material(ResourceStore* rs, const char* filename)
 				{
 				case uniform::Float: {
 					auto float_val = float_from_str(value_str);
-					stream::write(dynamic_uniform_data, &float_val, sizeof(float), *rs->allocator);
+					stream::write(&dynamic_uniform_data, &float_val, sizeof(float), rs->allocator);
 				} break;
 				case uniform::Texture1:
 				case uniform::Texture2:
 				case uniform::Texture3:
 				{
 					auto texture = load_texture(rs, value_str);
-					stream::write(dynamic_uniform_data, &texture->render_handle, sizeof(unsigned), *rs->allocator);
+					stream::write(&dynamic_uniform_data, &texture->render_handle, sizeof(unsigned), rs->allocator);
 				}
 					break;
 				}

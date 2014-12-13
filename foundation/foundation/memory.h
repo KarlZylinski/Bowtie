@@ -16,8 +16,8 @@ namespace memory
 	inline void *pointer_sub(void *p, unsigned bytes);
 	inline const void *pointer_sub(const void *p, unsigned bytes);
 
-	void init_allocator(Allocator& a, const char* name, CallstackCapturer* callstack_capturer);
-	void deinit_allocator(Allocator& a);
+	void init_allocator(Allocator* a, const char* name, CallstackCapturer* callstack_capturer);
+	void deinit_allocator(Allocator* a);
 }
 
 // Aligns p to the specified alignment by moving it forward if necessary and returns the result.

@@ -43,13 +43,6 @@ template<typename T> T get_value_or_null(Option<T> o)
 		: nullptr;
 }
 
-template<typename T> T get_or_default(Option<T> o, std::function<T()>& default_creator)
-{
-	return o.is_some
-		? o.value
-		: default_creator();
-}
-
 } // namespace option
 
 } // namespace bowtie

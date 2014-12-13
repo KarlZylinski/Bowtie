@@ -28,12 +28,12 @@ struct ConsumedRingBufferData
 
 namespace concurrent_ring_buffer
 {
-	void init(ConcurrentRingBuffer& b, Allocator& allocator, unsigned size, unsigned element_size);
-	void deinit(ConcurrentRingBuffer& b);
-	void write_one(ConcurrentRingBuffer& b, const void* data);
-	void* peek(ConcurrentRingBuffer& b);
-	void consume_one(ConcurrentRingBuffer& b);
-	bool fits_one(ConcurrentRingBuffer& b);
+	void init(ConcurrentRingBuffer* b, Allocator* allocator, unsigned size, unsigned element_size);
+	void deinit(ConcurrentRingBuffer* b);
+	void write_one(ConcurrentRingBuffer* b, const void* data);
+	void* peek(ConcurrentRingBuffer* b);
+	void consume_one(ConcurrentRingBuffer* b);
+	bool fits_one(ConcurrentRingBuffer* b);
 }
 
 }

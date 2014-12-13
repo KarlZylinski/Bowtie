@@ -25,7 +25,7 @@ struct Header
 namespace allocator_helpers
 {
 
-void add_captured_callstack(CapturedCallstack* callstacks, const CapturedCallstack& cc);
+void add_captured_callstack(CapturedCallstack* callstacks, const CapturedCallstack* cc);
 void remove_captured_callstack(CapturedCallstack* callstacks, void* p);
 void ensure_captured_callstacks_unused(CallstackCapturer* callstack_capturer, CapturedCallstack* callstacks);
 inline void* data_pointer(Header *header, unsigned align);

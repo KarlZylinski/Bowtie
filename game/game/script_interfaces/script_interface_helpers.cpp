@@ -3,6 +3,7 @@
 #include <lua.hpp>
 #include "script_console.h"
 #include <foundation/murmur_hash.h>
+#include <foundation/vector2u.h>
 
 namespace bowtie
 {
@@ -124,7 +125,7 @@ Vector2 to_vector2(lua_State* lua, int index)
 	auto x_value = (float)get_field(lua, index, "x");
 	auto y_value = (float)get_field(lua, index, "y");
 
-	return Vector2(x_value, y_value);
+	return vector2::create(x_value, y_value);
 }
 
 Vector2i to_vector2i(lua_State* lua, int index)
@@ -134,7 +135,7 @@ Vector2i to_vector2i(lua_State* lua, int index)
 	auto x_value = (int)get_field(lua, index, "x");
 	auto y_value = (int)get_field(lua, index, "y");
 
-	return Vector2i(x_value, y_value);
+	return vector2i::create(x_value, y_value);
 }
 
 Vector2u to_vector2u(lua_State* lua, int index)
@@ -144,7 +145,7 @@ Vector2u to_vector2u(lua_State* lua, int index)
 	auto x_value = (unsigned)get_field(lua, index, "x");
 	auto y_value = (unsigned)get_field(lua, index, "y");
 
-	return Vector2u(x_value, y_value);
+	return vector2u::create(x_value, y_value);
 }
 
 Vector4 to_vector4(lua_State* lua, int index)
@@ -155,8 +156,8 @@ Vector4 to_vector4(lua_State* lua, int index)
 	auto y_value = (float)get_field(lua, index, "y");
 	auto z_value = (float)get_field(lua, index, "z");
 	auto w_value = (float)get_field(lua, index, "w");
-
-	return Vector4(x_value, y_value, z_value, w_value);
+	
+	return vector4::create(x_value, y_value, z_value, w_value);
 }
 
 uint64_t to_hash(lua_State* lua, int index)

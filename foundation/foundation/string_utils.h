@@ -25,10 +25,10 @@ inline unsigned strlen32(const char* str)
 	return unsigned(strlen(str));
 }
 
-inline Array<char*> split(Allocator& allocator, const char* str, char delimiter)
+inline Array<char*> split(Allocator* allocator, const char* str, char delimiter)
 {
 	Array<char*> words;
-	array::init(words, allocator);
+	array::init(words, *allocator);
 	auto len_str = strlen(str);
 
 	if (len_str == 0)
@@ -41,7 +41,7 @@ inline Array<char*> split(Allocator& allocator, const char* str, char delimiter)
 	{
 		if (str[i] == delimiter || i == len - 1)
 		{
-			char* word = (char*)allocator.alloc_raw(current_word_len + 1);
+			char* word = (char*)allocator->alloc_raw(current_word_len + 1);
 			memcpy(word, str + i - current_word_len, current_word_len);
 			word[current_word_len] = 0;
 			array::push_back(words, word);

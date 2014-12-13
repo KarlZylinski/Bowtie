@@ -425,7 +425,7 @@ void consume_command_queue(Renderer* r)
 		r->_unprocessed_commands_exist = false;
 	}
 
-	auto command = (RendererCommand*)concurrent_ring_buffer::peek(r->_unprocessed_commands);
+	auto command = (RendererCommand*)concurrent_ring_buffer::peek(&r->_unprocessed_commands);
 
 	while (command != nullptr)
 	{
@@ -442,8 +442,8 @@ void consume_command_queue(Renderer* r)
 			}
 		}
 
-		concurrent_ring_buffer::consume_one(r->_unprocessed_commands);
-		command = (RendererCommand*)concurrent_ring_buffer::peek(r->_unprocessed_commands);
+		concurrent_ring_buffer::consume_one(&r->_unprocessed_commands);
+		command = (RendererCommand*)concurrent_ring_buffer::peek(&r->_unprocessed_commands);
 	}
 }
 
@@ -494,7 +494,7 @@ void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* ren
 	r->num_rendered_worlds = 0;
 	r->_context = *context;
 	const auto unprocessed_commands_num = 64000;
-	concurrent_ring_buffer::init(r->_unprocessed_commands, *r->allocator, unprocessed_commands_num, sizeof(RendererCommand));
+	concurrent_ring_buffer::init(&r->_unprocessed_commands, r->allocator, unprocessed_commands_num, sizeof(RendererCommand));
 	render_interface::init(&r->render_interface, render_interface_allocator, &r->_unprocessed_commands, &r->_unprocessed_commands_exist, &r->_unprocessed_commands_exist_mutex, &r->_wait_for_unprocessed_commands_to_exist);
 }
 
@@ -525,7 +525,7 @@ void deinit(Renderer* r)
 		r->allocator->dealloc(object);
 	}
 	
-	concurrent_ring_buffer::deinit(r->_unprocessed_commands);
+	concurrent_ring_buffer::deinit(&r->_unprocessed_commands);
 	array::deinit(r->_processed_memory);
 }
 

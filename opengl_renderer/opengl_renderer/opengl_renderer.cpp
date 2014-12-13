@@ -250,8 +250,8 @@ void draw_batch(unsigned start, unsigned size, RenderComponent** components, con
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto view_resolution_ratio = view->size.y / resolution->y;
-	auto resoultion_float = Vector2((float)resolution->x, (float)resolution->y);
-	Matrix4 ident;
+	auto resoultion_float = vector2::create((float)resolution->x, (float)resolution->y);
+	auto ident = matrix4::indentity();
 
 	auto uniforms = material->uniforms;
 	for (unsigned i = 0; i < material->num_uniforms; ++i)
@@ -262,13 +262,13 @@ void draw_batch(unsigned start, unsigned size, RenderComponent** components, con
 		switch (uniform.automatic_value)
 		{
 		case uniform::ModelViewProjectionMatrix:
-			value = (void*)&(*model_view_projection_matrix)[0][0];
+			value = (void*)&model_view_projection_matrix->x.x;
 			break;
 		case uniform::ModelViewMatrix:
-			value = (void*)&(*model_view_matrix)[0][0];
+			value = (void*)&model_view_matrix->x.x;
 			break;
 		case uniform::ModelMatrix:
-			value = (void*)&ident[0][0];
+			value = (void*)&ident.x.x;
 			break;
 		case uniform::Time:
 			value = &time;
@@ -398,7 +398,7 @@ void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* res
 		return;
 
 	auto view_matrix = view::view_matrix(view);
-	auto view_projection_matrix = view_matrix * view::projection_matrix(view);
+	auto view_projection_matrix = matrix4::mul(&view_matrix, &view::projection_matrix(view));
 	unsigned num_components = array::size(render_world->components);
 	auto batch_material = render_world->components[0]->material;
 	auto batch_depth = render_world->components[0]->depth;
