@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\foundation\foundation_windows.vcxproj">
+    <ProjectReference Include="..\base\base_windows.vcxproj">
       <Project>{f1c9e9f9-bfd6-4020-a64c-54734c47b6b4}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -92,7 +92,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Projects\KjellKod\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projects\KjellKod\base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -106,13 +106,13 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_ALLOW_KEYWORD_MACROS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\os;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\base;$(BOWTIE_SOURCE)\os;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127 %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/foundation/foundation/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -1,6 +1,6 @@
 #pragma once
 #include <mutex>
-#include <foundation/option.h>
+#include <base/option.h>
 
 namespace bowtie
 {

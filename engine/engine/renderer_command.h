@@ -2,9 +2,9 @@
 #include "rect.h"
 #include "render_resource_handle.h"
 #include "uniform.h"
-#include <foundation/vector2u.h>
-#include <foundation/vector4.h>
-#include <foundation/matrix4.h>
+#include <base/vector2u.h>
+#include <base/vector4.h>
+#include <base/matrix4.h>
 
 namespace bowtie
 {

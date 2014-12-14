@@ -2,9 +2,9 @@
 #include <cmath>
 #include <cstring>
 #include <stdio.h>
-#include <foundation/file.h>
-#include <foundation/memory.h>
-#include <foundation/string_utils.h>
+#include <base/file.h>
+#include <base/memory.h>
+#include <base/string_utils.h>
 #include "render_interface.h"
 #include "renderer_command.h"
 #include "render_resource_types.h"

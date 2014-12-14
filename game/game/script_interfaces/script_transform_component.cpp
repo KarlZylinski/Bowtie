@@ -2,8 +2,8 @@
 #include <lua.hpp>
 #include <engine/entity/entity_manager.h>
 #include <engine/world.h>
-#include <foundation/murmur_hash.h>
-#include <foundation/vector4.h>
+#include <base/murmur_hash.h>
+#include <base/vector4.h>
 #include "script_interface_helpers.h"
 #include "script_console.h"
 #include <engine/rect.h>

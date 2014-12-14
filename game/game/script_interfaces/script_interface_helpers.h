@@ -1,7 +1,7 @@
 #pragma once
-#include <foundation/vector2.h>
-#include <foundation/vector2i.h>
-#include <foundation/vector4.h>
+#include <base/vector2.h>
+#include <base/vector2i.h>
+#include <base/vector4.h>
 
 struct lua_State;
 typedef int(*lua_CFunction) (lua_State *L);

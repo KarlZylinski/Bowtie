@@ -2,12 +2,12 @@
 
 #include <cstring>
 
-#include <foundation/file.h>
-#include <foundation/memory.h>
-#include <foundation/murmur_hash.h>
-#include <foundation/jzon.h>
-#include <foundation/string_utils.h>
-#include <foundation/stream.h>
+#include <base/file.h>
+#include <base/memory.h>
+#include <base/murmur_hash.h>
+#include <base/jzon.h>
+#include <base/string_utils.h>
+#include <base/stream.h>
 #include <resource_path.h>
 
 #include "font.h"

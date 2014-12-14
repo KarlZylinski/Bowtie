@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entity.h"
-#include <foundation/collection_types.h>
+#include <base/collection_types.h>
 
 namespace bowtie
 {

@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 
-#include <foundation/memory.h>
+#include <base/memory.h>
 
 #include "image.h"
 #include "material.h"
@@ -12,7 +12,7 @@
 #include "resource_store.h"
 #include "texture.h"
 #include "world.h"
-#include <foundation/concurrent_ring_buffer.h>
+#include <base/concurrent_ring_buffer.h>
 
 namespace bowtie
 {

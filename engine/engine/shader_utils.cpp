@@ -1,8 +1,8 @@
 #include "shader_utils.h"
 #include <cassert>
-#include <foundation/file.h>
-#include <foundation/memory.h>
-#include <foundation/string_utils.h>
+#include <base/file.h>
+#include <base/memory.h>
+#include <base/string_utils.h>
 
 namespace bowtie
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "render_resource_handle.h"
-#include <foundation/vector2u.h>
+#include <base/vector2u.h>
 
 namespace bowtie
 {

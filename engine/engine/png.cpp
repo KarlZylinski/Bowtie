@@ -5,8 +5,8 @@
 #include <vector>
 #include <cassert>
 
-#include <foundation/file.h>
-#include <foundation/memory.h>
+#include <base/file.h>
+#include <base/memory.h>
 #include "resource_path.h"
 
 namespace bowtie

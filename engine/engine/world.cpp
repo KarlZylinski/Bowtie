@@ -1,8 +1,8 @@
 #include "world.h"
 
 #include <cassert>
-#include <foundation/vector.h>
-#include <foundation/quad.h>
+#include <base/vector.h>
+#include <base/quad.h>
 #include "material.h"
 #include "render_interface.h"
 #include "resource_store.h"

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "entity_manager.h"
-#include <foundation/vector.h>
-#include <foundation/memory.h>
+#include <base/vector.h>
+#include <base/memory.h>
 #include <cassert>
 
 namespace bowtie

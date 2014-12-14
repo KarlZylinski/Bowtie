@@ -1,7 +1,7 @@
 #include "opengl_renderer.h"
 #include <cassert>
-#include <foundation/vector.h>
-#include <foundation/matrix4.h>
+#include <base/vector.h>
+#include <base/matrix4.h>
 #include <engine/view.h>
 #include <engine/rect.h>
 #include <engine/timer.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <foundation/collection_types.h>
+#include <base/collection_types.h>
 #include "render_resource_handle.h"
 #include "entity/components/sprite_renderer_component.h"
 #include "entity/components/transform_component.h"

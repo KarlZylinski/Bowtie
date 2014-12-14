@@ -1,7 +1,7 @@
 #include "keyboard.h"
-#include <foundation/hash.h>
-#include <foundation/vector.h>
-#include <foundation/string_utils.h>
+#include <base/hash.h>
+#include <base/vector.h>
+#include <base/string_utils.h>
 #include <cassert>
 
 namespace bowtie

@@ -3,7 +3,7 @@
 
 #include <Windows.h>
 #include "keyboard.h"
-#include <foundation/vector2u.h>
+#include <base/vector2u.h>
 
 namespace bowtie
 {

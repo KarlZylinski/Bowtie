@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/uniform.h>
-#include <foundation/vector4.h>
+#include <base/vector4.h>
 
 namespace bowtie
 {

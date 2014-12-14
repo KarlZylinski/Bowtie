@@ -19,55 +19,55 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="foundation\allocator_helpers.h" />
-    <ClInclude Include="foundation\vector.h" />
-    <ClInclude Include="foundation\callstack_capturer_types.h" />
-    <ClInclude Include="foundation\collection_types.h" />
-    <ClInclude Include="foundation\concurrent_ring_buffer.h" />
-    <ClInclude Include="foundation\file.h" />
-    <ClInclude Include="foundation\hash.h" />
-    <ClInclude Include="foundation\callstack_capturer.h" />
-    <ClInclude Include="foundation\jzon.h" />
-    <ClInclude Include="foundation\malloc_allocator.h" />
-    <ClInclude Include="foundation\matrix4.h" />
-    <ClInclude Include="foundation\memory.h" />
-    <ClInclude Include="foundation\memory_types.h" />
-    <ClInclude Include="foundation\murmur_hash.h" />
-    <ClInclude Include="foundation\option.h" />
-    <ClInclude Include="foundation\quad.h" />
-    <ClInclude Include="foundation\result.h" />
-    <ClInclude Include="foundation\stream.h" />
-    <ClInclude Include="foundation\string_utils.h" />
-    <ClInclude Include="foundation\types.h" />
-    <ClInclude Include="foundation\vector2.h" />
-    <ClInclude Include="foundation\vector2i.h" />
-    <ClInclude Include="foundation\vector2u.h" />
-    <ClInclude Include="foundation\vector4.h" />
+    <ClInclude Include="base\allocator_helpers.h" />
+    <ClInclude Include="base\vector.h" />
+    <ClInclude Include="base\callstack_capturer_types.h" />
+    <ClInclude Include="base\collection_types.h" />
+    <ClInclude Include="base\concurrent_ring_buffer.h" />
+    <ClInclude Include="base\file.h" />
+    <ClInclude Include="base\hash.h" />
+    <ClInclude Include="base\callstack_capturer.h" />
+    <ClInclude Include="base\jzon.h" />
+    <ClInclude Include="base\malloc_allocator.h" />
+    <ClInclude Include="base\matrix4.h" />
+    <ClInclude Include="base\memory.h" />
+    <ClInclude Include="base\memory_types.h" />
+    <ClInclude Include="base\murmur_hash.h" />
+    <ClInclude Include="base\option.h" />
+    <ClInclude Include="base\quad.h" />
+    <ClInclude Include="base\result.h" />
+    <ClInclude Include="base\stream.h" />
+    <ClInclude Include="base\string_utils.h" />
+    <ClInclude Include="base\types.h" />
+    <ClInclude Include="base\vector2.h" />
+    <ClInclude Include="base\vector2i.h" />
+    <ClInclude Include="base\vector2u.h" />
+    <ClInclude Include="base\vector4.h" />
     <ClInclude Include="resource_path.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="foundation\allocator_helpers.cpp" />
-    <ClCompile Include="foundation\concurrent_ring_buffer.cpp" />
-    <ClCompile Include="foundation\file.cpp" />
-    <ClCompile Include="foundation\jzon.c" />
-    <ClCompile Include="foundation\malloc_allocator.cpp" />
-    <ClCompile Include="foundation\matrix4.cpp" />
-    <ClCompile Include="foundation\memory.cpp" />
-    <ClCompile Include="foundation\murmur_hash.cpp" />
-    <ClCompile Include="foundation\stream.cpp" />
-    <ClCompile Include="foundation\vector2.cpp" />
-    <ClCompile Include="foundation\vector2i.cpp" />
-    <ClCompile Include="foundation\vector2u.cpp" />
-    <ClCompile Include="foundation\vector4.cpp" />
+    <ClCompile Include="base\allocator_helpers.cpp" />
+    <ClCompile Include="base\concurrent_ring_buffer.cpp" />
+    <ClCompile Include="base\file.cpp" />
+    <ClCompile Include="base\jzon.c" />
+    <ClCompile Include="base\malloc_allocator.cpp" />
+    <ClCompile Include="base\matrix4.cpp" />
+    <ClCompile Include="base\memory.cpp" />
+    <ClCompile Include="base\murmur_hash.cpp" />
+    <ClCompile Include="base\stream.cpp" />
+    <ClCompile Include="base\vector2.cpp" />
+    <ClCompile Include="base\vector2i.cpp" />
+    <ClCompile Include="base\vector2u.cpp" />
+    <ClCompile Include="base\vector4.cpp" />
     <ClCompile Include="resource_path.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="foundation\allocator_helpers.inl" />
+    <None Include="base\allocator_helpers.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F1C9E9F9-BFD6-4020-A64C-54734C47B6B4}</ProjectGuid>
-    <RootNamespace>foundation</RootNamespace>
-    <ProjectName>foundation</ProjectName>
+    <RootNamespace>base</RootNamespace>
+    <ProjectName>base</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -118,7 +118,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_ALLOW_KEYWORD_MACROS;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Projects\KjellKod\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projects\KjellKod\base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -135,13 +135,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;_ALLOW_KEYWORD_MACROS;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530  /wd4127</AdditionalOptions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/foundation/foundation/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

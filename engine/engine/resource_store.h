@@ -1,8 +1,8 @@
 #pragma once
 #include <cassert>
-#include <foundation/hash.h>
-#include <foundation/murmur_hash.h>
-#include <foundation/string_utils.h>
+#include <base/hash.h>
+#include <base/murmur_hash.h>
+#include <base/string_utils.h>
 #include "render_resource_handle.h"
 #include "resource_type.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <foundation/hash.h>
+#include <base/hash.h>
 
 namespace bowtie
 {

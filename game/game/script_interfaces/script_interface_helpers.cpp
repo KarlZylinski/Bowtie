@@ -2,8 +2,8 @@
 #include <cassert>
 #include <lua.hpp>
 #include "script_console.h"
-#include <foundation/murmur_hash.h>
-#include <foundation/vector2u.h>
+#include <base/murmur_hash.h>
+#include <base/vector2u.h>
 
 namespace bowtie
 {

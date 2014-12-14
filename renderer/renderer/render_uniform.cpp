@@ -1,5 +1,5 @@
 #include "render_uniform.h"
-#include <foundation/memory.h>
+#include <base/memory.h>
 #include <cstring>
 
 namespace bowtie

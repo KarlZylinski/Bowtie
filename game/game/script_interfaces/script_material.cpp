@@ -3,7 +3,7 @@
 #include <engine/material.h>
 #include <engine/render_interface.h>
 #include <engine/render_resource_handle.h>
-#include <foundation/murmur_hash.h>
+#include <base/murmur_hash.h>
 #include <lua.hpp>
 #include "script_interface_helpers.h"
 

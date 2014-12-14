@@ -3,7 +3,7 @@
 #include <lua.hpp>
 #include <engine/entity/entity_manager.h>
 #include <engine/world.h>
-#include <foundation/murmur_hash.h>
+#include <base/murmur_hash.h>
 #include "script_interface_helpers.h"
 #include "script_console.h"
 #include <engine/entity/components/sprite_renderer_component.h>

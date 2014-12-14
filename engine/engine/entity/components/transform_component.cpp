@@ -1,8 +1,8 @@
 #pragma once
 
 #include "transform_component.h"
-#include <foundation/vector2.h>
-#include <foundation/matrix4.h>
+#include <base/vector2.h>
+#include <base/matrix4.h>
 #include <cassert>
 
 namespace bowtie

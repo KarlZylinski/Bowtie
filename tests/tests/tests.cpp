@@ -1,5 +1,5 @@
 #include "concurrent_ring_buffer.h"
-#include <foundation/malloc_allocator.h>
+#include <base/malloc_allocator.h>
 #include <os/windows/callstack_capturer.h>
 #include <Windows.h>
 

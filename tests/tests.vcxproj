@@ -26,7 +26,7 @@
     <ProjectReference Include="..\engine\engine_windows.vcxproj">
       <Project>{c2b76c8f-16a3-4454-98fc-625f488fcc04}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\foundation\foundation_windows.vcxproj">
+    <ProjectReference Include="..\base\base_windows.vcxproj">
       <Project>{f1c9e9f9-bfd6-4020-a64c-54734c47b6b4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\game\game_windows.vcxproj">
@@ -131,13 +131,13 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\foundation;$(BOWTIE_SOURCE)\opengl_renderer;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\game;$(BOWTIE_SOURCE)\renderer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOWTIE_SOURCE)\base;$(BOWTIE_SOURCE)\opengl_renderer;$(BOWTIE_SOURCE)\engine;$(BOWTIE_SOURCE)\os;$(BOWTIE_LIBS)\LuaJIT\include;$(BOWTIE_SOURCE)\game;$(BOWTIE_SOURCE)\renderer</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/wd4530 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/foundation/foundation/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -3,7 +3,7 @@
 #include <mutex>
 #include "renderer_command.h"
 #include "render_resource_types.h"
-#include <foundation/collection_types.h>
+#include <base/collection_types.h>
 
 namespace bowtie
 {

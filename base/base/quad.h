@@ -1,6 +1,6 @@
 #pragma once
 
-#include <foundation/vector2.h>
+#include <base/vector2.h>
 
 namespace bowtie
 {

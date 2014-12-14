@@ -1,6 +1,6 @@
 #include "concurrent_ring_buffer.h"
-#include <foundation/concurrent_ring_buffer.h>
-#include <foundation/memory.h>
+#include <base/concurrent_ring_buffer.h>
+#include <base/memory.h>
 #include <thread>
 #include <cassert>
 

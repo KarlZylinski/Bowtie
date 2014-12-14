@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "application", "application\
 		{D6836398-0790-4B6D-8A0F-E299F5E306FC} = {D6836398-0790-4B6D-8A0F-E299F5E306FC}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foundation", "foundation\foundation_windows.vcxproj", "{F1C9E9F9-BFD6-4020-A64C-54734C47B6B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base_windows.vcxproj", "{F1C9E9F9-BFD6-4020-A64C-54734C47B6B4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "opengl_renderer", "opengl_renderer\opengl_renderer_windows.vcxproj", "{AAD470B8-0425-454C-970F-E2A458A97F05}"
 EndProject

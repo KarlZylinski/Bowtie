@@ -7,8 +7,8 @@
 #include <engine/renderer_command.h>
 #include <engine/render_interface.h>
 #include <engine/render_resource_types.h>
-#include <foundation/collection_types.h>
-#include <foundation/concurrent_ring_buffer.h>
+#include <base/collection_types.h>
+#include <base/concurrent_ring_buffer.h>
 #include "render_resource_table.h"
 #include "render_resource.h"
 #include <os/renderer_context.h>

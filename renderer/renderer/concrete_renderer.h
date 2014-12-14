@@ -2,7 +2,7 @@
 
 #include <engine/render_resource_handle.h>
 #include <engine/image.h>
-#include <foundation/collection_types.h>
+#include <base/collection_types.h>
 #include "render_resource.h"
 
 namespace bowtie

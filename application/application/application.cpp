@@ -1,8 +1,8 @@
 #include <engine/engine.h>
 #include <engine/resource_store.h>
-#include <foundation/vector.h>
-#include <foundation/malloc_allocator.h>
-#include <foundation/memory.h>
+#include <base/vector.h>
+#include <base/malloc_allocator.h>
+#include <base/memory.h>
 #include <opengl_renderer/opengl_renderer.h>
 #include <os/windows/callstack_capturer.h>
 #include <os/windows/window.h>

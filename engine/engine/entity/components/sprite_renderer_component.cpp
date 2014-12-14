@@ -3,9 +3,9 @@
 #include "sprite_renderer_component.h"
 #include "../../rect.h"
 #include "../../material.h"
-#include <foundation/vector4.h>
-#include <foundation/matrix4.h>
-#include <foundation/quad.h>
+#include <base/vector4.h>
+#include <base/matrix4.h>
+#include <base/quad.h>
 #include <cassert>
 
 namespace bowtie

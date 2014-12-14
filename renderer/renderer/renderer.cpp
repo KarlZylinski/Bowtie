@@ -5,10 +5,10 @@
 #include <engine/render_fence.h>
 #include <engine/shader_utils.h>
 #include <engine/entity/components/sprite_renderer_component.h>
-#include <foundation/vector.h>
-#include <foundation/file.h>
-#include <foundation/murmur_hash.h>
-#include <foundation/string_utils.h>
+#include <base/vector.h>
+#include <base/file.h>
+#include <base/murmur_hash.h>
+#include <base/string_utils.h>
 #include "render_material.h"
 #include "render_world.h"
 #include "render_target.h"

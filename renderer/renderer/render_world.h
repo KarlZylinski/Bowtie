@@ -1,6 +1,6 @@
 #pragma once
 
-#include <foundation/collection_types.h>
+#include <base/collection_types.h>
 #include "render_resource.h"
 #include "render_target.h"
 

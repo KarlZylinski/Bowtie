@@ -1,9 +1,9 @@
 #include "text_geometry.h"
 #include "font.h"
 
-#include <foundation/memory.h>
-#include <foundation/string_utils.h>
-#include <foundation/vector4.h>
+#include <base/memory.h>
+#include <base/string_utils.h>
+#include <base/vector4.h>
 
 namespace bowtie
 {
