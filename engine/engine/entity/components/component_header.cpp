@@ -11,19 +11,19 @@ namespace component
 void init(ComponentHeader* h, Allocator* allocator)
 {
 	memset(h, 0, sizeof(ComponentHeader));
-	hash::init(h->map, *allocator);
+	hash::init(&h->map, allocator);
 	reset_dirty(h);
 	reset_new(h);
 }
 
 void deinit(ComponentHeader* h)
 {
-	hash::deinit(h->map);
+	hash::deinit(&h->map);
 }
 
 bool has_entity(const ComponentHeader* h, Entity e)
 {
-	return hash::has(h->map, e);
+	return hash::has(&h->map, e);
 }
 
 uint32 num_dirty(const ComponentHeader* h)

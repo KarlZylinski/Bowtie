@@ -53,12 +53,12 @@ uint64 get_name(uint64 name, ResourceType type)
 
 Option<void*> get(const Hash<void*>* resources, ResourceType type, uint64 name)
 {
-	return hash::try_get<void*>(*resources, get_name(name, type));
+	return hash::try_get<void*>(resources, get_name(name, type));
 }
 
 void add(Hash<void*>* resources, uint64 name, ResourceType type, void* resource)
 {
-	hash::set(*resources, get_name(name, type), resource);
+	hash::set(resources, get_name(name, type), resource);
 }
 
 uniform::Type get_uniform_type_from_str(const char* str)
@@ -339,7 +339,7 @@ void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_inter
 	rs->allocator = allocator;
 	rs->render_interface = render_interface;
 	memset(rs->_default_resources, 0, sizeof(Option<void*>) * (uint32)ResourceType::NumResourceTypes);
-	hash::init<void*>(rs->_resources, *rs->allocator);
+	hash::init<void*>(&rs->_resources, rs->allocator);
 	static_allocator = allocator;
 	jzon_allocator.allocate = jzon_static_allocate;
 	jzon_allocator.deallocate = jzon_static_deallocate;
@@ -347,10 +347,10 @@ void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_inter
 
 void deinit(ResourceStore* rs)
 {
-	for(auto resource_iter = hash::begin(rs->_resources); resource_iter != hash::end(rs->_resources); ++resource_iter)
+	for(auto resource_iter = hash::begin(&rs->_resources); resource_iter != hash::end(&rs->_resources); ++resource_iter)
 		rs->allocator->dealloc(resource_iter->value);
 
-	hash::deinit(rs->_resources);
+	hash::deinit(&rs->_resources);
 }
 
 Option<void*> get(const ResourceStore* rs, ResourceType type, uint64 name)

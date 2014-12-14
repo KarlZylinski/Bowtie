@@ -56,7 +56,7 @@ void update_transforms(TransformComponentData* transform, uint32 start, uint32 e
 		if (!component::has_entity(&sprite_renderer->header, entity))
 			continue;
 
-		auto sprite_index = hash::get(sprite_renderer->header.map, transform->entity[i]);
+		auto sprite_index = hash::get(&sprite_renderer->header.map, transform->entity[i]);
 		auto rect = sprite_renderer->data.rect[sprite_index];
 		auto v1 = matrix4::mul(&world_transform, &vector4::create(rect.position.x, rect.position.y, 0, 1));
 		auto v2 = matrix4::mul(&world_transform, &vector4::create(rect.position.x + rect.size.x, rect.position.y, 0, 1));

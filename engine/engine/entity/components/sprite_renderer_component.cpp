@@ -50,8 +50,8 @@ void internal_copy(SpriteRendererComponentData* c, uint32 from, uint32 to)
 
 void swap(SpriteRendererComponent* c, uint32 i1, uint32 i2)
 {
-	hash::set(c->header.map, c->data.entity[i1], i2);
-	hash::set(c->header.map, c->data.entity[i2], i1);
+	hash::set(&c->header.map, c->data.entity[i1], i2);
+	hash::set(&c->header.map, c->data.entity[i2], i1);
 	internal_copy(&c->data, i2, c->header.num);
 	internal_copy(&c->data, i1, i2);
 	internal_copy(&c->data, c->header.num, i1);
@@ -107,7 +107,7 @@ void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Re
 		grow(c, allocator);
 
 	uint32 i = c->header.num++;
-	hash::set(c->header.map, e, i);
+	hash::set(&c->header.map, e, i);
 	c->data.entity[i] = e;
 	c->data.color[i] = *color;
 	c->data.rect[i] = *rect;
@@ -122,8 +122,8 @@ void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Re
 
 void destroy(SpriteRendererComponent* c, Entity e)
 {
-	uint32 i = hash::get(c->header.map, e, 0u);
-	hash::remove(c->header.map, e);
+	uint32 i = hash::get(&c->header.map, e, 0u);
+	hash::remove(&c->header.map, e);
 	--c->header.num;
 
 	if (i == c->header.num)
@@ -134,65 +134,65 @@ void destroy(SpriteRendererComponent* c, Entity e)
 
 void set_rect(SpriteRendererComponent* c, Entity e, const Rect* rect)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.rect[i] = *rect;
 	mark_dirty(c, i);
 }
 
 const Rect* rect(SpriteRendererComponent* c, Entity e)
 {
-	return &c->data.rect[hash::get(c->header.map, e)];
+	return &c->data.rect[hash::get(&c->header.map, e)];
 }
 
 void set_color(SpriteRendererComponent* c, Entity e, const Color* color)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.color[i] = *color;
 	mark_dirty(c, i);
 }
 
 const Color* color(SpriteRendererComponent* c, Entity e)
 {
-	return &c->data.color[hash::get(c->header.map, e)];
+	return &c->data.color[hash::get(&c->header.map, e)];
 }
 
 void set_render_handle(SpriteRendererComponent* c, Entity e, RenderResourceHandle render_handle)
 {
-	c->data.render_handle[hash::get(c->header.map, e)] = render_handle;
+	c->data.render_handle[hash::get(&c->header.map, e)] = render_handle;
 }
 
 const Material* material(SpriteRendererComponent* c, Entity e)
 {
-	return &c->data.material[hash::get(c->header.map, e)];
+	return &c->data.material[hash::get(&c->header.map, e)];
 }
 
 void set_material(SpriteRendererComponent* c, Entity e, Material* material)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.material[i] = *material;
 	mark_dirty(c, i);
 }
 
 RenderResourceHandle render_handle(SpriteRendererComponent* c, Entity e)
 {
-	return c->data.render_handle[hash::get(c->header.map, e)];
+	return c->data.render_handle[hash::get(&c->header.map, e)];
 }
 
 void set_geometry(SpriteRendererComponent* c, Entity e, const Quad* geometry)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.geometry[i] = *geometry;
 	mark_dirty(c, i);
 }
 
 const Quad* transform(SpriteRendererComponent* c, Entity e)
 {
-	return &c->data.geometry[hash::get(c->header.map, e)];
+	return &c->data.geometry[hash::get(&c->header.map, e)];
 }
 
 void set_depth(SpriteRendererComponent* c, Entity e, int32 depth)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.depth[i] = depth;
 	mark_dirty(c, i);
 }

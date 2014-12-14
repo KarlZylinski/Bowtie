@@ -130,8 +130,8 @@ void swap(TransformComponent* c, uint32 i1, uint32 i2)
 	if (i2_parent != transform_component::not_assigned)
 		set_parent_internal(&c->data, i2, transform_component::not_assigned);
 
-	hash::set(c->header.map, c->data.entity[i1], i2);
-	hash::set(c->header.map, c->data.entity[i2], i1);
+	hash::set(&c->header.map, c->data.entity[i1], i2);
+	hash::set(&c->header.map, c->data.entity[i2], i1);
 	internal_copy(&c->data, i2, c->header.num);
 	internal_copy(&c->data, i1, i2);
 	internal_copy(&c->data, c->header.num, i1);
@@ -173,14 +173,14 @@ void mark_dirty(TransformComponent* c, uint32 index)
 	{
 		auto entity = c->data.entity[child_iter];
 		mark_dirty(c, child_iter);
-		child_iter = hash::get(c->header.map, entity); // Index might change when swapping, refetch it.
+		child_iter = hash::get(&c->header.map, entity); // Index might change when swapping, refetch it.
 		auto child_parent = c->data.parent[child_iter];
 		assert(c->data.parent[child_iter] != transform_component::not_assigned);
 
 		if (child_iter < child_parent)
 		{
 			swap(c, child_iter, child_parent); // Parents must be before all children, otherwise updating will be wonky.
-			child_iter = hash::get(c->header.map, entity);
+			child_iter = hash::get(&c->header.map, entity);
 		}
 
 		child_iter = c->data.next_sibling[child_iter];
@@ -214,7 +214,7 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
 		grow(c, allocator);
 
 	uint32 i = c->header.num++;
-	hash::set(c->header.map, e, i);
+	hash::set(&c->header.map, e, i);
 	c->data.entity[i] = e;
 	c->data.position[i] = vector2::create(0, 0);
 	c->data.rotation[i] = 0;
@@ -231,8 +231,8 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
 
 void destroy(TransformComponent* c, Entity e)
 {
-	uint32 i = hash::get(c->header.map, e, 0u);
-	hash::remove(c->header.map, e);
+	uint32 i = hash::get(&c->header.map, e, 0u);
+	hash::remove(&c->header.map, e);
 	--c->header.num;
 
 	if (i == c->header.num)
@@ -243,62 +243,62 @@ void destroy(TransformComponent* c, Entity e)
 
 void set_position(TransformComponent* c, Entity e, const Vector2* position)
 {	
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.position[i] = *position;
 	mark_dirty(c, i);
 }
 
 const Vector2* position(TransformComponent* c, Entity e)
 {
-	return &c->data.position[hash::get(c->header.map, e)];
+	return &c->data.position[hash::get(&c->header.map, e)];
 }
 
 void set_rotation(TransformComponent* c, Entity e, real32 rotation)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.rotation[i] = rotation;
 	mark_dirty(c, i);
 }
 
 real32 rotation(TransformComponent* c, Entity e)
 {
-	return c->data.rotation[hash::get(c->header.map, e)];
+	return c->data.rotation[hash::get(&c->header.map, e)];
 }
 
 void set_pivot(TransformComponent* c, Entity e, const Vector2* pivot)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.pivot[i] = *pivot;
 	mark_dirty(c, i);
 }
 
 const Vector2* pivot(TransformComponent* c, Entity e)
 {
-	return &c->data.pivot[hash::get(c->header.map, e)];
+	return &c->data.pivot[hash::get(&c->header.map, e)];
 }
 
 void set_parent(TransformComponent* c, Entity e, Entity parent_entity)
 {
-	auto i = hash::get(c->header.map, e);
-	set_parent_internal(&c->data, i, hash::get(c->header.map, parent_entity));
+	auto i = hash::get(&c->header.map, e);
+	set_parent_internal(&c->data, i, hash::get(&c->header.map, parent_entity));
 	mark_dirty(c, i);
 }
 
 Entity parent(TransformComponent* c, Entity e)
 {
-	return c->data.parent[hash::get(c->header.map, e)];
+	return c->data.parent[hash::get(&c->header.map, e)];
 }
 
 void set_world_transform(TransformComponent* c, Entity e, const Matrix4& world_transform)
 {
-	auto i = hash::get(c->header.map, e);
+	auto i = hash::get(&c->header.map, e);
 	c->data.world_transform[i] = world_transform;
 	mark_dirty(c, i);
 }
 
 const Matrix4* world_transform(TransformComponent* c, Entity e)
 {
-	return &c->data.world_transform[hash::get(c->header.map, e)];
+	return &c->data.world_transform[hash::get(&c->header.map, e)];
 }
 
 void* copy_dirty_data(TransformComponent* c, Allocator& allocator)
