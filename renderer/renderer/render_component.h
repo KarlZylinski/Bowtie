@@ -9,10 +9,10 @@ namespace bowtie
 
 struct RenderComponent
 {
-	RenderResourceHandle material;
-	Color color;
-	Quad geometry;
-	int32 depth;
+    RenderResourceHandle material;
+    Color color;
+    Quad geometry;
+    int32 depth;
 };
 
 }

@@ -9,7 +9,7 @@ namespace bowtie
 
 namespace
 {
-	Engine* s_engine;
+    Engine* s_engine;
 }
 
 namespace time_script_interface
@@ -17,20 +17,20 @@ namespace time_script_interface
 
 int32 time(lua_State* lua)
 {
-	auto counter = s_engine->timer->counter();
-	lua_pushnumber(lua, counter);
-	return 1;
+    auto counter = s_engine->timer->counter();
+    lua_pushnumber(lua, counter);
+    return 1;
 }
 
 void load(lua_State* lua, Engine* engine)
 {
-	s_engine = engine;
+    s_engine = engine;
 
-	const interface_function functions[] = {
-		{ "time", time }
-	};
+    const interface_function functions[] = {
+        { "time", time }
+    };
 
-	script_interface::register_interface(lua, "Time", functions, 1);
+    script_interface::register_interface(lua, "Time", functions, 1);
 }
 
 } // namespace time_script_interface

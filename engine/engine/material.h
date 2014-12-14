@@ -8,8 +8,8 @@ namespace bowtie
 struct Shader;
 struct Material
 {
-	RenderResourceHandle render_handle;
-	Shader* shader;
+    RenderResourceHandle render_handle;
+    Shader* shader;
 };
 
 }

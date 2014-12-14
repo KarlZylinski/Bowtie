@@ -13,13 +13,13 @@ struct World;
 typedef uint32 Entity;
 
 struct interface_function {
-	const char* name;
-	lua_CFunction function;
+    const char* name;
+    lua_CFunction function;
 };
 
 struct SpawnedEntity {
-	Entity entity;
-	World* world;
+    Entity entity;
+    World* world;
 };
 
 namespace script_interface

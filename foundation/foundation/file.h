@@ -8,8 +8,8 @@ struct Allocator;
 
 struct LoadedFile
 {
-	uint8* data;
-	uint32 size;
+    uint8* data;
+    uint32 size;
 };
 
 namespace file

@@ -8,16 +8,16 @@ namespace bowtie
 
 enum class PixelFormat
 {
-	RGB,
-	RGBA
+    RGB,
+    RGBA
 };
 
 struct Image
 {
-	void* data;
-	uint32 data_size;
-	PixelFormat pixel_format;
-	Vector2u resolution;
+    void* data;
+    uint32 data_size;
+    PixelFormat pixel_format;
+    Vector2u resolution;
 };
 
 }

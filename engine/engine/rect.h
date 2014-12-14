@@ -7,13 +7,13 @@ namespace bowtie
 
 struct Rect
 {
-	Vector2 position;
-	Vector2 size;
+    Vector2 position;
+    Vector2 size;
 };
 
 namespace rect
 {
-	void init(Rect* rect, Vector2* position, Vector2* size);
+    void init(Rect* rect, Vector2* position, Vector2* size);
 }
 
 }

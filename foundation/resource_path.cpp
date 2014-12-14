@@ -8,7 +8,7 @@ const char* resource_path()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-	static char rpath[512];
+    static char rpath[512];
     NSBundle* bundle = [NSBundle mainBundle];
 
     if (bundle == nil) {
@@ -17,8 +17,8 @@ const char* resource_path()
 #endif
     } else {
         NSString* path = [bundle resourcePath];
-		strcpy(rpath, [path UTF8String]);
-		strcat(rpath, "/");
+        strcpy(rpath, [path UTF8String]);
+        strcat(rpath, "/");
     }
 
     [pool drain];

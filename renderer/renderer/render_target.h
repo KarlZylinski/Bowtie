@@ -8,8 +8,8 @@ namespace bowtie
 
 struct RenderTarget
 {
-	RenderTexture texture;
-	RenderResource handle;
+    RenderTexture texture;
+    RenderResource handle;
 };
 
 }

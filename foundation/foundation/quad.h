@@ -7,10 +7,10 @@ namespace bowtie
 
 struct Quad
 {
-	Vector2 v1;
-	Vector2 v2;
-	Vector2 v3;
-	Vector2 v4;
+    Vector2 v1;
+    Vector2 v2;
+    Vector2 v3;
+    Vector2 v4;
 };
 
 }

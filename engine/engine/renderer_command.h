@@ -11,30 +11,30 @@ namespace bowtie
 
 struct RendererCommand
 {
-	enum Type { Fence, RenderWorld, LoadResource, UpdateResource, Resize, CombineRenderedWorlds, SetUniformValue };
-	Type type;
-	void* data;
-	uint32 dynamic_data_size;
-	void* dynamic_data;
+    enum Type { Fence, RenderWorld, LoadResource, UpdateResource, Resize, CombineRenderedWorlds, SetUniformValue };
+    Type type;
+    void* data;
+    uint32 dynamic_data_size;
+    void* dynamic_data;
 };
 
 struct RenderWorldData
 {
-	Rect view;
-	RenderResourceHandle render_world;
-	real32 time;
+    Rect view;
+    RenderResourceHandle render_world;
+    real32 time;
 };
 
 struct ResizeData
 {
-	Vector2u resolution;
+    Vector2u resolution;
 };
 
 struct SetUniformValueData
 {
-	RenderResourceHandle material;
-	uniform::Type type;
-	uint64 uniform_name;
+    RenderResourceHandle material;
+    uniform::Type type;
+    uint64 uniform_name;
 };
 
 }

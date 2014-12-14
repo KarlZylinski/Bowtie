@@ -7,9 +7,9 @@ struct Allocator;
 
 struct UncompressedTexture
 {
-	void* data;
-	uint32 data_size;
-	uint32 width, height;
+    void* data;
+    uint32 data_size;
+    uint32 width, height;
 };
 
 namespace png

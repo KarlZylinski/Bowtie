@@ -6,21 +6,21 @@
 namespace bowtie
 {
 
-struct RenderFence	
+struct RenderFence    
 {
-	std::condition_variable fence_processed;
-	std::mutex mutex;
-	bool processed;
-	
-	RenderFence()
-	{
-		processed = false;
-	}
+    std::condition_variable fence_processed;
+    std::mutex mutex;
+    bool processed;
+    
+    RenderFence()
+    {
+        processed = false;
+    }
 
-	RenderFence(const RenderFence&)
-	{
-		processed = false;
-	}
+    RenderFence(const RenderFence&)
+    {
+        processed = false;
+    }
 };
 
 }

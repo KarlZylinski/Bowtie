@@ -7,8 +7,8 @@ struct PlatformRendererContextData;
 
 struct RendererContext
 {
-	void (*flip)(PlatformRendererContextData* c);
-	void (*make_current_for_calling_thread)(PlatformRendererContextData* c);
+    void (*flip)(PlatformRendererContextData* c);
+    void (*make_current_for_calling_thread)(PlatformRendererContextData* c);
 };
 
 }

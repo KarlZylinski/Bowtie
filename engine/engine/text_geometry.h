@@ -11,29 +11,29 @@ class Allocator;
 class TextGeometry : public IDrawableGeometry
 {
 public:
-	TextGeometry(const Font& font, Allocator& allocator);
-	~TextGeometry();
-	
-	const IDrawableGeometry& clone(Allocator& allocator) const;
-	IDrawableGeometry& clone(Allocator& allocator);
-	const Vector4& color() const;
-	const real32* data() const;
-	uint32 data_size() const;
-	bool has_changed() const;
-	void reset_has_changed();
-	void set_color(const Vector4& color);
-	void set_text(const char* text);
-	const Texture* texture() const;
+    TextGeometry(const Font& font, Allocator& allocator);
+    ~TextGeometry();
+    
+    const IDrawableGeometry& clone(Allocator& allocator) const;
+    IDrawableGeometry& clone(Allocator& allocator);
+    const Vector4& color() const;
+    const real32* data() const;
+    uint32 data_size() const;
+    bool has_changed() const;
+    void reset_has_changed();
+    void set_color(const Vector4& color);
+    void set_text(const char* text);
+    const Texture* texture() const;
 
 private:
-	Allocator& _allocator;
-	bool _has_changed;
-	Color _color;
-	const Font& _font;
-	real32* _data;
-	char* _text;
+    Allocator& _allocator;
+    bool _has_changed;
+    Color _color;
+    const Font& _font;
+    real32* _data;
+    char* _text;
 
-	TextGeometry& operator=(const TextGeometry&);
+    TextGeometry& operator=(const TextGeometry&);
 };
 
 }

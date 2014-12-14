@@ -8,8 +8,8 @@ namespace bowtie
 
 struct Texture
 {
-	Image* image;
-	RenderResourceHandle render_handle;
+    Image* image;
+    RenderResourceHandle render_handle;
 };
 
 }

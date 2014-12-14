@@ -15,20 +15,20 @@ struct ResourceStore;
 
 struct World
 {
-	Allocator* allocator;
-	RenderResourceHandle render_handle;
-	RenderInterface* render_interface;
-	RenderResourceHandle default_material;
-	TransformComponent transform_components;
-	SpriteRendererComponent sprite_renderer_components;
+    Allocator* allocator;
+    RenderResourceHandle render_handle;
+    RenderInterface* render_interface;
+    RenderResourceHandle default_material;
+    TransformComponent transform_components;
+    SpriteRendererComponent sprite_renderer_components;
 };
 
 namespace world
 {
-	void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceStore* resource_store);
-	void deinit(World* w);
-	void update(World* w);
-	void draw(World* w, const Rect* view, real32 time);
+    void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceStore* resource_store);
+    void deinit(World* w);
+    void update(World* w);
+    void draw(World* w, const Rect* view, real32 time);
 }
 
 };

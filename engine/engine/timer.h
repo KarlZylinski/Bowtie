@@ -5,8 +5,8 @@ namespace bowtie
 
 struct Timer
 {
-	void (*start)();
-	real32 (*counter)();
+    void (*start)();
+    real32 (*counter)();
 };
 
 }

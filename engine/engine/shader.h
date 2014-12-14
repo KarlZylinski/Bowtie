@@ -7,7 +7,7 @@ namespace bowtie
 
 struct Shader
 {
-	RenderResourceHandle render_handle;
+    RenderResourceHandle render_handle;
 };
 
 }

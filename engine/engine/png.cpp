@@ -502,24 +502,24 @@ int decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width,
 
 UncompressedTexture load(const char* filename, Allocator* allocator)
 {
-	auto png_file_option = file::load(filename, allocator);
-	assert(png_file_option.is_some && "Failed loading texture");
-	auto png_file = &png_file_option.value;
-	std::vector<unsigned char> decoded_png;
-	unsigned long width, height;
-	decodePNG(decoded_png, width, height, png_file->data, png_file->size);
+    auto png_file_option = file::load(filename, allocator);
+    assert(png_file_option.is_some && "Failed loading texture");
+    auto png_file = &png_file_option.value;
+    std::vector<unsigned char> decoded_png;
+    unsigned long width, height;
+    decodePNG(decoded_png, width, height, png_file->data, png_file->size);
 
-	allocator->dealloc(png_file->data);
-	
-	auto texture = UncompressedTexture();
+    allocator->dealloc(png_file->data);
+    
+    auto texture = UncompressedTexture();
 
-	texture.data_size = (unsigned)decoded_png.size();
-	texture.data = allocator->alloc_raw(texture.data_size);
-	memcpy(texture.data, &decoded_png[0], texture.data_size);
-	texture.width = width;
-	texture.height = height;
+    texture.data_size = (unsigned)decoded_png.size();
+    texture.data = allocator->alloc_raw(texture.data_size);
+    memcpy(texture.data, &decoded_png[0], texture.data_size);
+    texture.width = width;
+    texture.height = height;
 
-	return texture;
+    return texture;
 }
 
 

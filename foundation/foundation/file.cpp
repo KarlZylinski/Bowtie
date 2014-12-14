@@ -12,38 +12,38 @@ namespace file
 
 Option<LoadedFile> load(const char* filename, Allocator* allocator)
 {
-	FILE* fp;
-	size_t filesize;
-	uint8* data;
-	
-	char full_filename[512];
-	strcpy(full_filename, resource_path());
-	strcat(full_filename, filename);
+    FILE* fp;
+    size_t filesize;
+    uint8* data;
+    
+    char full_filename[512];
+    strcpy(full_filename, resource_path());
+    strcat(full_filename, filename);
 
-	fp = fopen(full_filename, "rb");
+    fp = fopen(full_filename, "rb");
 
-	if (!fp)
-		return option::none<LoadedFile>();
+    if (!fp)
+        return option::none<LoadedFile>();
 
-	fseek(fp, 0, SEEK_END);
-	filesize = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_END);
+    filesize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-	data = (uint8*)allocator->alloc_raw(uint32(filesize) + 1);
+    data = (uint8*)allocator->alloc_raw(uint32(filesize) + 1);
 
-	if (!data)
-		return option::none<LoadedFile>();
+    if (!data)
+        return option::none<LoadedFile>();
 
-	fread(data, 1, filesize, fp);
-	data[filesize] = 0;
-	fclose(fp);
+    fread(data, 1, filesize, fp);
+    data[filesize] = 0;
+    fclose(fp);
 
-	LoadedFile lf;
+    LoadedFile lf;
 
-	lf.data = data;
-	lf.size = (uint32)filesize + 1;
+    lf.data = data;
+    lf.size = (uint32)filesize + 1;
 
-	return option::some(lf);
+    return option::some(lf);
 }
 
 }

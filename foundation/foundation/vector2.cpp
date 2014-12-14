@@ -1,87 +1,87 @@
 #include "vector2.h"
 
 namespace bowtie
-{	
+{    
 namespace vector2
 {
 
 Vector2 create(real32 x, real32 y)
 {
-	Vector2 v = {x, y};
-	return v;
+    Vector2 v = {x, y};
+    return v;
 }
 
 bool equals(const Vector2* v1, const Vector2* v2)
 {
-	return v1->x == v2->x && v1->y == v2->y;
+    return v1->x == v2->x && v1->y == v2->y;
 }
 
 void inc(Vector2* to, const Vector2* from)
 {
-	to->x += from->x;
-	to->y += from->y;
+    to->x += from->x;
+    to->y += from->y;
 }
 
 Vector2 add(const Vector2* v1, const Vector2* v2)
 {
-	Vector2 v1v2 = {
-		v1->x + v2->x,
-		v1->y + v2->y,
-	};
-	return v1v2;
+    Vector2 v1v2 = {
+        v1->x + v2->x,
+        v1->y + v2->y,
+    };
+    return v1v2;
 }
 
 void dec(Vector2* to, const Vector2* from)
 {
-	to->x -= from->x;
-	to->y -= from->y;
+    to->x -= from->x;
+    to->y -= from->y;
 }
 
 Vector2 sub(const Vector2* v1, const Vector2* v2)
 {
-	Vector2 v1v2 = {
-		v1->x - v2->x,
-		v1->y - v2->y
-	};
+    Vector2 v1v2 = {
+        v1->x - v2->x,
+        v1->y - v2->y
+    };
 
-	return v1v2;
+    return v1v2;
 }
 
 void scale(Vector2* v1, real32 scalar)
 {
-	v1->x *= scalar;
-	v1->y *= scalar;
+    v1->x *= scalar;
+    v1->y *= scalar;
 }
 
 Vector2 mul(const Vector2* v1, real32 scalar)
 {
-	Vector2 v1s = {
-		v1->x * scalar,
-		v1->y * scalar
-	};
+    Vector2 v1s = {
+        v1->x * scalar,
+        v1->y * scalar
+    };
 
-	return v1s;
+    return v1s;
 }
 
 void scale(Vector2* v1, const Vector2* v2)
 {
-	v1->x *= v2->x;
-	v1->y *= v2->y;
+    v1->x *= v2->x;
+    v1->y *= v2->y;
 }
 
 Vector2 mul(const Vector2* v1, const Vector2* v2)
 {
-	Vector2 v1v2 = {
-		v1->x * v2->x,
-		v1->y * v2->y
-	};
+    Vector2 v1v2 = {
+        v1->x * v2->x,
+        v1->y * v2->y
+    };
 
-	return v1v2;
+    return v1v2;
 }
 
 real32 dot(const Vector2* v1, const Vector2* v2)
 {
-	return v1->x * v2->x + v1->y * v2->y;
+    return v1->x * v2->x + v1->y * v2->y;
 }
 
 } // namespace Vector2

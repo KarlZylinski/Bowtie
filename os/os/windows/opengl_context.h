@@ -8,8 +8,8 @@ namespace bowtie
 
 struct PlatformRendererContextData
 {
-	HDC device_context;
-	HGLRC rendering_context;
+    HDC device_context;
+    HGLRC rendering_context;
 };
 
 namespace windows
@@ -17,8 +17,8 @@ namespace windows
 
 namespace opengl_context
 {
-	void init(PlatformRendererContextData* context, HWND hwnd);
-	bowtie::RendererContext create();
+    void init(PlatformRendererContextData* context, HWND hwnd);
+    bowtie::RendererContext create();
 }
 
 }

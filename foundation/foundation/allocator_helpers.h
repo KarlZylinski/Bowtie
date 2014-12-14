@@ -16,10 +16,10 @@ const uint32 TRACING_MARKER = 0xfffffffeu;
 
 struct Header
 {
-	#if defined(TRACING)
-		uint32 tracing_marker;
-	#endif
-	uint32 size;
+    #if defined(TRACING)
+        uint32 tracing_marker;
+    #endif
+    uint32 size;
 };
 
 namespace allocator_helpers
