@@ -8,7 +8,7 @@ namespace timer
 {
 
 void start();
-float counter();
+real32 counter();
 
 }
 }

@@ -20,7 +20,7 @@ complex material
     shader: "fire.shader"
     uniforms: [
         "mat4 model_view_projection_matrix mvp"
-        "float intensity 0"
+        "real32 intensity 0"
     ]
     vertex_definition: [
         "position"

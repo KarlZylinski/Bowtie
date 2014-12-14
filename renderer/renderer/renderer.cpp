@@ -98,7 +98,7 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
 			switch (uniform_data->type)
 			{
 			case uniform::Float:
-				render_uniform::set_value(&uniform, allocator, value, sizeof(float));
+				render_uniform::set_value(&uniform, allocator, value, sizeof(real32));
 				break;
 			case uniform::Texture1:
 			case uniform::Texture2:
@@ -191,7 +191,7 @@ void raise_fence(RenderFence* fence)
 	fence->fence_processed.notify_all();
 }
 
-void draw(ConcreteRenderer* concrete_renderer, const Vector2u* resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, uint32* num_rendered_worlds, RenderWorld* render_world, const Rect* view, float time)
+void draw(ConcreteRenderer* concrete_renderer, const Vector2u* resolution, RenderResource* resource_table, RenderWorld** rendered_worlds, uint32* num_rendered_worlds, RenderWorld* render_world, const Rect* view, real32 time)
 {
 	render_world::sort(render_world);
 	concrete_renderer->set_render_target(resolution, render_world->render_target.handle);
@@ -404,7 +404,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
 			switch (set_uniform_value_data->type)
 			{
 			case uniform::Float:
-				render_material::set_uniform_float_value(material, r->allocator, set_uniform_value_data->uniform_name, *(float*)command->dynamic_data);
+				render_material::set_uniform_real32_value(material, r->allocator, set_uniform_value_data->uniform_name, *(real32*)command->dynamic_data);
 				break;
 			default:
 				assert(!"Unknown uniform type");

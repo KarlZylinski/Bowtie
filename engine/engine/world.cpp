@@ -162,7 +162,7 @@ void update(World* w)
 	}
 }
 
-void draw(World* w, const Rect* view, float time)
+void draw(World* w, const Rect* view, real32 time)
 {
 	auto render_world_command = render_interface::create_command(w->render_interface, RendererCommand::RenderWorld);
 

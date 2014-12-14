@@ -6,7 +6,7 @@ namespace bowtie
 struct Timer
 {
 	void (*start)();
-	float (*counter)();
+	real32 (*counter)();
 };
 
 }

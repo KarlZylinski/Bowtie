@@ -13,7 +13,7 @@ struct TransformComponentData
 {
 	Entity* entity;
 	Vector2* position;
-	float* rotation;
+	real32* rotation;
 	Vector2* pivot;
 	uint32* parent;
 	uint32* first_child;
@@ -39,8 +39,8 @@ namespace transform_component
 	void destroy(TransformComponent* c, Entity e);
 	void set_position(TransformComponent* c, Entity e, const Vector2* rect);
 	const Vector2* position(TransformComponent* c, Entity e);
-	void set_rotation(TransformComponent* c, Entity e, float rotation);
-	float rotation(TransformComponent* c, Entity e);
+	void set_rotation(TransformComponent* c, Entity e, real32 rotation);
+	real32 rotation(TransformComponent* c, Entity e);
 	void set_pivot(TransformComponent* c, Entity e, const Vector2* pivot);
 	const Vector2* pivot(TransformComponent* c, Entity e);
 	void set_parent(TransformComponent* c, Entity e, Entity parent);

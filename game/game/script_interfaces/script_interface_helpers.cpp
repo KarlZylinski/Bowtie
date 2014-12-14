@@ -10,7 +10,7 @@ namespace bowtie
 
 namespace
 {
-double get_field(lua_State* lua, int32 index, const char *key)
+real64 get_field(lua_State* lua, int32 index, const char *key)
 {
     lua_pushstring(lua, key);
     lua_gettable(lua, index);
@@ -122,8 +122,8 @@ Vector2 to_vector2(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
-	auto x_value = (float)get_field(lua, index, "x");
-	auto y_value = (float)get_field(lua, index, "y");
+	auto x_value = (real32)get_field(lua, index, "x");
+	auto y_value = (real32)get_field(lua, index, "y");
 
 	return vector2::create(x_value, y_value);
 }
@@ -152,10 +152,10 @@ Vector4 to_vector4(lua_State* lua, int32 index)
 {
 	assert(lua_istable(lua, index));
 
-	auto x_value = (float)get_field(lua, index, "x");
-	auto y_value = (float)get_field(lua, index, "y");
-	auto z_value = (float)get_field(lua, index, "z");
-	auto w_value = (float)get_field(lua, index, "w");
+	auto x_value = (real32)get_field(lua, index, "x");
+	auto y_value = (real32)get_field(lua, index, "y");
+	auto z_value = (real32)get_field(lua, index, "z");
+	auto w_value = (real32)get_field(lua, index, "w");
 	
 	return vector4::create(x_value, y_value, z_value, w_value);
 }

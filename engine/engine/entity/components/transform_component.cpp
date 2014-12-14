@@ -16,7 +16,7 @@ TransformComponentData initialize_data(void* buffer, uint32 size)
 	TransformComponentData new_data;
 	new_data.entity = (Entity*)buffer;
 	new_data.position = (Vector2*)(new_data.entity + size);
-	new_data.rotation = (float*)(new_data.position + size);
+	new_data.rotation = (real32*)(new_data.position + size);
 	new_data.pivot = (Vector2*)(new_data.rotation + size);
 	new_data.parent = (uint32*)(new_data.pivot + size);
 	new_data.first_child = (uint32*)(new_data.parent + size);
@@ -30,7 +30,7 @@ void copy_offset(TransformComponentData* from, TransformComponentData* to, uint3
 {
 	memcpy(to->entity + to_offset, from->entity + from_offset, num * sizeof(Entity));
 	memcpy(to->position + to_offset, from->position + from_offset, num * sizeof(Vector2));
-	memcpy(to->rotation + to_offset, from->rotation + from_offset, num * sizeof(float));
+	memcpy(to->rotation + to_offset, from->rotation + from_offset, num * sizeof(real32));
 	memcpy(to->pivot + to_offset, from->pivot + from_offset, num * sizeof(Vector2));
 	memcpy(to->parent + to_offset, from->parent + from_offset, num * sizeof(uint32));
 	memcpy(to->first_child + to_offset, from->first_child + from_offset, num * sizeof(uint32));
@@ -192,7 +192,7 @@ void mark_dirty(TransformComponent* c, uint32 index)
 namespace transform_component
 {
 
-uint32 component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(float) + sizeof(Vector2)
+uint32 component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(real32) + sizeof(Vector2)
 							+ sizeof(uint32) + sizeof(uint32) + sizeof(uint32) + sizeof(uint32)
 							+ sizeof(Matrix4);
 
@@ -253,14 +253,14 @@ const Vector2* position(TransformComponent* c, Entity e)
 	return &c->data.position[hash::get(c->header.map, e)];
 }
 
-void set_rotation(TransformComponent* c, Entity e, float rotation)
+void set_rotation(TransformComponent* c, Entity e, real32 rotation)
 {
 	auto i = hash::get(c->header.map, e);
 	c->data.rotation[i] = rotation;
 	mark_dirty(c, i);
 }
 
-float rotation(TransformComponent* c, Entity e)
+real32 rotation(TransformComponent* c, Entity e)
 {
 	return c->data.rotation[hash::get(c->header.map, e)];
 }

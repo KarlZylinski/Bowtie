@@ -21,8 +21,8 @@ struct Engine
 	RenderInterface* render_interface;
 	Keyboard keyboard;
 	Game _game;
-	float _time_elapsed_previous_frame;
-	float _time_since_start;
+	real32 _time_elapsed_previous_frame;
+	real32 _time_since_start;
 	Timer* timer;
 };
 

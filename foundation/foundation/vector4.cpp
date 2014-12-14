@@ -5,7 +5,7 @@ namespace bowtie
 namespace vector4
 {
 
-Vector4 create(float x, float y, float z, float w)
+Vector4 create(real32 x, real32 y, real32 z, real32 w)
 {
 	Vector4 v = {x, y, z, w};
 	return v;
@@ -55,7 +55,7 @@ Vector4 sub(const Vector4* v1, const Vector4* v2)
 	return v1v2;
 }
 
-void scale(Vector4* v1, float scalar)
+void scale(Vector4* v1, real32 scalar)
 {
 	v1->x *= scalar;
 	v1->y *= scalar;
@@ -63,7 +63,7 @@ void scale(Vector4* v1, float scalar)
 	v1->w *= scalar;
 }
 
-Vector4 mul(const Vector4* v1, float scalar)
+Vector4 mul(const Vector4* v1, real32 scalar)
 {
 	Vector4 v1s = {
 		v1->x * scalar,
@@ -95,7 +95,7 @@ Vector4 mul(const Vector4* v1, const Vector4* v2)
 	return v1v2;
 }
 
-float dot(const Vector4* v1, const Vector4* v2)
+real32 dot(const Vector4* v1, const Vector4* v2)
 {
 	return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z + v1->w * v2->w;
 }

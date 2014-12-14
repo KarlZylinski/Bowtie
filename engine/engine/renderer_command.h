@@ -22,7 +22,7 @@ struct RenderWorldData
 {
 	Rect view;
 	RenderResourceHandle render_world;
-	float time;
+	real32 time;
 };
 
 struct ResizeData

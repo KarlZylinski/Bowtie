@@ -34,7 +34,7 @@ void write(const char* )
 	script_interface::check_errors(s_lua, error); */
 }
 
-void update(float )
+void update(real32 )
 {
 	/*lua_getglobal(s_lua, "console");
 	lua_getfield(s_lua, -1, "update");

@@ -17,7 +17,7 @@ public:
 	const IDrawableGeometry& clone(Allocator& allocator) const;
 	IDrawableGeometry& clone(Allocator& allocator);
 	const Vector4& color() const;
-	const float* data() const;
+	const real32* data() const;
 	uint32 data_size() const;
 	bool has_changed() const;
 	void reset_has_changed();
@@ -30,7 +30,7 @@ private:
 	bool _has_changed;
 	Color _color;
 	const Font& _font;
-	float* _data;
+	real32* _data;
 	char* _text;
 
 	TextGeometry& operator=(const TextGeometry&);

@@ -72,8 +72,8 @@ void update_and_render(Engine* e)
 	if (!e->_game.started)
 		game::start(&e->_game);
 
-	float time_elapsed = e->timer->counter();
-	float dt = time_elapsed - e->_time_elapsed_previous_frame;
+	real32 time_elapsed = e->timer->counter();
+	real32 dt = time_elapsed - e->_time_elapsed_previous_frame;
 	e->_time_elapsed_previous_frame = time_elapsed;
 	e->_time_since_start += dt;
 	game::update(&e->_game, dt);

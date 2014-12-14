@@ -10,7 +10,7 @@ namespace bowtie
 
 namespace
 {
-float* update_geometry(Allocator& allocator, const Color& color, const Font& font, const char* text);
+real32* update_geometry(Allocator& allocator, const Color& color, const Font& font, const char* text);
 }
 
 
@@ -42,7 +42,7 @@ const Vector4& TextGeometry::color() const
 	return _color;
 }
 
-const float* TextGeometry::data() const
+const real32* TextGeometry::data() const
 {
 	return _data;
 }
@@ -50,7 +50,7 @@ const float* TextGeometry::data() const
 uint32 TextGeometry::data_size() const
 {
 	auto text_len = strlen32(_text);
-	auto size_of_char_geometry = sizeof(float) * 9 * 6;
+	auto size_of_char_geometry = sizeof(real32) * 9 * 6;
 	return text_len * (uint32)size_of_char_geometry;
 }
 
@@ -90,15 +90,15 @@ const Texture* TextGeometry::texture() const
 namespace
 {
 
-float* update_geometry(Allocator& allocator, const Color& color, const Font& font, const char* text)
+real32* update_geometry(Allocator& allocator, const Color& color, const Font& font, const char* text)
 {
 	auto text_len = strlen32(text);
-	auto size_of_char_geometry = sizeof(float) * 9 * 6;
+	auto size_of_char_geometry = sizeof(real32) * 9 * 6;
 
 	if (text_len == 0)
 		return nullptr;
 
-	auto data = (float*)allocator.allocate((uint32)size_of_char_geometry * text_len);
+	auto data = (real32*)allocator.allocate((uint32)size_of_char_geometry * text_len);
 	
 	auto size = font::char_size(font);
 	auto pos = Vector2u();
@@ -107,17 +107,17 @@ float* update_geometry(Allocator& allocator, const Color& color, const Font& fon
 		char c = text[i];
 		auto uv = font::char_uv(font, c);
 
-		auto x = (float)pos.x;
-		auto y = (float)pos.y;
-		auto w = pos.x + (float)size.x;
-		auto h = pos.y + (float)size.y;
+		auto x = (real32)pos.x;
+		auto y = (real32)pos.y;
+		auto w = pos.x + (real32)size.x;
+		auto h = pos.y + (real32)size.y;
 
 		auto u_min = uv.position.x;
 		auto v_min = uv.position.y;
 		auto u_max = uv.size.x;
 		auto v_max = uv.size.y;
 
-		float geometry[54] = {
+		real32 geometry[54] = {
 			x, y, 0.0f,
 			u_min, v_min,
 			color.x, color.y, color.z, color.w,

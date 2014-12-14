@@ -54,9 +54,9 @@ inline Vector<char*> split(Allocator* allocator, const char* str, char delimiter
 	return words;
 }
 
-inline float float_from_str(const char* str)
+inline real32 real32_from_str(const char* str)
 {
-	return (float)strtod(str, nullptr);
+	return (real32)strtod(str, nullptr);
 }
 
 inline uint32 uint32_from_str(const char* str)

@@ -242,8 +242,8 @@ Material* load_material(ResourceStore* rs, const char* filename)
 				switch (type)
 				{
 				case uniform::Float: {
-					auto float_val = float_from_str(value_str);
-					stream::write(&dynamic_uniform_data, &float_val, sizeof(float), rs->allocator);
+					auto real32_val = real32_from_str(value_str);
+					stream::write(&dynamic_uniform_data, &real32_val, sizeof(real32), rs->allocator);
 				} break;
 				case uniform::Texture1:
 				case uniform::Texture2:

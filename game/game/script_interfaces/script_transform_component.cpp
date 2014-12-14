@@ -58,7 +58,7 @@ int32 rotation(lua_State* lua)
 int32 set_rotation(lua_State* lua)
 {
 	auto e = script_interface::to_entity(lua, 1);
-	transform_component::set_rotation(&e.world->transform_components, e.entity, (float)lua_tonumber(lua, 2));
+	transform_component::set_rotation(&e.world->transform_components, e.entity, (real32)lua_tonumber(lua, 2));
 	return 0;
 }
 

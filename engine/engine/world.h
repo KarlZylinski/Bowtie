@@ -28,7 +28,7 @@ namespace world
 	void init(World* w, Allocator* allocator, RenderInterface* render_interface, ResourceStore* resource_store);
 	void deinit(World* w);
 	void update(World* w);
-	void draw(World* w, const Rect* view, float time);
+	void draw(World* w, const Rect* view, real32 time);
 }
 
 };

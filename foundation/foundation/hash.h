@@ -215,7 +215,7 @@ namespace bowtie {
 
 		template<typename T> bool full(const Hash<T> &h)
 		{
-			const float max_load_factor = 0.7f;
+			const real32 max_load_factor = 0.7f;
 			return h._data.size >= h._hash.size * max_load_factor;
 		}
 

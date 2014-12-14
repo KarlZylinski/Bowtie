@@ -18,7 +18,7 @@ namespace render_material
 	void deinit(RenderMaterial* material, Allocator* allocator);
 	void set_uniform_vector4_value(RenderMaterial* material, Allocator* allocator, uint64 name, const Vector4* value);
 	void set_uniform_uint32_value(RenderMaterial* material, Allocator* allocator, uint64 name, uint32 value);
-	void set_uniform_float_value(RenderMaterial* material, Allocator* allocator, uint64 name, float value);
+	void set_uniform_real32_value(RenderMaterial* material, Allocator* allocator, uint64 name, real32 value);
 }
 
 }

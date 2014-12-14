@@ -30,7 +30,7 @@ void init_game(lua_State* lua)
 	script_interface::check_errors(lua, error);
 }
 
-void update_game(lua_State* lua, float dt)
+void update_game(lua_State* lua, real32 dt)
 {
 	lua_getglobal(lua, "update");
 	lua_pushnumber(lua, dt);
@@ -97,7 +97,7 @@ void deinit(Game* g)
 	lua_close(g->_lua);
 }
 
-void update(Game* g, float dt)
+void update(Game* g, real32 dt)
 {
 	if (!g->started)
 		return;

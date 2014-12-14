@@ -70,7 +70,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, Re
 {
 	auto shader = rendered_worlds_combining_shader.handle;
 
-	static const float fullscreen_quad_data[] = {
+	static const real32 fullscreen_quad_data[] = {
 		-1.0f, -1.0f, 0.0f,
 		1.0f, -1.0f, 0.0f,
 		-1.0f, 1.0f, 0.0f,
@@ -239,7 +239,7 @@ void destroy_render_target(RenderResource render_target)
 }
 
 void draw_batch(uint32 start, uint32 size, RenderComponent** components, const Vector2u* resolution, const Rect* view,
-			    const Matrix4* view_matrix, const Matrix4* view_projection_matrix, float time, const RenderResource* resource_table)
+			    const Matrix4* view_matrix, const Matrix4* view_projection_matrix, real32 time, const RenderResource* resource_table)
 {
 	auto model_view_projection_matrix = view_projection_matrix;
 	auto model_view_matrix = view_matrix;
@@ -248,7 +248,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 	assert(glIsProgram(shader) && "Invalid shader program");
 	glUseProgram(shader);
 	auto view_resolution_ratio = view->size.y / resolution->y;
-	auto resoultion_float = vector2::create((float)resolution->x, (float)resolution->y);
+	auto resoultion_real32 = vector2::create((real32)resolution->x, (real32)resolution->y);
 	auto ident = matrix4::indentity();
 
 	auto uniforms = material->uniforms;
@@ -278,7 +278,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 			value = (void*)&view_resolution_ratio;
 			break;
 		case uniform::Resolution:
-			value = (void*)&resoultion_float;
+			value = (void*)&resoultion_real32;
 			break;
 		}
 
@@ -307,26 +307,26 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 	}
 
 	static const uint32 draw_buffer_size = 864000;
-	static float draw_buffer[draw_buffer_size];
+	static real32 draw_buffer[draw_buffer_size];
 	const uint32 rect_buffer_num_elements = 54;
-	const uint32 rect_buffer_size = rect_buffer_num_elements * sizeof(float);
+	const uint32 rect_buffer_size = rect_buffer_num_elements * sizeof(real32);
 	const uint32 total_buffer_size = rect_buffer_size * size;
 	assert(total_buffer_size <= draw_buffer_size && "Draw buffer size exceeded limit. Increase in opengl_renderer.cpp");
 
 	for (uint32 i = start; i < start + size; ++i)
 	{
-		float* current_buffer = draw_buffer + rect_buffer_num_elements * (i - start);
+		real32* current_buffer = draw_buffer + rect_buffer_num_elements * (i - start);
 		auto v1 = &components[i]->geometry.v1;
 		auto v2 = &components[i]->geometry.v2;
 		auto v3 = &components[i]->geometry.v3;
 		auto v4 = &components[i]->geometry.v4;
 
-		auto r = (float)components[i]->color.r;
-		auto g = (float)components[i]->color.g;
-		auto b = (float)components[i]->color.b;
-		auto a = (float)components[i]->color.a;
+		auto r = (real32)components[i]->color.r;
+		auto g = (real32)components[i]->color.g;
+		auto b = (real32)components[i]->color.b;
+		auto a = (real32)components[i]->color.a;
 
-		float current_buffer_data[rect_buffer_num_elements] = {
+		real32 current_buffer_data[rect_buffer_num_elements] = {
 			v1->x, v1->y, 0.0f,
 			0.0f, 0.0f,
 			r, g, b, a,
@@ -360,7 +360,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		9 * sizeof(float),
+		9 * sizeof(real32),
 		(void*)0
 		);
 
@@ -370,8 +370,8 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 		2,
 		GL_FLOAT,
 		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(3 * sizeof(float))
+		9 * sizeof(real32),
+		(void*)(3 * sizeof(real32))
 		);
 
 	glEnableVertexAttribArray(2);
@@ -380,8 +380,8 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		9 * sizeof(float),
-		(void*)(5 * sizeof(float))
+		9 * sizeof(real32),
+		(void*)(5 * sizeof(real32))
 		);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6 * size);
@@ -390,7 +390,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
 	destroy_geometry_internal(geometry);
 }
 
-void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* resolution, float time, const RenderResource* resource_table)
+void draw(const Rect* view, const RenderWorld* render_world, const Vector2u* resolution, real32 time, const RenderResource* resource_table)
 {
 	if (render_world->components.size == 0)
 		return;

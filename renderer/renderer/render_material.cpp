@@ -52,9 +52,9 @@ void set_uniform_uint32_value(RenderMaterial* m, Allocator* allocator, uint64 na
 	internal::set_uniform_value(m, allocator, name, &value, sizeof(uint32));
 }
 
-void set_uniform_float_value(RenderMaterial* m, Allocator* allocator, uint64 name, float value)
+void set_uniform_real32_value(RenderMaterial* m, Allocator* allocator, uint64 name, real32 value)
 {
-	internal::set_uniform_value(m, allocator, name, &value, sizeof(float));
+	internal::set_uniform_value(m, allocator, name, &value, sizeof(real32));
 }
 
 } // namespace render_material
