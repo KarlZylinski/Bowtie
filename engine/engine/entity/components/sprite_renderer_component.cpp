@@ -197,19 +197,19 @@ void set_depth(SpriteRendererComponent* c, Entity e, int32 depth)
     mark_dirty(c, i);
 }
 
-void* copy_dirty_data(SpriteRendererComponent* c, Allocator* allocator)
+void* copy_dirty_data(SpriteRendererComponent* c)
 {
     auto num_dirty = component::num_dirty(&c->header);
-    void* buffer = allocator->alloc_raw(component_size * num_dirty);
+    void* buffer = temp_memory::alloc_raw(component_size * num_dirty);
     auto data = initialize_data(buffer, num_dirty);
     copy(&c->data, &data, num_dirty);
     return buffer;
 }
 
-void* copy_new_data(SpriteRendererComponent* c, Allocator* allocator)
+void* copy_new_data(SpriteRendererComponent* c)
 {
     auto num_new = component::num_new(&c->header);
-    void* buffer = allocator->alloc_raw(component_size * num_new);
+    void* buffer = temp_memory::alloc_raw(component_size * num_new);
     auto data = initialize_data(buffer, num_new);
     copy_offset(&c->data, &data, num_new, c->header.first_new, 0);
     return buffer;

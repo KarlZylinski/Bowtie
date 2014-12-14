@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tests/tests.cpp" />
     <ClCompile Include="tests\concurrent_ring_buffer.cpp" />
+    <ClCompile Include="tests\tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine_windows.vcxproj">

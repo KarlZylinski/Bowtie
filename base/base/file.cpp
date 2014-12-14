@@ -1,5 +1,5 @@
 #include "file.h"
-#include "memory_types.h"
+#include "memory.h"
 #include "resource_path.h"
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +10,7 @@ namespace bowtie
 namespace file
 {
 
-Option<LoadedFile> load(const char* filename, Allocator* allocator)
+Option<LoadedFile> load(const char* filename)
 {
     FILE* fp;
     size_t filesize;
@@ -29,7 +29,7 @@ Option<LoadedFile> load(const char* filename, Allocator* allocator)
     filesize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    data = (uint8*)allocator->alloc_raw(uint32(filesize) + 1);
+    data = (uint8*)temp_memory::alloc(uint32(filesize) + 1);
 
     if (!data)
         return option::none<LoadedFile>();

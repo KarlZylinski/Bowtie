@@ -255,7 +255,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
     for (uint32 i = 0; i < material->num_uniforms; ++i)
     {
         auto uniform = uniforms + i;
-        auto value = uniform->value;
+        auto value = (void*)uniform->value;
 
         switch (uniform->automatic_value)
         {

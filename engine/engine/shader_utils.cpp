@@ -9,7 +9,7 @@ namespace bowtie
 namespace shader_utils
 {
 
-SplitShader split_shader(const LoadedFile* shader_source, Allocator* allocator)
+SplitShader split_shader(const LoadedFile* shader_source)
 {
     const char* delimiter = "#fragment";
 
@@ -33,12 +33,12 @@ SplitShader split_shader(const LoadedFile* shader_source, Allocator* allocator)
     assert(matched_index == delimiter_len && fragment_start_index <= shader_len && "Could not find fragment part of shader.");
 
     uint32 vertex_shader_source_len = fragment_start_index - delimiter_len;
-    char* vertex_shader_source = (char*)allocator->alloc_raw(vertex_shader_source_len + 1);
+    char* vertex_shader_source = (char*)temp_memory::alloc_raw(vertex_shader_source_len + 1);
     memcpy(vertex_shader_source, shader_source->data, vertex_shader_source_len);
     vertex_shader_source[vertex_shader_source_len] = 0;
     
     uint32 fragment_shader_source_len = shader_len - fragment_start_index;
-    char* fragment_shader_source = (char*)allocator->alloc_raw(fragment_shader_source_len + 1);
+    char* fragment_shader_source = (char*)temp_memory::alloc_raw(fragment_shader_source_len + 1);
     memcpy(fragment_shader_source, shader_source->data + fragment_start_index, fragment_shader_source_len);
     fragment_shader_source[fragment_shader_source_len] = 0;
 

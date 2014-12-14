@@ -289,10 +289,10 @@ Entity parent(TransformComponent* c, Entity e)
     return c->data.parent[hash::get(&c->header.map, e)];
 }
 
-void set_world_transform(TransformComponent* c, Entity e, const Matrix4& world_transform)
+void set_world_transform(TransformComponent* c, Entity e, const Matrix4* world_transform)
 {
     auto i = hash::get(&c->header.map, e);
-    c->data.world_transform[i] = world_transform;
+    c->data.world_transform[i] = *world_transform;
     mark_dirty(c, i);
 }
 
@@ -301,10 +301,10 @@ const Matrix4* world_transform(TransformComponent* c, Entity e)
     return &c->data.world_transform[hash::get(&c->header.map, e)];
 }
 
-void* copy_dirty_data(TransformComponent* c, Allocator& allocator)
+void* copy_dirty_data(TransformComponent* c)
 {
     auto num_dirty = c->header.last_dirty_index + 1;
-    void* buffer = allocator.alloc_raw(component_size * num_dirty);
+    void* buffer = temp_memory::alloc_raw(component_size * num_dirty);
     auto data = initialize_data(buffer, num_dirty);
     copy(&c->data, &data, num_dirty);
     return buffer;

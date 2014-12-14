@@ -19,7 +19,7 @@ struct Header
     #if defined(TRACING)
         uint32 tracing_marker;
     #endif
-    uint32 size;
+    uint64 size;
 };
 
 namespace allocator_helpers

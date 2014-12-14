@@ -1,0 +1,110 @@
+
+
+permanent memory - fixed size
+---
+x concurrent ring buffer
+create world
+create resource (cpu side memory rep)
+init render material uniform data
+set render uniform value
+copy single created / updated resource (renderer)
+create render_material
+    practially all resource creates in renderer
+
+permanent memory - varying size
+vector<render component>
+vectors
+    - entity generation
+    - entity index holes
+    - component create
+
+to look over
+---
+resources are currently allocated one and one and put into resource store. how can we solve this? Not use a general resource thing? Maybe have static lists for each type? Or somehow make the one list preallocated. It containing arbitrary pointer is problem though.
+
+
+loading of resources in resource store
+---
+convert current stuff to debug loads, because it's what it is.
+
+create the data compiler
+
+create a level concept, the level also has a package it loads where non-referenced thing can be specified
+
+
+temporary memory
+---
+x file load
+x stream grow
+x word split
+x copy str
+x concat str
+vector set capacity where stuff is temporary
+x component copy data
+x load texture (png.cpp)
+x resource copying in render_interface
+x render_interface dispatch
+x create render fence
+x create resize message
+/ create shader dynamic data (resource_store)
+/ create uniform resource data (resource_store)
+x split shader
+draw render world data
+
+
+
+
+---
+
+
+
+
+
+
+
+Here's what we could do:
+
+2 permanent storages - 2x32 mb
+1 temporary ringbuffer style - 4gb for now
+
+TempMemory - bound to temporary memory block
+    global
+    uses ring buffer
+    concurrent
+    no deallocation
+    assert that start is not past start from last frame
+
+2 permanent storages
+    passed around
+    one for main thread, one for renderer
+    not concurrent
+
+// Acts on a static memory buffer
+namespace temp_memory
+{
+    void init(void* memory, uint64 total_size)
+    void* alloc(uint64 size, uint32 align)
+    void* alloc_raw(uint64 size, uint32 align)
+}
+
+struct PermanentMemory
+{
+    char* name;
+    callstack shizz
+}
+
+namespace memory
+{
+    void* alloc(PermanentMemory* memory, uint32 size, uint32 align)
+    void* alloc_raw(PermanentMemory* memory, uint32 size, uint32 align)
+}
+
+// Just 
+namespace debug_memory
+{
+    void* alloc(uint32 size, uint32 align);
+    void dealloc(void* p)
+}
+
+
+memory::alloc(renderer_memory, 32)

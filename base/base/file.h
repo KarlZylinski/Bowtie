@@ -15,7 +15,7 @@ struct LoadedFile
 namespace file
 {
 
-Option<LoadedFile> load(const char* filename, Allocator* allocator);
+Option<LoadedFile> load(const char* filename);
 
 }
 }

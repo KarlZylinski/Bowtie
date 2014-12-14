@@ -82,7 +82,7 @@ RenderUniform create_uniform(ConcreteRenderer* concrete_renderer, RenderResource
 SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* concrete_renderer, void* dynamic_data, const RenderResource* resource_table, const MaterialResourceData* data)
 {
     auto material = (RenderMaterial*)allocator->alloc(sizeof(RenderMaterial));
-    render_material::init(material, allocator, data->num_uniforms, data->shader);
+    render_material::init(material, data->num_uniforms, data->shader);
     auto shader = render_resource_table::lookup(resource_table, data->shader);
     auto uniforms_data = (UniformResourceData*)dynamic_data;
     
@@ -98,15 +98,15 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
             switch (uniform_data->type)
             {
             case uniform::Float:
-                render_uniform::set_value(&uniform, allocator, value, sizeof(real32));
+                render_uniform::set_value(&uniform, value, sizeof(real32));
                 break;
             case uniform::Texture1:
             case uniform::Texture2:
             case uniform::Texture3:
-                render_uniform::set_value(&uniform, allocator, value, sizeof(uint32));
+                render_uniform::set_value(&uniform, value, sizeof(uint32));
                 break;
             case uniform::Vec4:
-                render_uniform::set_value(&uniform, allocator, value, sizeof(Vector4));
+                render_uniform::set_value(&uniform, value, sizeof(Vector4));
                 break;
             default:
                 assert(!"Unkonwn uniform type.");
@@ -343,9 +343,6 @@ void execute_command(Renderer* r, const RendererCommand* command)
 
             r->allocator->dealloc(created_resources.handles);
             r->allocator->dealloc(created_resources.resources);
-
-            std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-            vector::push(&r->_processed_memory, data->data);
         } break;
 
         case RendererCommand::UpdateResource:
@@ -376,9 +373,6 @@ void execute_command(Renderer* r, const RendererCommand* command)
             r->allocator->dealloc(updated_resources.handles);
             r->allocator->dealloc(updated_resources.new_resources);
             r->allocator->dealloc(updated_resources.old_resources);
-
-            std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-            vector::push(&r->_processed_memory, data->data);
         } break;
 
         case RendererCommand::Resize:
@@ -404,7 +398,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
             switch (set_uniform_value_data->type)
             {
             case uniform::Float:
-                render_material::set_uniform_real32_value(material, r->allocator, set_uniform_value_data->uniform_name, *(real32*)command->dynamic_data);
+                render_material::set_uniform_real32_value(material, set_uniform_value_data->uniform_name, *(real32*)command->dynamic_data);
                 break;
             default:
                 assert(!"Unknown uniform type");
@@ -430,18 +424,6 @@ void consume_command_queue(Renderer* r)
     while (command != nullptr)
     {
         execute_command(r, command);
-
-        {
-            std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-            auto dont_free = command->type == RendererCommand::Fence;
-
-            if (!dont_free)
-            {
-                vector::push(&r->_processed_memory, command->data);
-                vector::push(&r->_processed_memory, command->dynamic_data);
-            }
-        }
-
         concurrent_ring_buffer::consume_one(&r->_unprocessed_commands);
         command = (RendererCommand*)concurrent_ring_buffer::peek(&r->_unprocessed_commands);
     }
@@ -460,14 +442,11 @@ void thread(Renderer* r)
     r->active = true;
 
     {
-        auto shader_source_option = file::load("rendered_world_combining.shader", r->allocator);
+        auto shader_source_option = file::load("rendered_world_combining.shader");
         assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
         auto shader_source = &shader_source_option.value;
-        auto split_shader = shader_utils::split_shader(shader_source, r->allocator);
+        auto split_shader = shader_utils::split_shader(shader_source);
         r->_rendered_worlds_combining_shader = r->_concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
-        r->allocator->dealloc(shader_source->data);
-        r->allocator->dealloc(split_shader.vertex_source);
-        r->allocator->dealloc(split_shader.fragment_source);
     }
 
     while (r->active)
@@ -482,12 +461,11 @@ void thread(Renderer* r)
 namespace renderer
 {
 
-void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* renderer_allocator, Allocator* render_interface_allocator, const RendererContext* context)
+void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* renderer_allocator, const RendererContext* context)
 {
     r->allocator = renderer_allocator;
     r->active = false;
     r->_concrete_renderer = *concrete_renderer;
-    vector::init(&r->_processed_memory, r->allocator);
     memset(r->_render_targets, 0, sizeof(RenderTarget) * max_render_targets);
     memset(r->_resource_objects, 0, sizeof(RendererResourceObject) * render_resource_handle::num);
     r->_unprocessed_commands_exist = false;
@@ -495,7 +473,7 @@ void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* ren
     r->_context = *context;
     const auto unprocessed_commands_num = 64000;
     concurrent_ring_buffer::init(&r->_unprocessed_commands, r->allocator, unprocessed_commands_num, sizeof(RendererCommand));
-    render_interface::init(&r->render_interface, render_interface_allocator, &r->_unprocessed_commands, &r->_unprocessed_commands_exist, &r->_unprocessed_commands_exist_mutex, &r->_wait_for_unprocessed_commands_to_exist);
+    render_interface::init(&r->render_interface, &r->_unprocessed_commands, &r->_unprocessed_commands_exist, &r->_unprocessed_commands_exist_mutex, &r->_wait_for_unprocessed_commands_to_exist);
 }
 
 void deinit(Renderer* r)
@@ -517,29 +495,12 @@ void deinit(Renderer* r)
         case RenderResourceData::RenderTarget:
             r->allocator->dealloc((RenderTarget*)object);
             break;
-        case RenderResourceData::RenderMaterial:
-            render_material::deinit((RenderMaterial*)object, r->allocator);
-            break;
         }
 
         r->allocator->dealloc(object);
     }
     
     concurrent_ring_buffer::deinit(&r->_unprocessed_commands);
-    vector::deinit(&r->_processed_memory);
-}
-
-void deallocate_processed_commands(Renderer* r, Allocator* render_interface_allocator)
-{
-    std::lock_guard<std::mutex> queue_lock(r->_processed_memory_mutex);
-
-    for (uint32 i = 0; i < r->_processed_memory.size; ++i)
-    {
-        auto ptr = r->_processed_memory.data[i];
-        render_interface_allocator->dealloc(ptr);
-    }
-
-    vector::clear(&r->_processed_memory);
 }
 
 void run(Renderer* r, PlatformRendererContextData* context_data, const Vector2u* resolution)
@@ -552,7 +513,7 @@ void run(Renderer* r, PlatformRendererContextData* context_data, const Vector2u*
     render_interface::resize(&r->render_interface, resolution);
 }
 
-void stop(Renderer* r, Allocator* render_interface_allocator)
+void stop(Renderer* r)
 {
     r->active = false;
 
@@ -563,7 +524,6 @@ void stop(Renderer* r, Allocator* render_interface_allocator)
 
     r->_wait_for_unprocessed_commands_to_exist.notify_all();
     r->_thread.join();
-    deallocate_processed_commands(r, render_interface_allocator);
 }
 
 } // namespace renderer

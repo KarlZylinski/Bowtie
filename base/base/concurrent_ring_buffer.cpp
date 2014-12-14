@@ -32,20 +32,20 @@ uint32 used(ConcurrentRingBuffer* b)
 namespace concurrent_ring_buffer
 {
 
-void init(ConcurrentRingBuffer* b, Allocator* allocator, uint32 size, uint32 element_size)
+void init(ConcurrentRingBuffer* b, Allocator* , uint32 size, uint32 element_size)
 {
     b->size = size;
     b->element_size = element_size;
-    b->start = (uint8*)allocator->alloc_raw(element_size * size);
+    b->start = (uint8*)memory::alloc_raw(&RenderThreadMemory, element_size * size);// (uint8*)allocator->alloc_raw(element_size * size);
     b->write_head = b->start;
     b->has_wrapped = false;
     b->consume_head = b->start;
-    b->allocator = allocator;
+    //b->allocator = allocator;
 }
 
-void deinit(ConcurrentRingBuffer* b)
+void deinit(ConcurrentRingBuffer*)
 {
-    b->allocator->dealloc(b->start);
+    //b->allocator->dealloc(b->start);
 }
 
 void write_one(ConcurrentRingBuffer* b, const void* data)

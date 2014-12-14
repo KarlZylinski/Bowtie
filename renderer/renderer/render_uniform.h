@@ -12,12 +12,12 @@ struct RenderUniform
     uint64 name;
     uint32 location;
     uniform::Type type;
-    void* value;
+    uint8 value[4];
 };
 
 namespace render_uniform
 {
-    void set_value(RenderUniform* uniform, Allocator* allocator, const void* value, uint32 value_size);
+    void set_value(RenderUniform* uniform, const void* value, uint32 value_size);
 }
 
 }

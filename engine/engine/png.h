@@ -15,7 +15,7 @@ struct UncompressedTexture
 namespace png
 {
 
-UncompressedTexture load(const char* filename, Allocator* allocator);
+UncompressedTexture load(const char* filename);
 
 }
 }

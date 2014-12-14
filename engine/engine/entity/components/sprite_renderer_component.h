@@ -51,8 +51,8 @@ namespace sprite_renderer_component
     void set_geometry(SpriteRendererComponent* c, Entity e, const Quad* geometry);
     const Quad* geometry(SpriteRendererComponent* c, Entity e);
     void set_depth(SpriteRendererComponent* c, Entity e, int32 depth);
-    void* copy_dirty_data(SpriteRendererComponent* c, Allocator* allocator);
-    void* copy_new_data(SpriteRendererComponent* c, Allocator* allocator);
+    void* copy_dirty_data(SpriteRendererComponent* c);
+    void* copy_new_data(SpriteRendererComponent* c);
     SpriteRendererComponentData create_data_from_buffer(void* buffer, uint32 num);
 }
 

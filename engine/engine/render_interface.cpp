@@ -20,11 +20,11 @@ namespace bowtie
 namespace internal
 {
 
-RendererCommand create_or_update_resource_renderer_command(Allocator* allocator, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size, RendererCommand::Type command_type)
+RendererCommand create_or_update_resource_renderer_command(RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size, RendererCommand::Type command_type)
 {
     RendererCommand rc;
 
-    auto copied_resource = (RenderResourceData*)allocator->alloc_raw(sizeof(RenderResourceData));
+    auto copied_resource = (RenderResourceData*)temp_memory::alloc_raw(sizeof(RenderResourceData));
     memcpy(copied_resource, resource, sizeof(RenderResourceData));
     rc.data = copied_resource;
     rc.type = command_type;
@@ -32,23 +32,23 @@ RendererCommand create_or_update_resource_renderer_command(Allocator* allocator,
     switch (resource->type)
     {
     case RenderResourceData::RenderMaterial:
-        copied_resource->data = allocator->alloc_raw(sizeof(MaterialResourceData));
+        copied_resource->data = temp_memory::alloc_raw(sizeof(MaterialResourceData));
         memcpy(copied_resource->data, resource->data, sizeof(MaterialResourceData));
         break;
     case RenderResourceData::Shader:
-        copied_resource->data = allocator->alloc_raw(sizeof(ShaderResourceData));
+        copied_resource->data = temp_memory::alloc_raw(sizeof(ShaderResourceData));
         memcpy(copied_resource->data, resource->data, sizeof(ShaderResourceData));
         break;
     case RenderResourceData::Texture:
-        copied_resource->data = allocator->alloc_raw(sizeof(TextureResourceData));
+        copied_resource->data = temp_memory::alloc_raw(sizeof(TextureResourceData));
         memcpy(copied_resource->data, resource->data, sizeof(TextureResourceData));
         break;
     case RenderResourceData::SpriteRenderer:
-        copied_resource->data = allocator->alloc_raw(sizeof(CreateSpriteRendererData));
+        copied_resource->data = temp_memory::alloc_raw(sizeof(CreateSpriteRendererData));
         memcpy(copied_resource->data, resource->data, sizeof(CreateSpriteRendererData));
         break;
     case RenderResourceData::World:
-        copied_resource->data = allocator->alloc_raw(sizeof(RenderWorldResourceData));
+        copied_resource->data = temp_memory::alloc_raw(sizeof(RenderWorldResourceData));
         memcpy(copied_resource->data, resource->data, sizeof(RenderWorldResourceData));
         break;
     default:
@@ -62,7 +62,7 @@ RendererCommand create_or_update_resource_renderer_command(Allocator* allocator,
     return rc;
 }
 
-RendererCommand create_command(Allocator* allocator, RendererCommand::Type type)
+RendererCommand create_command(RendererCommand::Type type)
 {
     RendererCommand command;
     memset(&command, 0, sizeof(RendererCommand));
@@ -71,7 +71,7 @@ RendererCommand create_command(Allocator* allocator, RendererCommand::Type type)
     switch (type)
     {
     case RendererCommand::SetUniformValue:
-        command.data = allocator->alloc(sizeof(SetUniformValueData));
+        command.data = temp_memory::alloc_raw(sizeof(SetUniformValueData));
         break;
     }
 
@@ -95,13 +95,13 @@ void dispatch(RenderInterface* ri, const RendererCommand* command)
 
 void create_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
-    auto command = create_or_update_resource_renderer_command(ri->allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource);
+    auto command = create_or_update_resource_renderer_command(resource, dynamic_data, dynamic_data_size, RendererCommand::LoadResource);
     dispatch(ri, &command);
 }
 
 void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dynamic_data, uint32 dynamic_data_size)
 {
-    auto command = create_or_update_resource_renderer_command(ri->allocator, resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource);
+    auto command = create_or_update_resource_renderer_command(resource, dynamic_data, dynamic_data_size, RendererCommand::UpdateResource);
     dispatch(ri, &command);
 }
 
@@ -118,10 +118,9 @@ RenderResourceHandle create_handle(RenderResourceHandle* free_handles, uint32* n
 namespace render_interface
 {
 
-void init(RenderInterface* ri, Allocator* allocator, ConcurrentRingBuffer* unprocessed_commands, bool* unprocessed_commands_exist,
+void init(RenderInterface* ri, ConcurrentRingBuffer* unprocessed_commands, bool* unprocessed_commands_exist,
           std::mutex* unprocessed_commands_exist_mutex, std::condition_variable* wait_for_unprocessed_commands_to_exist)
 {
-    ri->allocator = allocator;
     ri->_unprocessed_commands = unprocessed_commands;
     ri->_unprocessed_commands_exist = unprocessed_commands_exist;
     ri->_unprocessed_commands_exist_mutex = unprocessed_commands_exist_mutex;
@@ -193,9 +192,9 @@ void create_render_world(RenderInterface* ri, World* world)
     internal::create_resource(ri, &render_world_data, nullptr, 0);
 }
 
-RendererCommand create_command(RenderInterface* ri, RendererCommand::Type type)
+RendererCommand create_command(RendererCommand::Type type)
 {
-    return internal::create_command(ri->allocator, type);
+    return internal::create_command(type);
 }
 
 void dispatch(RenderInterface* ri, RendererCommand* command)
@@ -205,7 +204,7 @@ void dispatch(RenderInterface* ri, RendererCommand* command)
 
 void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data, uint32 dynamic_data_size)
 {
-    command->dynamic_data = ri->allocator->alloc_raw(dynamic_data_size);
+    command->dynamic_data = temp_memory::alloc_raw(dynamic_data_size);
     command->dynamic_data_size = dynamic_data_size;
     memcpy(command->dynamic_data, dynamic_data, dynamic_data_size);
     internal::dispatch(ri, command);
@@ -213,32 +212,30 @@ void dispatch(RenderInterface* ri, RendererCommand* command, void* dynamic_data,
 
 RenderFence* create_fence(RenderInterface* ri)
 {
-    auto fence_command = internal::create_command(ri->allocator, RendererCommand::Fence);
-    fence_command.data = new(ri->allocator->alloc_raw(sizeof(RenderFence), alignof(RenderFence))) RenderFence(); 
+    auto fence_command = internal::create_command(RendererCommand::Fence);
+    fence_command.data = new(temp_memory::alloc_raw(sizeof(RenderFence), alignof(RenderFence))) RenderFence(); 
     internal::dispatch(ri, &fence_command);
     return (RenderFence*)fence_command.data;
 }
 
-void wait_for_fence(RenderInterface* ri, RenderFence* fence)
+void wait_for_fence(RenderFence* fence)
 {
     {
         std::unique_lock<std::mutex> lock(fence->mutex);
         fence->fence_processed.wait(lock, [&fence] { return fence->processed; });
     }
-
-    ri->allocator->dealloc(fence);
 }
 
 void wait_until_idle(RenderInterface* ri)
 {
-    wait_for_fence(ri, create_fence(ri));
+    wait_for_fence(create_fence(ri));
 }
 
 void resize(RenderInterface* ri, const Vector2u* resolution)
 {
-    auto rd = (ResizeData*)ri->allocator->alloc(sizeof(ResizeData));
+    auto rd = (ResizeData*)temp_memory::alloc(sizeof(ResizeData));
     rd->resolution = *resolution;
-    auto resize_command = internal::create_command(ri->allocator, RendererCommand::Resize);
+    auto resize_command = internal::create_command(RendererCommand::Resize);
     resize_command.data = rd;
     dispatch(ri, &resize_command);
 }

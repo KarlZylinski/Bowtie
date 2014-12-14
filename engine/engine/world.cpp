@@ -74,7 +74,7 @@ void update_transforms(TransformComponentData* transform, uint32 start, uint32 e
     }
 }
 
-void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent* sprite_renderer, uint32 num)
+void create_sprites(RenderInterface* ri, RenderResourceHandle default_material, RenderResourceHandle render_world, SpriteRendererComponent* sprite_renderer, uint32 num)
 {
     auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
 
@@ -90,16 +90,16 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
     data.num = num;
     data.world = render_world;
     rrd.data = &data;
-    render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
+    render_interface::create_resource(ri, &rrd, sprite_renderer_component::copy_new_data(sprite_renderer), sprite_renderer_component::component_size * data.num);
 }
 
-void update_sprites(Allocator* allocator, RenderInterface* ri, SpriteRendererComponent* sprite_renderer, uint32 num)
+void update_sprites(RenderInterface* ri, SpriteRendererComponent* sprite_renderer, uint32 num)
 {
     auto rrd = render_resource_data::create(RenderResourceData::SpriteRenderer);
     UpdateSpriteRendererData data;
     data.num = num;
     rrd.data = &data;
-    render_interface::update_resource(ri, &rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer, allocator), sprite_renderer_component::component_size * data.num);
+    render_interface::update_resource(ri, &rrd, sprite_renderer_component::copy_dirty_data(sprite_renderer), sprite_renderer_component::component_size * data.num);
 }
 
 } // anonymous namespace
@@ -146,7 +146,7 @@ void update(World* w)
         const auto num_new_sprites = component::num_new(&w->sprite_renderer_components.header);
 
         if (num_new_sprites > 0)
-            create_sprites(w->allocator, w->render_interface, w->default_material, w->render_handle, &w->sprite_renderer_components, num_new_sprites);
+            create_sprites(w->render_interface, w->default_material, w->render_handle, &w->sprite_renderer_components, num_new_sprites);
 
         component::reset_new(&w->sprite_renderer_components.header);
     }
@@ -155,7 +155,7 @@ void update(World* w)
         const auto num_dirty_sprites = component::num_dirty(&w->sprite_renderer_components.header);
 
         if (num_dirty_sprites > 0)
-            update_sprites(w->allocator, w->render_interface, &w->sprite_renderer_components, num_dirty_sprites);
+            update_sprites(w->render_interface, &w->sprite_renderer_components, num_dirty_sprites);
     
         component::reset_dirty(&w->sprite_renderer_components.header);
     }
@@ -163,9 +163,9 @@ void update(World* w)
 
 void draw(World* w, const Rect* view, real32 time)
 {
-    auto render_world_command = render_interface::create_command(w->render_interface, RendererCommand::RenderWorld);
+    auto render_world_command = render_interface::create_command(RendererCommand::RenderWorld);
 
-    auto rwd = (RenderWorldData*)w->allocator->alloc(sizeof(RenderWorldData));
+    auto rwd = (RenderWorldData*)temp_memory::alloc(sizeof(RenderWorldData));
     rwd->view = *view;
     rwd->render_world = w->render_handle;
     rwd->time = time;

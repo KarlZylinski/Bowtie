@@ -78,7 +78,7 @@ void update_and_render(Engine* e)
     e->_time_since_start += dt;
     game::update(&e->_game, dt);
     game::draw(&e->_game);
-    auto command = render_interface::create_command(e->render_interface, RendererCommand::CombineRenderedWorlds);
+    auto command = render_interface::create_command(RendererCommand::CombineRenderedWorlds);
     render_interface::dispatch(e->render_interface, &command);
 
     if (keyboard::key_pressed(&e->keyboard, Key::F5))

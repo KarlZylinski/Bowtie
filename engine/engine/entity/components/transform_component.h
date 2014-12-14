@@ -46,7 +46,7 @@ namespace transform_component
     Entity parent(TransformComponent* c, Entity e);
     void set_world_transform(TransformComponent* c, Entity e, const Matrix4* world_transform);
     const Matrix4* world_transform(TransformComponent* c, Entity e);
-    void* copy_dirty_data(TransformComponent* c, Allocator* allocator);
+    void* copy_dirty_data(TransformComponent* c);
 }
 
 }

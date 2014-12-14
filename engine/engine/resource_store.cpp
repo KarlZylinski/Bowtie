@@ -18,17 +18,16 @@
 #include "shader_utils.h"
 #include "texture.h"
 
-static bowtie::Allocator* static_allocator;
 static JzonAllocator jzon_allocator;
 
 static void* jzon_static_allocate(size_t size)
 {
-    return static_allocator->alloc_raw((bowtie::uint32)size);
+    return bowtie::temp_memory::alloc_raw(size);
 }
 
-static void jzon_static_deallocate(void* ptr)
+// Allocator uses temp memory, does nothing.
+static void jzon_static_deallocate(void*)
 {
-    return static_allocator->dealloc(ptr);
 }
 
 namespace bowtie
@@ -112,18 +111,17 @@ template<typename T> struct RenderResourcePackage
     uint32 dynamic_data_size;
 };
 
-RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* allocator, const char* filename)
+RenderResourcePackage<ShaderResourceData> get_shader_resource_data(const char* filename)
 {
-    auto shader_source_option = file::load(filename, allocator);
+    auto shader_source_option = file::load(filename);
     assert(shader_source_option.is_some && "Failed loading shader source");
     auto shader_source = &shader_source_option.value;
-    auto split_shader = shader_utils::split_shader(shader_source, allocator);
-    allocator->dealloc(shader_source->data);
+    auto split_shader = shader_utils::split_shader(shader_source);
 
     ShaderResourceData srd;
     uint32 shader_dynamic_data_size = split_shader.vertex_source_len + split_shader.fragment_source_len;
     uint32 shader_dynamic_data_offset = 0;
-    void* shader_resource_dynamic_data = allocator->alloc_raw(shader_dynamic_data_size);
+    void* shader_resource_dynamic_data = temp_memory::alloc_raw(shader_dynamic_data_size);
 
     srd.vertex_shader_source_offset = shader_dynamic_data_offset;
     strcpy((char*)shader_resource_dynamic_data, (char*)split_shader.vertex_source);
@@ -131,9 +129,7 @@ RenderResourcePackage<ShaderResourceData> get_shader_resource_data(Allocator* al
 
     srd.fragment_shader_source_offset = shader_dynamic_data_offset;
     strcpy((char*)memory::pointer_add(shader_resource_dynamic_data, shader_dynamic_data_offset), (char*)split_shader.fragment_source);
-
-    allocator->dealloc(split_shader.vertex_source);
-    allocator->dealloc(split_shader.fragment_source);
+    
     return RenderResourcePackage<ShaderResourceData>(srd, shader_resource_dynamic_data, shader_dynamic_data_size);
 }
 
@@ -145,11 +141,11 @@ Shader* load_shader(ResourceStore* rs, const char* filename)
     if (existing.is_some)
         return (Shader*)existing.value;
 
-    auto resource_package = get_shader_resource_data(rs->allocator, filename);
+    auto resource_package = get_shader_resource_data(filename);
     resource_package.data.handle = render_interface::create_handle(rs->render_interface);
     auto create_resource_data = get_create_render_resource_data(RenderResourceData::Shader, &resource_package.data);
     render_interface::create_resource(rs->render_interface, &create_resource_data, resource_package.dynamic_data, resource_package.dynamic_data_size);
-    auto shader = (Shader*)rs->allocator->alloc(sizeof(Shader));
+    auto shader = (Shader*)debug_memory::alloc(sizeof(Shader));
     shader->render_handle = resource_package.data.handle;
     add(&rs->_resources, name, ResourceType::Shader, shader);
     return shader;
@@ -163,8 +159,8 @@ Image* load_image(ResourceStore* rs, const char* filename)
     if (existing.is_some)
         return (Image*)existing.value;
 
-    UncompressedTexture tex = png::load(filename, rs->allocator);
-    auto image = (Image*)rs->allocator->alloc(sizeof(Image));
+    UncompressedTexture tex = png::load(filename);
+    auto image = (Image*)debug_memory::alloc(sizeof(Image));
     image->resolution = vector2u::create(tex.width, tex.height);
     image->data = tex.data;
     image->data_size = tex.data_size;
@@ -182,7 +178,7 @@ Texture* load_texture(ResourceStore* rs, const char* filename)
         return (Texture*)existing.value;
 
     auto image = load_image(rs, filename);
-    auto texture = (Texture*)rs->allocator->alloc(sizeof(Texture));
+    auto texture = (Texture*)debug_memory::alloc(sizeof(Texture));
     texture->image = image;
     texture->render_handle = RenderResourceHandle();
     render_interface::create_texture(rs->render_interface, texture);
@@ -198,12 +194,11 @@ Material* load_material(ResourceStore* rs, const char* filename)
     if (existing.is_some)
         return (Material*)existing.value;
 
-    auto material_file_option = file::load(filename, rs->allocator);
+    auto material_file_option = file::load(filename);
     assert(material_file_option.is_some && "Failed loading material.");
     auto file = &material_file_option.value;
     auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
     assert(jzon_result.success && "Failed to parse font");
-    rs->allocator->dealloc(file->data);
 
     auto jzon = jzon_result.output;
     auto shader_filename = jzon_get(jzon, "shader")->string_value;
@@ -211,14 +206,14 @@ Material* load_material(ResourceStore* rs, const char* filename)
     auto uniforms_jzon = jzon_get(jzon, "uniforms");
 
     uint32 uniforms_size = sizeof(UniformResourceData) * uniforms_jzon->size;
-    auto uniforms = (UniformResourceData*)rs->allocator->alloc(uniforms_size);
-    Stream dynamic_uniform_data = { 0 };
+    auto uniforms = (UniformResourceData*)temp_memory::alloc(uniforms_size);
+    Stream dynamic_uniform_data = {};
 
     for (uint32 i = 0; i < uniforms_jzon->size; ++i)
     {
         auto uniform_json = uniforms_jzon->array_values[i];
         auto uniform_str = uniform_json->string_value;
-        auto split_uniform = split(rs->allocator, uniform_str, ' ');
+        auto split_uniform = split(uniform_str, ' ');
         assert(split_uniform.size >= 2 && "Uniform definition must contain at least type and name.");
         auto type = get_uniform_type_from_str(split_uniform[0]);
 
@@ -227,7 +222,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
         uniform.name_offset = uniforms_size + dynamic_uniform_data.size;
         auto name = split_uniform[1];
         auto name_len = strlen32(name) + 1;
-        stream::write(&dynamic_uniform_data, name, name_len, rs->allocator);
+        stream::write(&dynamic_uniform_data, name, name_len);
         uniform.value_offset = (uint32)-1;
 
         if (split_uniform.size > 2)
@@ -243,34 +238,27 @@ Material* load_material(ResourceStore* rs, const char* filename)
                 {
                 case uniform::Float: {
                     auto real32_val = real32_from_str(value_str);
-                    stream::write(&dynamic_uniform_data, &real32_val, sizeof(real32), rs->allocator);
+                    stream::write(&dynamic_uniform_data, &real32_val, sizeof(real32));
                 } break;
                 case uniform::Texture1:
                 case uniform::Texture2:
                 case uniform::Texture3:
                 {
                     auto texture = load_texture(rs, value_str);
-                    stream::write(&dynamic_uniform_data, &texture->render_handle, sizeof(uint32), rs->allocator);
+                    stream::write(&dynamic_uniform_data, &texture->render_handle, sizeof(uint32));
                 }
                     break;
                 }
             }
         }
 
-        for (uint32 j = 0; j < split_uniform.size; ++j)
-            rs->allocator->dealloc(split_uniform[j]);
-
-        vector::deinit(&split_uniform);
         uniforms[i] = uniform;
     }
 
-
     auto uniform_data_size = uniforms_size + dynamic_uniform_data.size;
-    auto uniforms_data = rs->allocator->alloc_raw(uniform_data_size);
+    auto uniforms_data = temp_memory::alloc_raw(uniform_data_size);
     memcpy(uniforms_data, uniforms, uniforms_size);
     memcpy(memory::pointer_add(uniforms_data, uniforms_size), dynamic_uniform_data.start, dynamic_uniform_data.size);
-    rs->allocator->dealloc(uniforms);
-    rs->allocator->dealloc(dynamic_uniform_data.start);
 
     MaterialResourceData mrd;
     mrd.handle = render_interface::create_handle(rs->render_interface);
@@ -280,7 +268,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
     material_resource_data.data = &mrd;
     render_interface::create_resource(rs->render_interface, &material_resource_data, uniforms_data, uniform_data_size);
 
-    auto material = (Material*)rs->allocator->alloc(sizeof(Material));
+    auto material = (Material*)debug_memory::alloc(sizeof(Material));
     material->render_handle = mrd.handle;
     material->shader = shader;
     add(&rs->_resources, name, ResourceType::Material, material);
@@ -296,18 +284,17 @@ Font* load_font(ResourceStore* rs, const char* filename)
     if (existing.is_some)
         return (Font*)existing.value;
 
-    auto font_option = file::load(filename, rs->allocator);
+    auto font_option = file::load(filename);
     assert(font_option.is_some && "Failed loading font");
     auto file = &font_option.value;
     auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
     assert(jzon_result.success && "Failed to parse font");
-    rs->allocator->dealloc(file->data);
     auto jzon = jzon_result.output;
     auto texture_filename = jzon_get(jzon, "texture")->string_value;
     auto columns = jzon_get(jzon, "columns")->int_value;
     auto rows = jzon_get(jzon, "rows")->int_value;
 
-    auto font = (Font*)rs->allocator->alloc(sizeof(Font));
+    auto font = (Font*)debug_memory::alloc(sizeof(Font));
     font->columns = columns;
     font->rows = rows;
     font->texture = load_texture(rs, texture_filename);
@@ -340,7 +327,6 @@ void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_inter
     rs->render_interface = render_interface;
     memset(rs->_default_resources, 0, sizeof(Option<void*>) * (uint32)ResourceType::NumResourceTypes);
     hash::init<void*>(&rs->_resources, rs->allocator);
-    static_allocator = allocator;
     jzon_allocator.allocate = jzon_static_allocate;
     jzon_allocator.deallocate = jzon_static_deallocate;
 }
@@ -348,7 +334,7 @@ void init(ResourceStore* rs, Allocator* allocator, RenderInterface* render_inter
 void deinit(ResourceStore* rs)
 {
     for(auto resource_iter = hash::begin(&rs->_resources); resource_iter != hash::end(&rs->_resources); ++resource_iter)
-        rs->allocator->dealloc(resource_iter->value);
+        debug_memory::dealloc(resource_iter->value);
 
     hash::deinit(&rs->_resources);
 }
@@ -380,7 +366,7 @@ void reload(ResourceStore* rs, ResourceType type, const char* filename)
         case ResourceType::Shader:
             {
                 auto shader = (Shader*)option::get(get(rs, type, name));
-                auto shader_data = internal::get_shader_resource_data(rs->allocator, filename);
+                auto shader_data = internal::get_shader_resource_data(filename);
                 shader_data.data.handle = shader->render_handle;
                 auto update_command_data = internal::get_update_render_resource_data(RenderResourceData::Shader, &shader_data.data);
                 render_interface::update_resource(rs->render_interface, &update_command_data, shader_data.dynamic_data, shader_data.dynamic_data_size);

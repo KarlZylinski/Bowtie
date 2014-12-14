@@ -52,8 +52,6 @@ struct Renderer
     ConcreteRenderer _concrete_renderer;
     RendererContext _context;
     PlatformRendererContextData* _context_data;
-    Vector<void*> _processed_memory;
-    std::mutex _processed_memory_mutex;
     RenderInterface render_interface;
     Vector2u resolution;
     RenderResource resource_table[render_resource_handle::num];
@@ -71,11 +69,10 @@ struct Renderer
 
 namespace renderer
 {
-    void init(Renderer* r, const ConcreteRenderer* concrete_renderer_obj, Allocator* renderer_allocator, Allocator* render_interface_allocator, const RendererContext* context);
-    void deinit(Renderer* r);    
-    void deallocate_processed_commands(Renderer* r, Allocator* render_interface_allocator);
+    void init(Renderer* r, const ConcreteRenderer* concrete_renderer_obj, Allocator* renderer_allocator, const RendererContext* context);
+    void deinit(Renderer* r);
     void run(Renderer* r, PlatformRendererContextData* context, const Vector2u* resolution);
-    void stop(Renderer* r, Allocator* render_interface_allocator);
+    void stop(Renderer* r);
 };
 
 }

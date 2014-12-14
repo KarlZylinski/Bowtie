@@ -10,6 +10,7 @@ namespace bowtie {
     namespace vector
     {
         template<typename T> void init(Vector<T>* v, Allocator* allocator);
+        template<typename T> void init(Vector<T>* v); // Will use temp memory.
         template<typename T> void copy(Vector<T>* from, Vector<T>* to);
         template<typename T> void deinit(Vector<T>* v);
         template<typename T> void resize(Vector<T>* v, uint32 new_size);
@@ -35,6 +36,12 @@ namespace bowtie {
             v->allocator = allocator;
         }
 
+        template<typename T> inline void init(Vector<T>* v)
+        {
+            memset(v, 0, sizeof(Vector<T>));
+            v->allocator = nullptr;
+        }
+
         template<typename T> inline void copy(Vector<T>* from, Vector<T>* to)
         {
             const uint32 n = from->size;
@@ -45,7 +52,8 @@ namespace bowtie {
 
         template<typename T> inline void deinit(Vector<T>* v)
         {
-            v->allocator->dealloc(v->data);
+            if (v->allocator != nullptr)
+                v->allocator->dealloc(v->data);
         }
         
         template <typename T> inline void clear(Vector<T>* v)
@@ -116,12 +124,19 @@ namespace bowtie {
 
             T *new_data = 0;
 
-            if (new_capacity > 0) {
-                new_data = (T*)v->allocator->alloc(sizeof(T) * new_capacity, alignof(T));
+            if (new_capacity > 0)
+            {
+                if (v->allocator == nullptr)
+                    new_data = (T*)temp_memory::alloc_raw(sizeof(T) * new_capacity, alignof(T));
+                else    
+                    new_data = (T*)v->allocator->alloc_raw(sizeof(T) * new_capacity, alignof(T));
+
                 memcpy(new_data, v->data, sizeof(T) * v->size);
             }
 
-            v->allocator->dealloc(v->data);
+            if (v->allocator != nullptr)
+                v->allocator->dealloc(v->data);
+
             v->data = new_data;
             v->capacity = new_capacity;
         }
