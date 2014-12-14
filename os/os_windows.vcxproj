@@ -24,10 +24,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="os\keyboard.h" />
     <ClInclude Include="os\renderer_context.h" />
     <ClInclude Include="os\windows\callstack_capturer.h" />
-    <ClInclude Include="os\windows\keyboard.h" />
     <ClInclude Include="os\windows\opengl_context.h" />
     <ClInclude Include="os\windows\timer.h" />
     <ClInclude Include="os\windows\window.h" />

@@ -23,13 +23,9 @@
     <ClInclude Include="os\windows\callstack_capturer.h">
       <Filter>windows</Filter>
     </ClInclude>
-    <ClInclude Include="os\windows\keyboard.h">
-      <Filter>windows</Filter>
-    </ClInclude>
     <ClInclude Include="os\windows\window.h">
       <Filter>windows</Filter>
     </ClInclude>
-    <ClInclude Include="os\keyboard.h" />
     <ClInclude Include="os\windows\timer.h">
       <Filter>windows</Filter>
     </ClInclude>

@@ -50,12 +50,12 @@ void destroy_world(Engine* e, World* world)
     e->allocator->dealloc(world);
 }
 
-void key_pressed(Engine* e, platform::Key key)
+void key_pressed(Engine* e, Key key)
 {
     keyboard::set_key_pressed(&e->keyboard, key);
 }
 
-void key_released(Engine* e, platform::Key key)
+void key_released(Engine* e, Key key)
 {
     keyboard::set_key_released(&e->keyboard, key);
 }
@@ -81,7 +81,7 @@ void update_and_render(Engine* e)
     auto command = render_interface::create_command(e->render_interface, RendererCommand::CombineRenderedWorlds);
     render_interface::dispatch(e->render_interface, &command);
 
-    if (keyboard::key_pressed(&e->keyboard, platform::Key::F5))
+    if (keyboard::key_pressed(&e->keyboard, Key::F5))
         resource_store::reload_all(&e->resource_store);
 
     keyboard::reset_pressed_released(&e->keyboard);

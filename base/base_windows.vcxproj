@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\allocator_helpers.h" />
+    <ClInclude Include="base\key.h" />
     <ClInclude Include="base\vector.h" />
     <ClInclude Include="base\callstack_capturer_types.h" />
     <ClInclude Include="base\collection_types.h" />

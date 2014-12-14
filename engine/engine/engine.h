@@ -33,8 +33,8 @@ namespace engine
     World* create_world(Engine* e);
     void destroy_world(Engine* e, World* world);
     const Keyboard* keyboard(const Engine* e);
-    void key_pressed(Engine* e, platform::Key key);
-    void key_released(Engine* e, platform::Key key);
+    void key_pressed(Engine* e, Key key);
+    void key_released(Engine* e, Key key);
     void resize(Engine* e, const Vector2u* resolution);
     void update_and_render(Engine* e);
 

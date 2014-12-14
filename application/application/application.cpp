@@ -32,12 +32,12 @@ void window_resized_callback(const Vector2u* resolution)
     engine::resize(s_engine, resolution);
 }
 
-void key_down_callback(platform::Key key)
+void key_down_callback(Key key)
 {
     engine::key_pressed(s_engine, key);
 }
 
-void key_up_callback(platform::Key key)
+void key_up_callback(Key key)
 {
     engine::key_released(s_engine, key);
 }
