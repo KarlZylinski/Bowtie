@@ -19,6 +19,7 @@ struct ComponentHeader
 
 namespace component
 {
+    const uint32 NotAssigned = (uint32)-1;
     void init(ComponentHeader* h, Allocator* allocator);
     void deinit(ComponentHeader* h);
     bool has_entity(const ComponentHeader* h, Entity e);

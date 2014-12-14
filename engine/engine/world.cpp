@@ -22,7 +22,7 @@ Matrix4 world_matrix(const TransformComponentData* c, uint32 i)
     p.w.x = -c->pivot[i].x;
     p.w.y = -c->pivot[i].y;
 
-    if (parent_index != transform_component::not_assigned)
+    if (parent_index != component::NotAssigned)
     {
         p.w.x += c->pivot[parent_index].x;
         p.w.y += c->pivot[parent_index].y;
@@ -36,7 +36,7 @@ Matrix4 world_matrix(const TransformComponentData* c, uint32 i)
     t.w.x = c->position[i].x;
     t.w.y = c->position[i].y;
 
-    if (parent_index == transform_component::not_assigned)
+    if (parent_index == component::NotAssigned)
         return matrix4::mul(&p, &t);
     else
     {
@@ -82,7 +82,7 @@ void create_sprites(Allocator* allocator, RenderInterface* ri, RenderResourceHan
     {
         sprite_renderer->data.render_handle[i] = render_interface::create_handle(ri);
 
-        if (sprite_renderer->data.material[i].render_handle == handle_not_initialized)
+        if (sprite_renderer->data.material[i].render_handle == NotInitialized)
             sprite_renderer->data.material[i].render_handle = default_material;
     }
 
@@ -111,7 +111,6 @@ void init(World* w, Allocator* allocator, RenderInterface* render_interface, Res
 {
     w->allocator = allocator;
     w->render_interface = render_interface;
-    w->render_handle = handle_not_initialized;
     auto default_material = resource_store::load(resource_store, ResourceType::Material, "default.material");
     assert(default_material.is_some && "Default material default.material is missing.");
     w->default_material = ((Material*)default_material.value)->render_handle;

@@ -111,12 +111,12 @@ void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Re
     c->data.entity[i] = e;
     c->data.color[i] = *color;
     c->data.rect[i] = *rect;
-    c->data.material[i].render_handle = (uint32)-1;
-    c->data.render_handle[i] = handle_not_initialized;
+    c->data.material[i].render_handle = component::NotAssigned;
+    c->data.render_handle[i] = component::NotAssigned;
     memset(c->data.geometry + i, 0, sizeof(Quad));
     c->data.depth[i] = 0;
     
-    if (c->header.first_new == (uint32)-1)
+    if (c->header.first_new == component::NotAssigned)
         c->header.first_new = i;
 }
 

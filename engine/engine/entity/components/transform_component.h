@@ -31,7 +31,6 @@ struct TransformComponent
 
 namespace transform_component
 {
-    const uint32 not_assigned = (uint32)-1;
     extern uint32 component_size;
     void init(TransformComponent* c, Allocator* allocator);
     void deinit(TransformComponent* c, Allocator* allocator);

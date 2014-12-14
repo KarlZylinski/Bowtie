@@ -10,7 +10,6 @@
 
 namespace bowtie
 {
-static const unsigned handle_not_initialized = 0;
 typedef signed char int8;
 typedef short int16;
 typedef int int32;
@@ -21,4 +20,5 @@ typedef unsigned int uint32;
 typedef unsigned long long uint64;
 typedef float real32;
 typedef double real64;
+static const uint32 NotInitialized = 0;
 }

@@ -504,7 +504,7 @@ void deinit(Renderer* r)
     {
         auto resource_object = r->_resource_objects + i;
 
-        if (resource_object->handle == handle_not_initialized)
+        if (resource_object->handle == NotInitialized)
             continue;
 
         auto object = render_resource_table::lookup(r->resource_table, resource_object->handle).object;

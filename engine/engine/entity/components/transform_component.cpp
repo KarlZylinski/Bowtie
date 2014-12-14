@@ -55,12 +55,12 @@ void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_
         return;
 
     // Remove any references to this transform from old parent and siblings.
-    if (d->parent[index] != transform_component::not_assigned)
+    if (d->parent[index] != component::NotAssigned)
     {
         auto old_parent = d->parent[index];
         auto old_parent_child_iter = d->first_child[old_parent];
 
-        while (old_parent_child_iter != transform_component::not_assigned)
+        while (old_parent_child_iter != component::NotAssigned)
         {
             if (old_parent_child_iter == index)
             {
@@ -71,15 +71,15 @@ void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_
             auto next = d->next_sibling[old_parent_child_iter];
             auto previous = d->previous_sibling[old_parent_child_iter];
 
-            if (next != transform_component::not_assigned && previous != transform_component::not_assigned) // Removed from middle.
+            if (next != component::NotAssigned && previous != component::NotAssigned) // Removed from middle.
             {
                 d->next_sibling[previous] = next;
                 d->previous_sibling[next] = previous;
             }
-            else if (next != transform_component::not_assigned) // Removed from start.
-                d->previous_sibling[next] = transform_component::not_assigned;
-            else if (previous != transform_component::not_assigned) // Removed from end.
-                d->next_sibling[previous] = transform_component::not_assigned;
+            else if (next != component::NotAssigned) // Removed from start.
+                d->previous_sibling[next] = component::NotAssigned;
+            else if (previous != component::NotAssigned) // Removed from end.
+                d->next_sibling[previous] = component::NotAssigned;
 
             break;
         }
@@ -89,13 +89,13 @@ void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_
     }
     
     // Unset any previous siblings to this component.
-    d->previous_sibling[index] = transform_component::not_assigned;
-    d->next_sibling[index] = transform_component::not_assigned;
+    d->previous_sibling[index] = component::NotAssigned;
+    d->next_sibling[index] = component::NotAssigned;
 
-    if (parent_index != transform_component::not_assigned)
+    if (parent_index != component::NotAssigned)
     {
         // Parent already has children, insert at front of list.
-        if (d->first_child[parent_index] != transform_component::not_assigned)
+        if (d->first_child[parent_index] != component::NotAssigned)
         {
             auto current_first_child = d->first_child[parent_index];
             d->previous_sibling[current_first_child] = index;
@@ -112,7 +112,7 @@ void update_child_parent_indices(TransformComponent* c, uint32 parent)
 {
     auto child = c->data.first_child[parent];
 
-    while (child != (uint32)-1)
+    while (child != component::NotAssigned)
     {
         c->data.parent[child] = parent;
         child = c->data.next_sibling[child];
@@ -124,11 +124,11 @@ void swap(TransformComponent* c, uint32 i1, uint32 i2)
     auto i1_parent = c->data.parent[i1];
     auto i2_parent = c->data.parent[i2];
 
-    if (i1_parent != transform_component::not_assigned)
-        set_parent_internal(&c->data, i1, transform_component::not_assigned);
+    if (i1_parent != component::NotAssigned)
+        set_parent_internal(&c->data, i1, component::NotAssigned);
 
-    if (i2_parent != transform_component::not_assigned)
-        set_parent_internal(&c->data, i2, transform_component::not_assigned);
+    if (i2_parent != component::NotAssigned)
+        set_parent_internal(&c->data, i2, component::NotAssigned);
 
     hash::set(&c->header.map, c->data.entity[i1], i2);
     hash::set(&c->header.map, c->data.entity[i2], i1);
@@ -136,10 +136,10 @@ void swap(TransformComponent* c, uint32 i1, uint32 i2)
     internal_copy(&c->data, i1, i2);
     internal_copy(&c->data, c->header.num, i1);
 
-    if (i1_parent != transform_component::not_assigned)
+    if (i1_parent != component::NotAssigned)
         set_parent_internal(&c->data, i2, i1_parent);
 
-    if (i2_parent != transform_component::not_assigned)
+    if (i2_parent != component::NotAssigned)
         set_parent_internal(&c->data, i1, i2_parent);
 
     update_child_parent_indices(c, i1);
@@ -169,13 +169,13 @@ void mark_dirty(TransformComponent* c, uint32 index)
     auto child_iter = c->data.first_child[dd.new_index];
 
     // Mark all children dirty as well.
-    while (child_iter != transform_component::not_assigned)
+    while (child_iter != component::NotAssigned)
     {
         auto entity = c->data.entity[child_iter];
         mark_dirty(c, child_iter);
         child_iter = hash::get(&c->header.map, entity); // Index might change when swapping, refetch it.
         auto child_parent = c->data.parent[child_iter];
-        assert(c->data.parent[child_iter] != transform_component::not_assigned);
+        assert(c->data.parent[child_iter] != component::NotAssigned);
 
         if (child_iter < child_parent)
         {
@@ -219,13 +219,13 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
     c->data.position[i] = vector2::create(0, 0);
     c->data.rotation[i] = 0;
     c->data.pivot[i] = vector2::create(0, 0);
-    c->data.parent[i] = not_assigned;
-    c->data.first_child[i] = not_assigned;
-    c->data.next_sibling[i] = not_assigned;
-    c->data.previous_sibling[i] = not_assigned;
+    c->data.parent[i] = component::NotAssigned;
+    c->data.first_child[i] = component::NotAssigned;
+    c->data.next_sibling[i] = component::NotAssigned;
+    c->data.previous_sibling[i] = component::NotAssigned;
     c->data.world_transform[i] = matrix4::indentity();
 
-    if (c->header.first_new == not_assigned)
+    if (c->header.first_new == component::NotAssigned)
         c->header.first_new = i;
 }
 

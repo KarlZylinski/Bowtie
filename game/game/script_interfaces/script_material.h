@@ -1,7 +1,7 @@
 #pragma once
 
 struct lua_State;
-class RenderInterface;
+struct RenderInterface;
 
 namespace bowtie
 {

@@ -33,12 +33,12 @@ uint32 num_dirty(const ComponentHeader* h)
 
 void reset_dirty(ComponentHeader* h)
 {
-    h->last_dirty_index = (uint32)-1;
+    h->last_dirty_index = NotAssigned;
 }
 
 uint32 num_new(const ComponentHeader* h)
 {
-    if (h->first_new == (uint32)-1)
+    if (h->first_new == NotAssigned)
         return 0;
 
     return h->num - h->first_new;
@@ -46,7 +46,7 @@ uint32 num_new(const ComponentHeader* h)
 
 void reset_new(ComponentHeader* h)
 {
-    h->first_new = (uint32)-1;
+    h->first_new = NotAssigned;
 }
 
 DirtyData mark_dirty(ComponentHeader* h, uint32 index)
@@ -56,10 +56,10 @@ DirtyData mark_dirty(ComponentHeader* h, uint32 index)
         index
     };
 
-    if (h->last_dirty_index != (uint32)-1 && index <= h->last_dirty_index)
+    if (h->last_dirty_index != NotAssigned && index <= h->last_dirty_index)
         return dd;
 
-    if (h->first_new != (uint32)-1 && index >= h->first_new)
+    if (h->first_new != NotAssigned && index >= h->first_new)
         return dd;
 
     dd.new_index = ++h->last_dirty_index;
