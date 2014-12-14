@@ -11,7 +11,7 @@ namespace bowtie {
 		template<typename T> void copy(Hash<T>* from, Hash<T>* to);
 		template<typename T> void deinit(Hash<T>* a);
 		template<typename T> bool has(const Hash<T>* h, uint64 key);
-		template<typename T> const T* get(const Hash<T>* h, uint64 key, const T* default);
+		template<typename T> const T& get(const Hash<T>* h, uint64 key, const T& default);
 		template<typename T> void set(Hash<T>* h, uint64 key, const T* value);
 		template<typename T> void remove(Hash<T>* h, uint64 key);
 		template<typename T> void reserve(Hash<T>* h, uint32 size);
@@ -217,7 +217,7 @@ namespace bowtie {
 			return hash_internal::find_or_fail(h, key) != hash_internal::END_OF_LIST;
 		}
 
-		template<typename T> const T &get(const Hash<T>* h, uint64 key, const T &default)
+		template<typename T> const T& get(const Hash<T>* h, uint64 key, const T& default)
 		{
 			const uint32 i = hash_internal::find_or_fail(h, key);
 			return i == hash_internal::END_OF_LIST ? default : h->_data[i].value;
