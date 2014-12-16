@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\application.cpp" />
+    <ClCompile Include="application_windows\application_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine_windows.vcxproj">
@@ -44,8 +44,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CD931A2C-E99D-44F2-9E23-0E6B6916A213}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>application</RootNamespace>
-    <ProjectName>application</ProjectName>
+    <RootNamespace>application_windows</RootNamespace>
+    <ProjectName>application_windows</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
