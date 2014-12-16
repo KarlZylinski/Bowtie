@@ -56,6 +56,7 @@ DWORD WINAPI renderer_thread_proc(void* param)
 
 int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, __in int)
 {
+    // Alloc memory
     const auto permanent_memory_size = 33554432u; // 32 megabyte
     void* main_thread_memory_buffer = alloc(permanent_memory_size);
     memory::init(&MainThreadMemory, main_thread_memory_buffer, permanent_memory_size);
@@ -70,45 +71,44 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
     auto renderer_allocator = new MallocAllocator();
     memory::init_allocator(renderer_allocator, "renederer allocator", &callstack_capturer);
 
+    // Setup renderer
+    ConcreteRenderer opengl_renderer = opengl_renderer::create();
+    Renderer renderer;
+    auto renderer_context = windows::opengl_context::create();
+    renderer::init(&renderer, &opengl_renderer, renderer_allocator, &renderer_context);
+        
+    // Setup engine
+    Timer timer = {};
+    timer.counter = windows::timer::counter;
+    timer.start = windows::timer::start;
+    Engine engine = {};
+    engine::init(&engine, allocator, &renderer.render_interface, &timer);
+    s_engine = &engine;
+
+    // Create window
+    auto resolution = vector2u::create(1280, 720);
+    windows::Window window = {};
+    windows::window::init(&window, instance, &resolution, &window_resized_callback, &key_down_callback, &key_up_callback);
+
+    // Setup renderer thread
+    PlatformRendererContextData platform_renderer_context_data = {};
+    windows::opengl_context::init(&platform_renderer_context_data, window.hwnd);
+    renderer::setup(&renderer, &platform_renderer_context_data, &resolution);
+    auto render_thread = CreateThread(nullptr, 0, renderer_thread_proc, &renderer, 0, nullptr);
+    
+    while(window.is_open)
     {
-        // Setup renderer
-        ConcreteRenderer opengl_renderer = opengl_renderer::create();
-        Renderer renderer;
-        auto renderer_context = windows::opengl_context::create();
-        renderer::init(&renderer, &opengl_renderer, renderer_allocator, &renderer_context);
-        
-        // Setup engine
-        Timer timer = {};
-        timer.counter = windows::timer::counter;
-        timer.start = windows::timer::start;
-        Engine engine = {};
-        engine::init(&engine, allocator, &renderer.render_interface, &timer);
-        s_engine = &engine;
-
-        // Create window
-        auto resolution = vector2u::create(1280, 720);
-        windows::Window window = {};
-        windows::window::init(&window, instance, &resolution, &window_resized_callback, &key_down_callback, &key_up_callback);
-
-        // Setup renderer thread
-        PlatformRendererContextData platform_renderer_context_data = {};
-        windows::opengl_context::init(&platform_renderer_context_data, window.hwnd);
-        renderer::setup(&renderer, &platform_renderer_context_data, &resolution);
-        auto render_thread = CreateThread(nullptr, 0, renderer_thread_proc, &renderer, 0, nullptr);
-        
-        while(window.is_open)
-        {
-            temp_memory::new_frame();
-            windows::window::dispatch_messages(&window);
-            engine::update_and_render(&engine);
-        }
-
-        engine::deinit(&engine);
-        renderer::stop(&renderer);
-        WaitForSingleObject(render_thread, INFINITE);
-        renderer::deinit(&renderer);
+        temp_memory::new_frame();
+        windows::window::dispatch_messages(&window);
+        engine::update_and_render(&engine);
     }
 
+    engine::deinit(&engine);
+    renderer::stop(&renderer);
+    WaitForSingleObject(render_thread, INFINITE);
+    renderer::deinit(&renderer);
+
+    // Dealloc memory
     memory::deinit_allocator(renderer_allocator);
     memory::deinit_allocator(allocator);
     dealloc(temp_memory_buffer);
