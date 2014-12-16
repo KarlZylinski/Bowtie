@@ -92,7 +92,32 @@ Memory layout:
 v  - Game << maybe have this one separately or before level as a system with a predefined heap allocator which the game can use to it's leisure?
 
 - [ ] Reload dynamically loaded dlls whenever they're touched. Might need to move debug memory load to platform layer so resources don't die?
+- [ ] For allocators:
+    
+    Not saying that we should do this everywhere. Pretty pleased with the global temp memory stuff, but where we want two different allocation strategies, for example for resource loading (autoloading for writing an editor vs permanent memory loading).
 
+    struct Allocator
+    {
+        void* memory;
+        void* (*alloc)(uint64 size, uint64 align);
+        void (*dealloc)(uint64 size, uint64 align);
+        void* (*alloc_with_memory)(void* memory, uint64 size, uint64 align);
+        void (*dealloc_with_memory)(void* memory, uint64 size, uint64 align);
+    }
+
+void* bowtie::alloc(Allocator* allocator, uint64 size, uint32 align = memory::default_align)
+{
+    return allocator->memory != nullptr
+        ? allocator->alloc_with_memory(allocator->memory, size, align)
+        : allocator->alloc(size, align);
+}
+
+void bowtie::dealloc(Allocator* allocator, void* p)
+{
+    return allocator->memory != nullptr
+        ? allocator->dealloc_with_memory(allocator->memory, p)
+        : allocator->dealloc(p);
+}
 
 ## Style
 
