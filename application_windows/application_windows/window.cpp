@@ -131,13 +131,12 @@ namespace window
 
 LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreatedCallback window_created_callback, WindowResizedCallback window_resized_callback,
+void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowResizedCallback window_resized_callback,
           KeyDownCallback key_down_callback, KeyUpCallback key_up_callback)
 {
     w->_key_down_callback = key_down_callback;
     w->_key_up_callback = key_up_callback;
     w->_window_resized_callback = window_resized_callback;
-    w->_window_created_callback = window_created_callback;
     w->resolution = *resolution;
     WNDCLASS wc = {}; 
     wc.lpfnWndProc = window_proc;
@@ -167,11 +166,6 @@ void dispatch_messages(Window*)
     }
 }
 
-void invoke_window_created_callback(Window* w, HWND hwnd, const Vector2u* resolution)
-{
-    w->_window_created_callback(hwnd, resolution);
-}
-
 void invoke_window_resized_callback(Window* w, const Vector2u* resolution)
 {
     w->_window_resized_callback(resolution);
@@ -198,12 +192,6 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 
     switch(message)
     {
-    case WM_CREATE:
-        {
-        Window* created_window = (Window*)(((LPCREATESTRUCT)lparam)->lpCreateParams);
-        invoke_window_created_callback(created_window, hwnd, &created_window->resolution);
-        }
-        return 0;
     case WM_SIZE:
         {
         WORD width = LOWORD(lparam);

@@ -425,7 +425,7 @@ uint32 get_uniform_location(RenderResource shader, const char* name)
     return glGetUniformLocation(shader.handle, name);
 }
 
-void initialize_thread()
+void initialize()
 {
     int extension_load_error = gl3wInit();
     assert(extension_load_error == 0);
@@ -498,7 +498,7 @@ ConcreteRenderer create()
     renderer.destroy_shader = &destroy_shader;
     renderer.draw = &draw;
     renderer.get_uniform_location = &get_uniform_location;
-    renderer.initialize_thread = &initialize_thread;
+    renderer.initialize = &initialize;
     renderer.resize = &resize;
     renderer.set_render_target = &set_render_target;
     renderer.unset_render_target = &unset_render_target;

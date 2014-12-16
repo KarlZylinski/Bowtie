@@ -435,27 +435,6 @@ void wait_for_unprocessed_commands_to_exist(Renderer* r)
     r->_wait_for_unprocessed_commands_to_exist.wait(unprocessed_commands_exists_lock, [&]{return r->_unprocessed_commands_exist; });
 }
 
-void thread(Renderer* r)
-{
-    r->_context.make_current_for_calling_thread(r->_context_data);
-    r->_concrete_renderer.initialize_thread();
-    r->active = true;
-
-    {
-        auto shader_source_option = file::load("rendered_world_combining.shader");
-        assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
-        auto shader_source = &shader_source_option.value;
-        auto split_shader = shader_utils::split_shader(shader_source);
-        r->_rendered_worlds_combining_shader = r->_concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
-    }
-
-    while (r->active)
-    {
-        wait_for_unprocessed_commands_to_exist(r);
-        consume_command_queue(r);
-    }
-}
-
 } // namespace internal
 
 namespace renderer
@@ -471,6 +450,7 @@ void init(Renderer* r, const ConcreteRenderer* concrete_renderer, Allocator* ren
     r->_unprocessed_commands_exist = false;
     r->num_rendered_worlds = 0;
     r->_context = *context;
+    r->_context_data = nullptr;
     const auto unprocessed_commands_num = 64000;
     concurrent_ring_buffer::init(&r->_unprocessed_commands, r->allocator, unprocessed_commands_num, sizeof(RendererCommand));
     render_interface::init(&r->render_interface, &r->_unprocessed_commands, &r->_unprocessed_commands_exist, &r->_unprocessed_commands_exist_mutex, &r->_wait_for_unprocessed_commands_to_exist);
@@ -503,14 +483,31 @@ void deinit(Renderer* r)
     concurrent_ring_buffer::deinit(&r->_unprocessed_commands);
 }
 
-void run(Renderer* r, PlatformRendererContextData* context_data, const Vector2u* resolution)
+void setup(Renderer* r, PlatformRendererContextData* context_data, const Vector2u* resolution)
 {
+    r->active = true;
     r->_context_data = context_data;
     r->resolution = *resolution;
-    r->_thread = std::thread(&internal::thread, r);
 
     // Do stuff here which should happen before anything else.
     render_interface::resize(&r->render_interface, resolution);
+}
+
+void initialize_thread(Renderer* r)
+{
+    r->_context.make_current_for_calling_thread(r->_context_data);
+    r->_concrete_renderer.initialize();
+    auto shader_source_option = file::load("rendered_world_combining.shader");
+    assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
+    auto shader_source = &shader_source_option.value;
+    auto split_shader = shader_utils::split_shader(shader_source);
+    r->_rendered_worlds_combining_shader = r->_concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);
+}
+
+void process_command_queue(Renderer* r)
+{
+    internal::wait_for_unprocessed_commands_to_exist(r);
+    internal::consume_command_queue(r);
 }
 
 void stop(Renderer* r)
@@ -523,7 +520,6 @@ void stop(Renderer* r)
     }
 
     r->_wait_for_unprocessed_commands_to_exist.notify_all();
-    r->_thread.join();
 }
 
 } // namespace renderer

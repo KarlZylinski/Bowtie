@@ -20,7 +20,7 @@ struct Vector2u;
 struct ConcreteRenderer
 {
     // Initialization
-    void (*initialize_thread)();
+    void (*initialize)();
     
     // Resource management
     RenderResource (*create_render_target)(const RenderTexture* texture);

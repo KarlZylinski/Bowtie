@@ -60,7 +60,6 @@ struct Renderer
     uint32 num_rendered_worlds;
     RendererResourceObject _resource_objects[render_resource_handle::num]; // Same amount of maximum resource objects as handles.
     RenderResource _rendered_worlds_combining_shader;
-    std::thread _thread;
     ConcurrentRingBuffer _unprocessed_commands;
     std::mutex _unprocessed_commands_exist_mutex;
     std::condition_variable _wait_for_unprocessed_commands_to_exist;
@@ -71,7 +70,9 @@ namespace renderer
 {
     void init(Renderer* r, const ConcreteRenderer* concrete_renderer_obj, Allocator* renderer_allocator, const RendererContext* context);
     void deinit(Renderer* r);
-    void run(Renderer* r, PlatformRendererContextData* context, const Vector2u* resolution);
+    void process_command_queue(Renderer* renderer);
+    void setup(Renderer* r, PlatformRendererContextData* context, const Vector2u* resolution);
+    void initialize_thread(Renderer* r);
     void stop(Renderer* r);
 };
 
