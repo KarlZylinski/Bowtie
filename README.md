@@ -54,6 +54,44 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Deffered / heightmap lighting
 - [ ] Replace PNG with homebrew DDS loader
 - [ ] Proper assert() and error()
+- [ ] Make engine, game and renderer into dlls. Load them dynamically and fetch func ptrs which are called.
+- [ ] Move all platform related stuff such as creating and waiting for mutices and conditionals to funtion ptrs whicha send along with the memory from the platform layer. Should be able to remove os layer after that.
+- [ ] Remove lua, turn game project into an empty c game project.
+- [ ] Move any static or dynamically allocated chucks of memory to permanent memory.
+- [ ] Look over temp allocator, make it possible to somehow push the head forward more often? Requires one temp allocator per thread? Might be good though, because of mutex perf. issues
+- [ ] The tough one! What to do about the component allocations? Make entity into a regular index and have gaps in component collections? That would be ok if it wasn't for two things: bad locality and marking one entity dirty forces you to move all entities. You could have an indirection table though. It's only the touched ones that are updated and those are at the front so that's ok.
+
+        entity index -> transform index table
+        mark dirty by moving transform index to front
+        the gc stuff might be non-needed, just remove stuff?
+
+Entity can be turned into struct:
+    
+struct Entity
+{
+    unsigned id;
+    World* world;
+}
+
+entity::set_position(Entity* e, const Vector2* pos)
+{
+    transform_component::set_position(e->world->transform_components, e.id, pos);
+}
+
+etc
+
+Have x preallocated entities and the same amount of components of each type. That's no memory anyways.
+
+- [ ] Maybe change world loading a bit to be "after" the systems in the memory map. This goes in line with loading a level and then just rewinding memory
+        the to where the systems left off. 
+
+Memory layout:
+
+|  - Systems
+|  - Level
+v  - Game << maybe have this one separately or before level as a system with a predefined heap allocator which the game can use to it's leisure?
+
+- [ ] Reload dynamically loaded dlls whenever they're touched. Might need to move debug memory load to platform layer so resources don't die?
 
 
 ## Style
