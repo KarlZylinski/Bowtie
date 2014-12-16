@@ -8,7 +8,7 @@ namespace bowtie
 struct CallstackCapturer
 {
     CapturedCallstack(*capture)(uint32 frames_to_skip, void* p);
-    void (*print_callstack)(const char* caption, const CapturedCallstack* captured_callstack);
+    void (*print_callstack)(const wchar* caption, const CapturedCallstack* captured_callstack);
 };
 
 }

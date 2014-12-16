@@ -1,37 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="windows">
-      <UniqueIdentifier>{a3916a7a-b2b6-46a4-b221-059b74c49d4b}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="os\windows\callstack_capturer.cpp">
-      <Filter>windows</Filter>
-    </ClCompile>
-    <ClCompile Include="os\windows\window.cpp">
-      <Filter>windows</Filter>
-    </ClCompile>
-    <ClCompile Include="os\windows\timer.cpp">
-      <Filter>windows</Filter>
-    </ClCompile>
-    <ClCompile Include="os\windows\opengl_context.cpp">
-      <Filter>windows</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="os\windows\callstack_capturer.h">
-      <Filter>windows</Filter>
-    </ClInclude>
-    <ClInclude Include="os\windows\window.h">
-      <Filter>windows</Filter>
-    </ClInclude>
-    <ClInclude Include="os\windows\timer.h">
-      <Filter>windows</Filter>
-    </ClInclude>
     <ClInclude Include="os\renderer_context.h" />
-    <ClInclude Include="os\windows\opengl_context.h">
-      <Filter>windows</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

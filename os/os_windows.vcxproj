@@ -25,16 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os\renderer_context.h" />
-    <ClInclude Include="os\windows\callstack_capturer.h" />
-    <ClInclude Include="os\windows\opengl_context.h" />
-    <ClInclude Include="os\windows\timer.h" />
-    <ClInclude Include="os\windows\window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="os\windows\callstack_capturer.cpp" />
-    <ClCompile Include="os\windows\opengl_context.cpp" />
-    <ClCompile Include="os\windows\timer.cpp" />
-    <ClCompile Include="os\windows\window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE0CF23B-FEC0-4B55-A8DF-D901D7BD9B73}</ProjectGuid>

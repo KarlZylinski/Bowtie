@@ -20,6 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_windows\application_windows.cpp" />
+    <ClCompile Include="application_windows\callstack_capturer.cpp" />
+    <ClCompile Include="application_windows\opengl_context.cpp" />
+    <ClCompile Include="application_windows\timer.cpp" />
+    <ClCompile Include="application_windows\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine_windows.vcxproj">
@@ -40,6 +44,12 @@
     <ProjectReference Include="..\renderer\renderer_windows.vcxproj.vcxproj">
       <Project>{d6836398-0790-4b6d-8a0f-e299f5e306fc}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="application_windows\callstack_capturer.h" />
+    <ClInclude Include="application_windows\opengl_context.h" />
+    <ClInclude Include="application_windows\timer.h" />
+    <ClInclude Include="application_windows\window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CD931A2C-E99D-44F2-9E23-0E6B6916A213}</ProjectGuid>

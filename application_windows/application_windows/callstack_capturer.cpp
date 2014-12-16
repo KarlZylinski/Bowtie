@@ -24,7 +24,7 @@ CapturedCallstack capture(uint32 frames_to_skip, void* p)
     #endif
 }    
 
-void print_callstack(const char* caption, const CapturedCallstack* captured_callstack)
+void print_callstack(const wchar* caption, const CapturedCallstack* captured_callstack)
 {
     #if defined(_WIN32)
         HANDLE process = GetCurrentProcess();
@@ -33,7 +33,7 @@ void print_callstack(const char* caption, const CapturedCallstack* captured_call
         symbol->MaxNameLen = 255;
         symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
-        char* callstack_str = (char*)malloc(symbol->MaxNameLen * 64);
+        auto callstack_str = (wchar*)malloc(symbol->MaxNameLen * 64);
         uint32 callstack_str_size = 0;
         for (uint32 i = 0; i < captured_callstack->num_frames; i++ )
         {

@@ -4,12 +4,12 @@
 #include <base/malloc_allocator.h>
 #include <base/memory.h>
 #include <opengl_renderer/opengl_renderer.h>
-#include <os/windows/callstack_capturer.h>
-#include <os/windows/window.h>
-#include <os/windows/opengl_context.h>
+#include "callstack_capturer.h"
+#include "window.h"
+#include "opengl_context.h"
 #include <renderer/renderer.h>
 #include <engine/timer.h>
-#include <os/windows/timer.h>
+#include "timer.h"
 
 using namespace bowtie;
 

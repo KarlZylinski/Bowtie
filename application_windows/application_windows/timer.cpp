@@ -1,5 +1,3 @@
-
-#ifdef _WIN32
 #include "timer.h"
 
 #include <Windows.h>
@@ -38,5 +36,3 @@ real32 counter()
 } // namespace timer
 } // namespace windows
 } // namespace bowtie
-
-#endif

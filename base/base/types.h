@@ -20,5 +20,6 @@ typedef unsigned int uint32;
 typedef unsigned long long uint64;
 typedef float real32;
 typedef double real64;
+typedef wchar_t wchar;
 static const uint32 NotInitialized = 0;
 }

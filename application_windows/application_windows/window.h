@@ -1,4 +1,3 @@
-#ifdef _WIN32
 #pragma once
 
 #include <Windows.h>
@@ -45,5 +44,3 @@ namespace window
 }
 
 } // namespace bowtie
-
-#endif

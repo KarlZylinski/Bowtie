@@ -1,4 +1,3 @@
-#ifdef _WIN32
 #include "window.h"
 #include <cassert>
 #include <stdio.h>
@@ -144,7 +143,7 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreat
     wc.lpfnWndProc = window_proc;
     wc.hInstance = instance;
     wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
-    wc.lpszClassName = "Bowtie";
+    wc.lpszClassName = L"Bowtie";
     wc.style = CS_OWNDC;
     assert(RegisterClass(&wc) && "Failed to register windows window class");
     w->is_open = true;
@@ -152,7 +151,7 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowCreat
     int32 h_border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) + border_width;
     int32 v_border_thickness = GetSystemMetrics(SM_CYSIZEFRAME) + border_width;
     int32 caption_thickness = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    HWND hwnd = CreateWindow("Bowtie", "Bowtie", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, resolution->x + 2 * h_border_thickness, resolution->y + 2 * v_border_thickness + caption_thickness, 0, 0, instance, w);
+    HWND hwnd = CreateWindow(L"Bowtie", L"Bowtie", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, resolution->x + 2 * h_border_thickness, resolution->y + 2 * v_border_thickness + caption_thickness, 0, 0, instance, w);
     w->hwnd = hwnd;
     SetWindowLong(hwnd, GWLP_USERDATA, (long)w);
 }
@@ -233,5 +232,3 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 } // namespace windows
 
 } // namespace bowtie
-
-#endif
