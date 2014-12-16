@@ -1,14 +1,11 @@
 #include <engine/engine.h>
-#include <engine/resource_store.h>
-#include <base/vector.h>
 #include <base/malloc_allocator.h>
-#include <base/memory.h>
 #include <opengl_renderer/opengl_renderer.h>
+#include <renderer/renderer.h>
+#include <engine/timer.h>
 #include "callstack_capturer.h"
 #include "window.h"
 #include "opengl_context.h"
-#include <renderer/renderer.h>
-#include <engine/timer.h>
 #include "timer.h"
 
 using namespace bowtie;

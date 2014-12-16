@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClInclude Include="os\renderer_context.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="os\dummy.cpp" />
+  </ItemGroup>
 </Project>

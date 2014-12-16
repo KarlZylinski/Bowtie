@@ -26,6 +26,9 @@
   <ItemGroup>
     <ClInclude Include="os\renderer_context.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="os\dummy.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE0CF23B-FEC0-4B55-A8DF-D901D7BD9B73}</ProjectGuid>
     <RootNamespace>os</RootNamespace>
@@ -101,6 +104,8 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
       <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
