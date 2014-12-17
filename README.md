@@ -53,7 +53,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [x] Move geometry generation to renderer
 - [ ] Deffered / heightmap lighting
 - [ ] Replace PNG with homebrew DDS loader
-- [ ] Proper assert() and error()
+- [x] Proper assert() and error()
 - [ ] Make engine, game and renderer into dlls. Load them dynamically and fetch func ptrs which are called.
 - [ ] Move all platform related stuff such as creating and waiting for mutices and conditionals to funtion ptrs whicha send along with the memory from the platform layer. Should be able to remove os layer after that.
 - [ ] Remove lua, turn game project into an empty c game project.
