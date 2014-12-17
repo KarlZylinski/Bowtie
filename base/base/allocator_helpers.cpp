@@ -2,7 +2,6 @@
 #include "memory.h"
 #include "callstack_capturer.h"
 
-
 namespace bowtie
 {
 
