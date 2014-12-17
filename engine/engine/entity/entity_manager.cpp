@@ -1,9 +1,7 @@
 #pragma once
-
 #include "entity_manager.h"
 #include <base/vector.h>
 #include <base/memory.h>
-#include <cassert>
 
 namespace bowtie
 {
@@ -28,9 +26,10 @@ uint32 entity_generation(Entity e)
 
 uint32 get_next_index(EntityManager* m)
 {
-    if (m->index_holes.size == 0) {
+    if (m->index_holes.size == 0)
+    {
         uint32 new_index = ++m->last_entity_index;;
-        assert(new_index < (1 << entity_generation_bits));
+        Assert(new_index < (1 << entity_generation_bits), "Invalid entity handle created");
         return new_index; 
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "image.h"
-#include "render_resource_handle.h"
+#include "renderer/render_resource_handle.h"
 
 namespace bowtie
 {

@@ -1,17 +1,16 @@
 #include "opengl_renderer.h"
-#include <cassert>
 #include <base/vector.h>
 #include <base/matrix4.h>
 #include <engine/view.h>
 #include <engine/rect.h>
 #include <engine/timer.h>
-#include <renderer/render_component.h>
-#include <renderer/render_material.h>
-#include <renderer/render_target.h>
-#include <renderer/render_texture.h>
-#include <renderer/render_world.h>
-#include <renderer/render_resource_table.h>
-#include <renderer/constants.h>
+#include <engine/renderer/render_component.h>
+#include <engine/renderer/render_material.h>
+#include <engine/renderer/render_target.h>
+#include <engine/renderer/render_texture.h>
+#include <engine/renderer/render_world.h>
+#include <engine/renderer/render_resource_table.h>
+#include <engine/renderer/constants.h>
 #include "gl3w.h"
 
 namespace bowtie
@@ -41,7 +40,7 @@ GLPixelFormat gl_pixel_format(PixelFormat pixel_format)
         gl_pixel_format.format = GL_RGBA;
         gl_pixel_format.internal_format = GL_RGBA;
         break;
-    default: assert(!"Unknown pixel format"); break;
+    default: Error("Unknown pixel format"); break;
     }
 
     return gl_pixel_format;
@@ -81,7 +80,7 @@ void combine_rendered_worlds(RenderResource rendered_worlds_combining_shader, Re
 
     auto quad = create_geometry_internal((void*)fullscreen_quad_data, sizeof(fullscreen_quad_data));
     glUseProgram(shader);
-    assert(num_rendered_worlds <= renderer::max_rendered_worlds);
+    Assert(num_rendered_worlds <= renderer::max_rendered_worlds, "Rendered too many worlds");
     GLuint texture_sampler_id = glGetUniformLocation(shader, "texture_samplers");
 
     for (uint32 i = 0; i < num_rendered_worlds; ++i)
@@ -145,7 +144,7 @@ GLuint compile_glsl(const char* shader_source, GLenum shader_type)
     glCompileShader(result);
     GLint status = 0;
     glGetShaderiv(result, GL_COMPILE_STATUS, &status);
-    assert(status && "Compilation of shader failed.");
+    Assert(status, "Compilation of shader failed.");
     return result;
 }
 
@@ -160,7 +159,7 @@ GLuint link_glsl(const GLuint* shaders, uint32 shader_count, bool delete_shaders
     glLinkProgram(program);
     GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
-    assert(status && "Failed linking shader program");
+    Assert(status, "Failed linking shader program");
 
     if (delete_shaders)
     {
@@ -168,11 +167,11 @@ GLuint link_glsl(const GLuint* shaders, uint32 shader_count, bool delete_shaders
             glDeleteShader(shaders[i]);
     }
 
-    assert(glIsProgram(program));
+    Assert(glIsProgram(program), "Shader program is invalid");
     glValidateProgram(program);
     GLint validation_status;
     glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
-    assert(validation_status && "Failed to validate program");
+    Assert(validation_status, "Failed to validate program");
 
     return program;
 }
@@ -181,8 +180,8 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
 {
     GLuint vertex_shader = compile_glsl(vertex_source, GL_VERTEX_SHADER);
     GLuint fragment_shader = compile_glsl(fragment_source, GL_FRAGMENT_SHADER);
-    assert(vertex_shader != 0 && "Failed compiling vertex shader");
-    assert(fragment_shader != 0 && "Failed compiling fragments shader");
+    Assert(vertex_shader != 0, "Failed compiling vertex shader");
+    Assert(fragment_shader != 0, "Failed compiling fragments shader");
     GLuint shaders[] = { vertex_shader, fragment_shader };
     GLuint program = link_glsl(shaders, 2, true);
 
@@ -194,8 +193,7 @@ RenderResource create_shader(const char* vertex_source, const char* fragment_sou
         printf("%s", buf);
     }
 
-    assert(program != 0 && "Failed to link glsl shader");
-
+    Assert(program != 0, "Failed to link glsl shader");
     return render_resource::create_handle(program);
 }
 
@@ -245,7 +243,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
     auto model_view_matrix = view_matrix;
     auto material = (RenderMaterial*)render_resource_table::lookup(resource_table, components[start]->material).object;
     auto shader = render_resource_table::lookup(resource_table, material->shader).handle;
-    assert(glIsProgram(shader) && "Invalid shader program");
+    Assert(glIsProgram(shader), "Invalid shader program");
     glUseProgram(shader);
     auto view_resolution_ratio = view->size.y / resolution->y;
     auto resoultion_real32 = vector2::create((real32)resolution->x, (real32)resolution->y);
@@ -302,7 +300,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
             glUniform1i(uniform->location, 0);
         } break;
         default:
-            assert(!"Unknown uniform type");
+            Error("Unknown uniform type");
         }
     }
 
@@ -311,7 +309,7 @@ void draw_batch(uint32 start, uint32 size, RenderComponent** components, const V
     const uint32 rect_buffer_num_elements = 54;
     const uint32 rect_buffer_size = rect_buffer_num_elements * sizeof(real32);
     const uint32 total_buffer_size = rect_buffer_size * size;
-    assert(total_buffer_size <= draw_buffer_size && "Draw buffer size exceeded limit. Increase in opengl_renderer.cpp");
+    Assert(total_buffer_size <= draw_buffer_size, "Draw buffer size exceeded limit. Increase in opengl_renderer.cpp");
 
     for (uint32 i = start; i < start + size; ++i)
     {
@@ -428,7 +426,7 @@ uint32 get_uniform_location(RenderResource shader, const char* name)
 void initialize()
 {
     int extension_load_error = gl3wInit();
-    assert(extension_load_error == 0);
+    Assert(extension_load_error == 0, "Failed loading GL extensions");
 
     GLuint vao;
     glGenVertexArrays(1, &vao);

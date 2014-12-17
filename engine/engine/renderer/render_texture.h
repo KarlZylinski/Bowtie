@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/image.h>
+#include "../image.h"
 #include <base/vector2u.h>
 #include "render_resource.h"
 

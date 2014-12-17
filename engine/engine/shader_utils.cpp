@@ -1,5 +1,4 @@
 #include "shader_utils.h"
-#include <cassert>
 #include <base/file.h>
 #include <base/memory.h>
 #include <base/string_utils.h>
@@ -30,7 +29,7 @@ SplitShader split_shader(const LoadedFile* shader_source)
     }
 
     ++fragment_start_index;
-    assert(matched_index == delimiter_len && fragment_start_index <= shader_len && "Could not find fragment part of shader.");
+    Assert(matched_index == delimiter_len && fragment_start_index <= shader_len, "Could not find fragment part of shader.");
 
     uint32 vertex_shader_source_len = fragment_start_index - delimiter_len;
     char* vertex_shader_source = (char*)temp_memory::alloc_raw(vertex_shader_source_len + 1);

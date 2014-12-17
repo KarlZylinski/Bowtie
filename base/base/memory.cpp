@@ -2,7 +2,6 @@
 #include <cstring>
 #include <cstdlib>
 #include "allocator_helpers.h"
-#include <cassert>
 #include <mutex>
 
 namespace bowtie
@@ -28,8 +27,8 @@ void deinit_allocator(Allocator* a)
     #endif
 
     free(a->name);
-    assert(a->total_allocations == 0);
-    assert(a->total_allocated == 0);
+    Assert(a->total_allocations == 0, "Allocator not empty on deinit");
+    Assert(a->total_allocated == 0, "Allocator not empty on deinit");
 }
 
 }
@@ -39,8 +38,8 @@ namespace memory
 
 void init(PermanentMemory* memory, void* buffer, uint32 size)
 {
-    assert(size > 0);
-    assert(buffer != nullptr);
+    Assert(size > 0, "Memory block passet to memory::init is null");
+    Assert(buffer != nullptr, "Memory block passed to memory::init is null");
     memory->start = (uint8*)buffer;
     memory->end = memory->start + size;
     memory->head = memory->start;
@@ -56,7 +55,7 @@ void* alloc(PermanentMemory* memory, uint32 size, uint32 align)
 void* alloc_raw(PermanentMemory* memory, uint32 size, uint32 align)
 {
     auto total_size = size + align;
-    assert(memory->head + total_size <= memory->end);
+    Assert(memory->head + total_size <= memory->end, "Out of memory in permanent allocator");
     auto p = memory::align_forward(memory->head, memory::default_align);
     memory->head += total_size;
     return p;
@@ -101,11 +100,11 @@ void* alloc_raw(uint64 size, uint32 align)
 
     if (head + total_size > end)
     {
-        assert(head_at_frame_start < head + total_size);
+        Assert(head_at_frame_start < head + total_size, "Allocation will go past where head was at frame start");
         head = start;
     }
     
-    assert(head_at_frame_start <= head || head_at_frame_start > head + total_size);
+    Assert(head_at_frame_start <= head || head_at_frame_start > head + total_size, "Allocation will go past where head was at frame start");
     auto p = memory::align_forward(head, memory::default_align);
     head += total_size;
     return p;
@@ -131,7 +130,7 @@ void* alloc(uint32 size, uint32 align)
 void* alloc_raw(uint32 size, uint32 align)
 {
     #ifndef _DEBUG
-        assert(!"Trying to use debug allocation in non-debug mode.");
+        Assert(!"Trying to use debug allocation in non-debug mode.");
     #endif
 
     auto total_size = size + align;
@@ -141,7 +140,7 @@ void* alloc_raw(uint32 size, uint32 align)
 void dealloc(void* p)
 {
     #ifndef _DEBUG
-        assert(!"Trying to use debug allocation in non-debug mode.");
+        Assert(!"Trying to use debug allocation in non-debug mode.");
     #endif
 
     free(p);

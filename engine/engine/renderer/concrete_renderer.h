@@ -1,8 +1,8 @@
 #pragma once
 
-#include <engine/render_resource_handle.h>
-#include <engine/image.h>
 #include <base/collection_types.h>
+#include "render_resource_handle.h"
+#include "../image.h"
 #include "render_resource.h"
 
 namespace bowtie

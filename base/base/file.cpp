@@ -3,7 +3,6 @@
 #include "resource_path.h"
 #include <stdio.h>
 #include <string.h>
-#include <cassert>
 
 namespace bowtie
 {

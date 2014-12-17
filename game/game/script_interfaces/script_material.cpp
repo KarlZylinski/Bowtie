@@ -1,8 +1,8 @@
 #include "script_material.h"
 
 #include <engine/material.h>
-#include <engine/render_interface.h>
-#include <engine/render_resource_handle.h>
+#include <engine/renderer/render_interface.h>
+#include <engine/renderer/render_resource_handle.h>
 #include <base/murmur_hash.h>
 #include <lua.hpp>
 #include "script_interface_helpers.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render_resource_handle.h"
+#include "renderer/render_resource_handle.h"
 #include <base/vector2u.h>
 
 namespace bowtie

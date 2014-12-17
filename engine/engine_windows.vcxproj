@@ -31,9 +31,25 @@
     <ClInclude Include="engine\material.h" />
     <ClInclude Include="engine\png.h" />
     <ClInclude Include="engine\rect.h" />
+    <ClInclude Include="engine\renderer\concrete_renderer.h" />
+    <ClInclude Include="engine\renderer\constants.h" />
+    <ClInclude Include="engine\renderer\renderer.h" />
+    <ClInclude Include="engine\renderer\renderer_command.h" />
+    <ClInclude Include="engine\renderer\render_component.h" />
+    <ClInclude Include="engine\renderer\render_fence.h" />
+    <ClInclude Include="engine\renderer\render_interface.h" />
+    <ClInclude Include="engine\renderer\render_material.h" />
+    <ClInclude Include="engine\renderer\render_resource.h" />
+    <ClInclude Include="engine\renderer\render_resource_handle.h" />
+    <ClInclude Include="engine\renderer\render_resource_table.h" />
+    <ClInclude Include="engine\renderer\render_resource_types.h" />
+    <ClInclude Include="engine\renderer\render_target.h" />
+    <ClInclude Include="engine\renderer\render_texture.h" />
+    <ClInclude Include="engine\renderer\render_uniform.h" />
+    <ClInclude Include="engine\renderer\render_world.h" />
+    <ClInclude Include="engine\renderer\uniform.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\render_fence.h" />
-    <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\resource_store.h" />
@@ -56,7 +72,12 @@
     <ClCompile Include="engine\keyboard.cpp" />
     <ClCompile Include="engine\png.cpp" />
     <ClCompile Include="engine\rect.cpp" />
-    <ClCompile Include="engine\render_interface.cpp" />
+    <ClCompile Include="engine\renderer\renderer.cpp" />
+    <ClCompile Include="engine\renderer\render_interface.cpp" />
+    <ClCompile Include="engine\renderer\render_material.cpp" />
+    <ClCompile Include="engine\renderer\render_resource_table.cpp" />
+    <ClCompile Include="engine\renderer\render_uniform.cpp" />
+    <ClCompile Include="engine\renderer\render_world.cpp" />
     <ClCompile Include="engine\resource_store.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
     <ClCompile Include="engine\view.cpp" />
@@ -144,7 +165,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";"$(BOWTIE_SOURCE)/base/base/assert.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>

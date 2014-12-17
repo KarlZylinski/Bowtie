@@ -1,10 +1,8 @@
 #include "world.h"
-
-#include <cassert>
 #include <base/vector.h>
 #include <base/quad.h>
 #include "material.h"
-#include "render_interface.h"
+#include "renderer/render_interface.h"
 #include "resource_store.h"
 #include "timer.h"
 
@@ -112,7 +110,7 @@ void init(World* w, Allocator* allocator, RenderInterface* render_interface, Res
     w->allocator = allocator;
     w->render_interface = render_interface;
     auto default_material = resource_store::load(resource_store, ResourceType::Material, "default.material");
-    assert(default_material.is_some && "Default material default.material is missing.");
+    Assert(default_material.is_some, "Default material default.material is missing.");
     w->default_material = ((Material*)default_material.value)->render_handle;
     sprite_renderer_component::init(&w->sprite_renderer_components, allocator);
     transform_component::init(&w->transform_components, allocator);

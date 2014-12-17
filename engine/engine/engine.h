@@ -3,11 +3,13 @@
 #include "keyboard.h"
 #include "resource_store.h"
 #include "entity/entity_manager.h"
+#include "renderer/renderer.h"
 
 namespace bowtie
 {
 
 struct Allocator;
+struct RendererContext;
 struct RenderInterface;
 struct World;
 struct Timer;
@@ -18,7 +20,7 @@ struct Engine
     Allocator* allocator;
     EntityManager entity_manager;
     ResourceStore resource_store;
-    RenderInterface* render_interface;
+    Renderer renderer;
     Keyboard keyboard;
     Game _game;
     real32 _time_elapsed_previous_frame;
@@ -28,7 +30,8 @@ struct Engine
 
 namespace engine
 {
-    void init(Engine* e, Allocator* allocator, RenderInterface* render_interface, Timer* timer);
+    void init(Engine* e, Allocator* allocator, ConcreteRenderer* concrete_renderer,
+              RendererContext* renderer_context, Allocator* renderer_allocator, Timer* timer);
     void deinit(Engine* e);
     World* create_world(Engine* e);
     void destroy_world(Engine* e, World* world);

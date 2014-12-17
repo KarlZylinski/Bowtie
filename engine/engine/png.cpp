@@ -1,10 +1,7 @@
 #include "png.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <cassert>
-
 #include <base/file.h>
 #include <base/memory.h>
 #include "resource_path.h"
@@ -503,7 +500,7 @@ int decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width,
 UncompressedTexture load(const char* filename)
 {
     auto png_file_option = file::load(filename);
-    assert(png_file_option.is_some && "Failed loading texture");
+    Assert(png_file_option.is_some, "Failed loading texture");
     auto png_file = &png_file_option.value;
     std::vector<unsigned char> decoded_png;
     unsigned long width, height;

@@ -3,24 +3,23 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-
-#include <engine/renderer_command.h>
-#include <engine/render_interface.h>
-#include <engine/render_resource_types.h>
 #include <base/collection_types.h>
 #include <base/concurrent_ring_buffer.h>
+#include "renderer_command.h"
+#include "render_interface.h"
+#include "render_resource_types.h"
 #include "render_resource_table.h"
 #include "render_resource.h"
-#include <os/renderer_context.h>
 #include "render_world.h"
 #include "concrete_renderer.h"
 #include "constants.h"
+#include <os/renderer_context.h>
 
 namespace bowtie
 {
 
-struct ConcreteRenderer;
 struct RenderTarget;
+struct PlatformRendererContextData;
 
 struct RendererResourceObject
 {

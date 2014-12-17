@@ -1,5 +1,5 @@
 #pragma once
-#include <engine/uniform.h>
+#include "uniform.h"
 #include <base/vector4.h>
 
 namespace bowtie

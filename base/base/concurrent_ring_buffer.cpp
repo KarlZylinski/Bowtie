@@ -1,6 +1,5 @@
 #include "concurrent_ring_buffer.h"
 #include "memory.h"
-#include <cassert>
 
 namespace bowtie
 {

@@ -41,9 +41,6 @@
     <ProjectReference Include="..\os\os_windows.vcxproj">
       <Project>{ee0cf23b-fec0-4b55-a8df-d901d7bd9b73}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\renderer\renderer_windows.vcxproj.vcxproj">
-      <Project>{d6836398-0790-4b6d-8a0f-e299f5e306fc}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application_windows\callstack_capturer.h" />
@@ -143,7 +140,7 @@
       <AdditionalOptions>/wd4530 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>"$(BOWTIE_SOURCE)/base/base/types.h";"$(BOWTIE_SOURCE)/base/base/assert.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>

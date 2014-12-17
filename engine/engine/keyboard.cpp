@@ -2,7 +2,6 @@
 #include <base/hash.h>
 #include <base/vector.h>
 #include <base/string_utils.h>
-#include <cassert>
 
 namespace bowtie
 {

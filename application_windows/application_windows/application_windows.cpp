@@ -1,7 +1,7 @@
 #include <engine/engine.h>
 #include <base/malloc_allocator.h>
 #include <opengl_renderer/opengl_renderer.h>
-#include <renderer/renderer.h>
+#include <engine/renderer/renderer.h>
 #include <engine/timer.h>
 #include "callstack_capturer.h"
 #include "window.h"
@@ -72,17 +72,15 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
     memory::init_allocator(renderer_allocator, "renederer allocator", &callstack_capturer);
 
     // Setup renderer
-    ConcreteRenderer opengl_renderer = opengl_renderer::create();
-    Renderer renderer;
-    auto renderer_context = windows::opengl_context::create();
-    renderer::init(&renderer, &opengl_renderer, renderer_allocator, &renderer_context);
         
     // Setup engine
     Timer timer = {};
     timer.counter = windows::timer::counter;
     timer.start = windows::timer::start;
+    auto opengl_renderer = opengl_renderer::create();
+    auto renderer_context = windows::opengl_context::create();
     Engine engine = {};
-    engine::init(&engine, allocator, &renderer.render_interface, &timer);
+    engine::init(&engine, allocator, &opengl_renderer, &renderer_context, renderer_allocator, &timer);
     s_engine = &engine;
 
     // Create window
@@ -93,8 +91,8 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
     // Setup renderer thread
     PlatformRendererContextData platform_renderer_context_data = {};
     windows::opengl_context::init(&platform_renderer_context_data, window.hwnd);
-    renderer::setup(&renderer, &platform_renderer_context_data, &resolution);
-    auto render_thread = CreateThread(nullptr, 0, renderer_thread_proc, &renderer, 0, nullptr);
+    renderer::setup(&engine.renderer, &platform_renderer_context_data, &resolution);
+    auto render_thread = CreateThread(nullptr, 0, renderer_thread_proc, &engine.renderer, 0, nullptr);
     
     while(window.is_open)
     {
@@ -104,9 +102,9 @@ int WINAPI WinMain(__in HINSTANCE instance, __in_opt HINSTANCE, __in_opt LPSTR, 
     }
 
     engine::deinit(&engine);
-    renderer::stop(&renderer);
+    renderer::stop(&engine.renderer);
     WaitForSingleObject(render_thread, INFINITE);
-    renderer::deinit(&renderer);
+    renderer::deinit(&engine.renderer);
 
     // Dealloc memory
     memory::deinit_allocator(renderer_allocator);

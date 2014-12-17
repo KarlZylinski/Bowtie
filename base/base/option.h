@@ -32,7 +32,7 @@ template<typename T> Option<T> none()
 
 template<typename T> T get(Option<T> o)
 {
-    assert(o.is_some && "Tried to get value of empty option");
+    Assert(o.is_some, "Tried to get value of empty option");
     return o.value;
 }
 

@@ -1,9 +1,7 @@
 #pragma once
-
 #include "transform_component.h"
 #include <base/vector2.h>
 #include <base/matrix4.h>
-#include <cassert>
 
 namespace bowtie
 {
@@ -175,7 +173,7 @@ void mark_dirty(TransformComponent* c, uint32 index)
         mark_dirty(c, child_iter);
         child_iter = hash::get(&c->header.map, entity); // Index might change when swapping, refetch it.
         auto child_parent = c->data.parent[child_iter];
-        assert(c->data.parent[child_iter] != component::NotAssigned);
+        Assert(c->data.parent[child_iter] != component::NotAssigned, "Swapped parent of transform child, but the parent is invalid after swap");
 
         if (child_iter < child_parent)
         {

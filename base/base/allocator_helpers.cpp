@@ -1,7 +1,7 @@
 #include "allocator_helpers.h"
 #include "memory.h"
 #include "callstack_capturer.h"
-#include <cassert>
+
 
 namespace bowtie
 {
@@ -20,7 +20,7 @@ void add_captured_callstack(CapturedCallstack* callstacks, const CapturedCallsta
         }
     }
 
-    assert(!"Out of callstacks. Increase max_callstacks in memory.cpp.");
+    Error("Out of callstacks. Increase max_callstacks in memory.cpp.");
 }
 
 void remove_captured_callstack(CapturedCallstack* callstacks, void* p)
@@ -33,7 +33,7 @@ void remove_captured_callstack(CapturedCallstack* callstacks, void* p)
         }
     }
 
-    assert(!"Failed to find callstack in remove_captured_callstack.");
+    Error("Failed to find callstack in remove_captured_callstack.");
 }
 
 void ensure_captured_callstacks_unused(CallstackCapturer* callstack_capturer, CapturedCallstack* callstacks)

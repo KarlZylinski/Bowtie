@@ -7,7 +7,6 @@
 #include "script_interface_helpers.h"
 #include "script_console.h"
 #include <engine/rect.h>
-#include <cassert>
 
 namespace bowtie
 {
@@ -88,7 +87,7 @@ int32 set_parent(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
     auto parent = script_interface::to_entity(lua, 2);
-    assert(e.world == parent.world);
+    Assert(e.world == parent.world, "A parent and child transform must be part of the same world");
     transform_component::set_parent(&e.world->transform_components, e.entity, parent.entity);
     return 0;
 }

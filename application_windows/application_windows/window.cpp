@@ -1,5 +1,4 @@
 #include "window.h"
-#include <cassert>
 #include <stdio.h>
 
 namespace bowtie
@@ -144,7 +143,7 @@ void init(Window* w, HINSTANCE instance, const Vector2u* resolution, WindowResiz
     wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
     wc.lpszClassName = L"Bowtie";
     wc.style = CS_OWNDC;
-    assert(RegisterClass(&wc) && "Failed to register windows window class");
+    Assert(RegisterClass(&wc), "Failed to register windows window class");
     w->is_open = true;
     int32 border_width = GetSystemMetrics(SM_CXFIXEDFRAME);
     int32 h_border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) + border_width;

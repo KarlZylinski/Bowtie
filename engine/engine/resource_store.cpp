@@ -13,7 +13,7 @@
 #include "font.h"
 #include "material.h"
 #include "png.h"
-#include "render_interface.h"
+#include "renderer/render_interface.h"
 #include "shader.h"
 #include "shader_utils.h"
 #include "texture.h"
@@ -70,7 +70,7 @@ uniform::Type get_uniform_type_from_str(const char* str)
             return (uniform::Type)i;
     }
 
-    assert(!"Unknown uniform type");
+    Error("Unknown uniform type");
     return uniform::NumUniformTypes;
 }
 
@@ -114,7 +114,7 @@ template<typename T> struct RenderResourcePackage
 RenderResourcePackage<ShaderResourceData> get_shader_resource_data(const char* filename)
 {
     auto shader_source_option = file::load(filename);
-    assert(shader_source_option.is_some && "Failed loading shader source");
+    Assert(shader_source_option.is_some, "Failed loading shader source");
     auto shader_source = &shader_source_option.value;
     auto split_shader = shader_utils::split_shader(shader_source);
 
@@ -195,10 +195,10 @@ Material* load_material(ResourceStore* rs, const char* filename)
         return (Material*)existing.value;
 
     auto material_file_option = file::load(filename);
-    assert(material_file_option.is_some && "Failed loading material.");
+    Assert(material_file_option.is_some, "Failed loading material.");
     auto file = &material_file_option.value;
     auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
-    assert(jzon_result.success && "Failed to parse font");
+    Assert(jzon_result.success, "Failed to parse font");
 
     auto jzon = jzon_result.output;
     auto shader_filename = jzon_get(jzon, "shader")->string_value;
@@ -214,7 +214,7 @@ Material* load_material(ResourceStore* rs, const char* filename)
         auto uniform_json = uniforms_jzon->array_values[i];
         auto uniform_str = uniform_json->string_value;
         auto split_uniform = split(uniform_str, ' ');
-        assert(split_uniform.size >= 2 && "Uniform definition must contain at least type and name.");
+        Assert(split_uniform.size >= 2, "Uniform definition must contain at least type and name.");
         auto type = get_uniform_type_from_str(split_uniform[0]);
 
         UniformResourceData uniform;
@@ -285,10 +285,10 @@ Font* load_font(ResourceStore* rs, const char* filename)
         return (Font*)existing.value;
 
     auto font_option = file::load(filename);
-    assert(font_option.is_some && "Failed loading font");
+    Assert(font_option.is_some, "Failed loading font");
     auto file = &font_option.value;
     auto jzon_result = jzon_parse_custom_allocator((char*)file->data, &jzon_allocator);
-    assert(jzon_result.success && "Failed to parse font");
+    Assert(jzon_result.success, "Failed to parse font");
     auto jzon = jzon_result.output;
     auto texture_filename = jzon_get(jzon, "texture")->string_value;
     auto columns = jzon_get(jzon, "columns")->int_value;
@@ -317,7 +317,7 @@ ResourceType resource_type_from_string(const char* type)
             return (ResourceType)i;
     }
 
-    assert(!"Unknown resource type string");
+    Error("Unknown resource type string");
     return ResourceType::NumResourceTypes;
 }
 
@@ -373,7 +373,7 @@ void reload(ResourceStore* rs, ResourceType type, const char* filename)
             }
             break;
         default:
-            assert(!"Tried to reload unsupported resource type");
+            Error("Tried to reload unsupported resource type");
             break;
     }
 }

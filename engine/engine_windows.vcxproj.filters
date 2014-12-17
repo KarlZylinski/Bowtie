@@ -8,7 +8,6 @@
     <ClCompile Include="engine\png.cpp" />
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\shader_utils.cpp" />
-    <ClCompile Include="engine\render_interface.cpp" />
     <ClCompile Include="engine\entity\entity_manager.cpp">
       <Filter>entity</Filter>
     </ClCompile>
@@ -23,6 +22,24 @@
     </ClCompile>
     <ClCompile Include="engine\rect.cpp" />
     <ClCompile Include="engine\resource_store.cpp" />
+    <ClCompile Include="engine\renderer\render_resource_table.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\renderer\render_uniform.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\renderer\render_world.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\renderer\renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\renderer\render_interface.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\renderer\render_material.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.h" />
@@ -39,7 +56,6 @@
     <ClInclude Include="engine\shader_utils.h" />
     <ClInclude Include="engine\render_resource_types.h" />
     <ClInclude Include="engine\render_fence.h" />
-    <ClInclude Include="engine\render_interface.h" />
     <ClInclude Include="engine\renderer_command.h" />
     <ClInclude Include="engine\render_resource_handle.h" />
     <ClInclude Include="engine\material.h" />
@@ -61,6 +77,57 @@
       <Filter>entity\components</Filter>
     </ClInclude>
     <ClInclude Include="engine\resource_store.h" />
+    <ClInclude Include="engine\renderer\render_resource.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_resource_handle.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_resource_table.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_resource_types.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_target.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_texture.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_uniform.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_world.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\renderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\renderer_command.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\uniform.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\concrete_renderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\constants.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_component.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_fence.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_interface.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\renderer\render_material.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="entity">
@@ -68,6 +135,9 @@
     </Filter>
     <Filter Include="entity\components">
       <UniqueIdentifier>{752efeed-de0b-4e0f-b436-efee5bc26cd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{ee7b5e01-171c-4082-821b-5f210e146638}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

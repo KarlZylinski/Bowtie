@@ -1,5 +1,4 @@
 #include "script_interface_helpers.h"
-#include <cassert>
 #include <lua.hpp>
 #include "script_console.h"
 #include <base/murmur_hash.h>
@@ -120,7 +119,7 @@ Color to_color(lua_State* lua, int32 index)
 
 Vector2 to_vector2(lua_State* lua, int32 index)
 {
-    assert(lua_istable(lua, index));
+    Assert(lua_istable(lua, index), "There's no table at passed index");
 
     auto x_value = (real32)get_field(lua, index, "x");
     auto y_value = (real32)get_field(lua, index, "y");
@@ -130,7 +129,7 @@ Vector2 to_vector2(lua_State* lua, int32 index)
 
 Vector2i to_vector2i(lua_State* lua, int32 index)
 {
-    assert(lua_istable(lua, index));
+    Assert(lua_istable(lua, index), "There's no table at passed index");
 
     auto x_value = (int)get_field(lua, index, "x");
     auto y_value = (int)get_field(lua, index, "y");
@@ -140,7 +139,7 @@ Vector2i to_vector2i(lua_State* lua, int32 index)
 
 Vector2u to_vector2u(lua_State* lua, int32 index)
 {
-    assert(lua_istable(lua, index));
+    Assert(lua_istable(lua, index), "There's no table at passed index");
 
     auto x_value = (uint32)get_field(lua, index, "x");
     auto y_value = (uint32)get_field(lua, index, "y");
@@ -150,7 +149,7 @@ Vector2u to_vector2u(lua_State* lua, int32 index)
 
 Vector4 to_vector4(lua_State* lua, int32 index)
 {
-    assert(lua_istable(lua, index));
+    Assert(lua_istable(lua, index), "There's no table at passed index");
 
     auto x_value = (real32)get_field(lua, index, "x");
     auto y_value = (real32)get_field(lua, index, "y");
@@ -162,7 +161,7 @@ Vector4 to_vector4(lua_State* lua, int32 index)
 
 uint64 to_hash(lua_State* lua, int32 index)
 {
-    assert(lua_isstring(lua, index));
+    Assert(lua_isstring(lua, index), "There's no table at passed index");
 
     return hash_str(lua_tostring(lua, index));
 }

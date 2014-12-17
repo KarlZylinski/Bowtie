@@ -1,7 +1,6 @@
 #include "malloc_allocator.h"
 #include "memory_types.h"
 #include <cstdlib>
-#include <cassert>
 #include "callstack_capturer.h"
 #include <cstring>
 #include "allocator_helpers.h"
@@ -35,15 +34,15 @@ inline void dealloc(Allocator* a, void* p)
         return;
 
     auto h = allocator_helpers::header(p);
-    assert(a->total_allocated >= h->size);
+    Assert(a->total_allocated >= h->size, "Trying to deallocate more memory than totally allocated.");
 
     #if defined(TRACING)
-        assert(h->tracing_marker == TRACING_MARKER);
+        Assert(h->tracing_marker == TRACING_MARKER, "Tracing is active, but could not find TRACING_MARKER in allocation header.");
         h->tracing_marker = 0;
     #endif
-
+    
+    Assert(a->total_allocations - 1 < a->total_allocations && a->total_allocations - 1 >= 0, "Trying to deallocate, but there are no current allocations.");
     --a->total_allocations;
-    assert(a->total_allocations >= 0);
     a->total_allocated -= h->size;
 
     #if defined(TRACING)

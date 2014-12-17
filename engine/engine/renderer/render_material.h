@@ -1,5 +1,5 @@
 #pragma once
-#include <engine/render_resource_handle.h>
+#include "render_resource_handle.h"
 #include "render_uniform.h"
 
 namespace bowtie

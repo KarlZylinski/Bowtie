@@ -1,17 +1,17 @@
 #include "render_interface.h"
 
-#include <cassert>
+
 #include <condition_variable>
 #include <mutex>
 
 #include <base/memory.h>
 
-#include "image.h"
-#include "material.h"
+#include "../image.h"
+#include "../material.h"
 #include "render_fence.h"
-#include "resource_store.h"
-#include "texture.h"
-#include "world.h"
+#include "../resource_store.h"
+#include "../texture.h"
+#include "../world.h"
 #include <base/concurrent_ring_buffer.h>
 
 namespace bowtie
@@ -52,7 +52,7 @@ RendererCommand create_or_update_resource_renderer_command(RenderResourceData* r
         memcpy(copied_resource->data, resource->data, sizeof(RenderWorldResourceData));
         break;
     default:
-        assert(!"Unknown resource data type.");
+        Error("Unknown resource data type.");
         break;
     }
 
@@ -107,7 +107,7 @@ void update_resource(RenderInterface* ri, RenderResourceData* resource, void* dy
 
 RenderResourceHandle create_handle(RenderResourceHandle* free_handles, uint32* num_free_handles)
 {
-    assert(*num_free_handles > 0 && "Out of render resource handles!");
+    Assert(*num_free_handles > 0, "Out of render resource handles!");
     RenderResourceHandle handle = free_handles[*num_free_handles - 1];
     --*num_free_handles;
     return handle;
@@ -140,14 +140,14 @@ RenderResourceHandle create_handle(RenderInterface* ri)
 
 void free_handle(RenderInterface* ri, RenderResourceHandle handle)
 {
-    assert(handle < render_resource_handle::num && "Trying to free render resource handle with a higher value than render_resource_handle::num.");
+    Assert(handle < render_resource_handle::num, "Trying to free render resource handle with a higher value than render_resource_handle::num.");
     ri->_free_handles[ri->num_free_handles] = handle;
     ++ri->num_free_handles;
 }
 
 void create_texture(RenderInterface* ri, Texture* texture)
 {
-    assert(texture->render_handle == NotInitialized && "Trying to create already created texture");
+    Assert(texture->render_handle == NotInitialized, "Trying to create already created texture");
     auto image = texture->image;
     auto texture_resource = render_resource_data::create(RenderResourceData::Texture);
     auto trd = TextureResourceData();
@@ -183,7 +183,7 @@ void update_resource(RenderInterface* ri, RenderResourceData* resource)
 
 void create_render_world(RenderInterface* ri, World* world)
 {
-    assert(world->render_handle == NotInitialized);
+    Assert(world->render_handle == NotInitialized, "Render world is already initialized");
     auto render_world_data = render_resource_data::create(RenderResourceData::World);
     RenderWorldResourceData rwrd;
     rwrd.handle = internal::create_handle(ri->_free_handles, &ri->num_free_handles);

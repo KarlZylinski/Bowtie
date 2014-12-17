@@ -1,10 +1,9 @@
 #include "renderer.h"
-
-#include <cassert>
 #include <cstdlib>
-#include <engine/render_fence.h>
-#include <engine/shader_utils.h>
-#include <engine/entity/components/sprite_renderer_component.h>
+#include "render_fence.h"
+#include "../shader_utils.h"
+#include "../entity/components/sprite_renderer_component.h"
+#include "../material.h"
 #include <base/vector.h>
 #include <base/file.h>
 #include <base/murmur_hash.h>
@@ -14,7 +13,6 @@
 #include "render_target.h"
 #include "render_texture.h"
 #include "render_component.h"
-#include <engine/material.h>
 
 namespace bowtie
 {
@@ -109,7 +107,7 @@ SingleCreatedResource create_material(Allocator* allocator, ConcreteRenderer* co
                 render_uniform::set_value(&uniform, value, sizeof(Vector4));
                 break;
             default:
-                assert(!"Unkonwn uniform type.");
+                Error("Unkonwn uniform type.");
                 break;
             }
         }
@@ -128,7 +126,7 @@ RenderTarget* find_free_render_target_slot(RenderTarget* render_targets)
             return render_targets + i;
     }
 
-    assert("Out of render targets");
+    Error("Out of render targets");
     return nullptr;
 }
 
@@ -197,7 +195,7 @@ void draw(ConcreteRenderer* concrete_renderer, const Vector2u* resolution, Rende
     concrete_renderer->set_render_target(resolution, render_world->render_target.handle);
     concrete_renderer->clear();
     concrete_renderer->draw(view, render_world, resolution, time, resource_table);
-    assert(*num_rendered_worlds < renderer::max_rendered_worlds);
+    Assert(*num_rendered_worlds < renderer::max_rendered_worlds, "Rendererd too many worlds");
     rendered_worlds[*num_rendered_worlds] = render_world;
     ++(*num_rendered_worlds);
 }
@@ -252,7 +250,7 @@ CreatedResources create_resources(Renderer* r, RenderResourceData::Type type, vo
 
         return cr;
     } break;
-    default: assert(!"Unknown render resource type"); return CreatedResources();
+    default: Error("Unknown render resource type"); return CreatedResources();
     }
 }
 
@@ -300,7 +298,7 @@ UpdatedResources update_resources(Renderer* r, RenderResourceData::Type type, vo
 
             return ur;
         }
-        default: assert(!"Unknown render resource type"); return UpdatedResources();
+        default: Error("Unknown render resource type"); return UpdatedResources();
     }
 }
 
@@ -331,7 +329,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
                 auto handle = created_resources.handles[i];
                 auto resource = created_resources.resources[i];
 
-                assert(resource.type != RenderResourceType::NotInitialized && "Failed to load resource!");
+                Assert(resource.type != RenderResourceType::NotInitialized, "Failed to load resource!");
 
                 // Map handle from outside of renderer (RenderResourceHandle) to internal handle (RenderResource).
                 render_resource_table::set(r->resource_table, handle, &resource);
@@ -357,7 +355,7 @@ void execute_command(Renderer* r, const RendererCommand* command)
                 auto old_resource = updated_resources.old_resources[i];
                 auto new_resource = updated_resources.new_resources[i];
 
-                assert(new_resource.type != RenderResourceType::NotInitialized && "Failed to load resource!");
+                Assert(new_resource.type != RenderResourceType::NotInitialized, "Failed to load resource!");
 
                 if (old_resource.type == RenderResourceType::Object)
                     memset(r->_resource_objects + handle, 0, sizeof(RendererResourceObject));
@@ -401,13 +399,13 @@ void execute_command(Renderer* r, const RendererCommand* command)
                 render_material::set_uniform_real32_value(material, set_uniform_value_data->uniform_name, *(real32*)command->dynamic_data);
                 break;
             default:
-                assert(!"Unknown uniform type");
+                Error("Unknown uniform type");
                 break;
             }
         } break;
 
         default:
-            assert(!"Command not implemented!");
+            Error("Command not implemented!");
             break;
     }
 }
@@ -498,7 +496,7 @@ void initialize_thread(Renderer* r)
     r->_context.make_current_for_calling_thread(r->_context_data);
     r->_concrete_renderer.initialize();
     auto shader_source_option = file::load("rendered_world_combining.shader");
-    assert(shader_source_option.is_some && "Failed loading rendered world combining shader");
+    Assert(shader_source_option.is_some, "Failed loading rendered world combining shader");
     auto shader_source = &shader_source_option.value;
     auto split_shader = shader_utils::split_shader(shader_source);
     r->_rendered_worlds_combining_shader = r->_concrete_renderer.create_shader(split_shader.vertex_source, split_shader.fragment_source);

@@ -2,7 +2,7 @@
 
 #include <base/matrix4.h>
 
-#include "image.h"
+#include "../image.h"
 #include "uniform.h"
 #include "render_resource_handle.h"
 

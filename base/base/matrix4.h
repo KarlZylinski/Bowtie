@@ -1,6 +1,4 @@
 #pragma once
-
-#include <cassert>
 #include <cstring>
 #include "vector4.h"
 

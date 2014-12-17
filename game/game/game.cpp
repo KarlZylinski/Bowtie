@@ -1,6 +1,4 @@
 #include "game.h"
-
-#include <cassert>
 #include <lua.hpp>
 #include "script_interfaces/script_console.h"
 #include "script_interfaces/script_interface_helpers.h"
