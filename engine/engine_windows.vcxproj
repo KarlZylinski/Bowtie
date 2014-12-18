@@ -67,6 +67,7 @@
     <ClCompile Include="engine\entity\components\component_header.cpp" />
     <ClCompile Include="engine\entity\components\sprite_renderer_component.cpp" />
     <ClCompile Include="engine\entity\components\transform_component.cpp" />
+    <ClCompile Include="engine\entity\entity.cpp" />
     <ClCompile Include="engine\entity\entity_manager.cpp" />
     <ClCompile Include="engine\font.cpp" />
     <ClCompile Include="engine\keyboard.cpp" />

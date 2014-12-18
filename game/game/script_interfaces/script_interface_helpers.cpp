@@ -88,12 +88,12 @@ void push_vector4(lua_State* lua, const Vector4* v)
     script_interface::check_errors(lua, error);
 }
 
-void push_entity(lua_State* lua, Entity entity, World* world)
+void push_entity(lua_State* lua, Entity entity)
 {
     lua_newtable(lua);
-    lua_pushnumber(lua, entity);
+    lua_pushnumber(lua, entity.id);
     lua_rawseti(lua, -2, 1);
-    lua_pushlightuserdata(lua, world);
+    lua_pushlightuserdata(lua, entity.world);
     lua_rawseti(lua, -2, 2);
 }
 
@@ -166,12 +166,12 @@ uint64 to_hash(lua_State* lua, int32 index)
     return hash_str(lua_tostring(lua, index));
 }
 
-SpawnedEntity to_entity(lua_State* lua, int32 index)
+Entity to_entity(lua_State* lua, int32 index)
 {
-    SpawnedEntity e;
+    Entity e;
     lua_pushnumber(lua, 1);
     lua_gettable(lua, index);
-    e.entity = (Entity)lua_tonumber(lua, -1);
+    e.id = (uint32)lua_tonumber(lua, -1);
     lua_pop(lua, 1);
     lua_pushnumber(lua, 2);
     lua_gettable(lua, index);

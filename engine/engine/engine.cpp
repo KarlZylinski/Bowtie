@@ -47,7 +47,6 @@ World* create_world(Engine* e)
 
 void destroy_world(Engine* e, World* world)
 {
-    world::deinit(world);
     e->allocator->dealloc(world);
 }
 

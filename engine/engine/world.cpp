@@ -14,7 +14,7 @@ namespace
 
 Matrix4 world_matrix(const TransformComponentData* c, uint32 i)
 {
-    auto parent_index = c->parent[i];
+    auto parent_index = c->parent_index[i];
 
     auto p = matrix4::indentity();
     p.w.x = -c->pivot[i].x;
@@ -54,7 +54,7 @@ void update_transforms(TransformComponentData* transform, uint32 start, uint32 e
         if (!component::has_entity(&sprite_renderer->header, entity))
             continue;
 
-        auto sprite_index = hash::get(&sprite_renderer->header.map, transform->entity[i]);
+        auto sprite_index = sprite_renderer->header.index_by_entity_index[entity::index(transform->entity[i])];
         auto rect = sprite_renderer->data.rect[sprite_index];
         auto v1 = matrix4::mul(&world_transform, &vector4::create(rect.position.x, rect.position.y, 0, 1));
         auto v2 = matrix4::mul(&world_transform, &vector4::create(rect.position.x + rect.size.x, rect.position.y, 0, 1));
@@ -112,14 +112,8 @@ void init(World* w, Allocator* allocator, RenderInterface* render_interface, Res
     auto default_material = resource_store::load(resource_store, ResourceType::Material, "default.material");
     Assert(default_material.is_some, "Default material default.material is missing.");
     w->default_material = ((Material*)default_material.value)->render_handle;
-    sprite_renderer_component::init(&w->sprite_renderer_components, allocator);
-    transform_component::init(&w->transform_components, allocator);
-}
-
-void deinit(World* w)
-{
-    sprite_renderer_component::deinit(&w->sprite_renderer_components, w->allocator);
-    transform_component::deinit(&w->transform_components, w->allocator);
+    sprite_renderer_component::init(&w->sprite_renderer_components);
+    transform_component::init(&w->transform_components);
 }
 
 void update(World* w)

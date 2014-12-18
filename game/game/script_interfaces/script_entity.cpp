@@ -22,14 +22,14 @@ namespace
 int32 create(lua_State* lua)
 {
     auto world = (World*)lua_touserdata(lua, 1);
-    script_interface::push_entity(lua, entity_manager::create(s_manager), world);
+    script_interface::push_entity(lua, entity_manager::create(s_manager, world));
     return 1;
 }
 
 int32 destroy(lua_State* lua)
 {
     auto entity = script_interface::to_entity(lua, 1);
-    entity_manager::destroy(s_manager, entity.entity);
+    entity_manager::destroy(s_manager, entity);
     return 0;
 }
 

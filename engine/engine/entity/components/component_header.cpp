@@ -8,22 +8,16 @@ namespace bowtie
 namespace component
 {
 
-void init(ComponentHeader* h, Allocator* allocator)
+void init(ComponentHeader* h)
 {
     memset(h, 0, sizeof(ComponentHeader));
-    hash::init(&h->map, allocator);
     reset_dirty(h);
     reset_new(h);
 }
 
-void deinit(ComponentHeader* h)
-{
-    hash::deinit(&h->map);
-}
-
 bool has_entity(const ComponentHeader* h, Entity e)
 {
-    return hash::has(&h->map, e);
+    return entity::index(e) < h->num;
 }
 
 uint32 num_dirty(const ComponentHeader* h)

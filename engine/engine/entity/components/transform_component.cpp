@@ -3,6 +3,8 @@
 #include <base/vector2.h>
 #include <base/matrix4.h>
 
+#define GetIndex(c, e) c->header.index_by_entity_index[entity::index(e)]
+
 namespace bowtie
 {
 
@@ -16,8 +18,8 @@ TransformComponentData initialize_data(void* buffer, uint32 size)
     new_data.position = (Vector2*)(new_data.entity + size);
     new_data.rotation = (real32*)(new_data.position + size);
     new_data.pivot = (Vector2*)(new_data.rotation + size);
-    new_data.parent = (uint32*)(new_data.pivot + size);
-    new_data.first_child = (uint32*)(new_data.parent + size);
+    new_data.parent_index = (uint32*)(new_data.pivot + size);
+    new_data.first_child = (uint32*)(new_data.parent_index + size);
     new_data.next_sibling = (uint32*)(new_data.first_child + size);
     new_data.previous_sibling = (uint32*)(new_data.next_sibling + size);
     new_data.world_transform = (Matrix4*)(new_data.previous_sibling + size);
@@ -30,7 +32,7 @@ void copy_offset(TransformComponentData* from, TransformComponentData* to, uint3
     memcpy(to->position + to_offset, from->position + from_offset, num * sizeof(Vector2));
     memcpy(to->rotation + to_offset, from->rotation + from_offset, num * sizeof(real32));
     memcpy(to->pivot + to_offset, from->pivot + from_offset, num * sizeof(Vector2));
-    memcpy(to->parent + to_offset, from->parent + from_offset, num * sizeof(uint32));
+    memcpy(to->parent_index + to_offset, from->parent_index + from_offset, num * sizeof(uint32));
     memcpy(to->first_child + to_offset, from->first_child + from_offset, num * sizeof(uint32));
     memcpy(to->next_sibling + to_offset, from->next_sibling + from_offset, num * sizeof(uint32));
     memcpy(to->previous_sibling + to_offset, from->previous_sibling + from_offset, num * sizeof(uint32));
@@ -49,13 +51,13 @@ void internal_copy(TransformComponentData* c, uint32 from, uint32 to)
 
 void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_index)
 {
-    if (d->parent[index] == parent_index)
+    if (d->parent_index[index] == parent_index)
         return;
 
     // Remove any references to this transform from old parent and siblings.
-    if (d->parent[index] != component::NotAssigned)
+    if (d->parent_index[index] != component::NotAssigned)
     {
-        auto old_parent = d->parent[index];
+        auto old_parent = d->parent_index[index];
         auto old_parent_child_iter = d->first_child[old_parent];
 
         while (old_parent_child_iter != component::NotAssigned)
@@ -103,7 +105,7 @@ void set_parent_internal(TransformComponentData* d, uint32 index, uint32 parent_
         d->first_child[parent_index] = index;
     }
 
-    d->parent[index] = parent_index;
+    d->parent_index[index] = parent_index;
 }
 
 void update_child_parent_indices(TransformComponent* c, uint32 parent)
@@ -112,15 +114,15 @@ void update_child_parent_indices(TransformComponent* c, uint32 parent)
 
     while (child != component::NotAssigned)
     {
-        c->data.parent[child] = parent;
+        c->data.parent_index[child] = parent;
         child = c->data.next_sibling[child];
     }
 }
 
 void swap(TransformComponent* c, uint32 i1, uint32 i2)
 {
-    auto i1_parent = c->data.parent[i1];
-    auto i2_parent = c->data.parent[i2];
+    auto i1_parent = c->data.parent_index[i1];
+    auto i2_parent = c->data.parent_index[i2];
 
     if (i1_parent != component::NotAssigned)
         set_parent_internal(&c->data, i1, component::NotAssigned);
@@ -128,8 +130,8 @@ void swap(TransformComponent* c, uint32 i1, uint32 i2)
     if (i2_parent != component::NotAssigned)
         set_parent_internal(&c->data, i2, component::NotAssigned);
 
-    hash::set(&c->header.map, c->data.entity[i1], i2);
-    hash::set(&c->header.map, c->data.entity[i2], i1);
+    c->header.index_by_entity_index[entity::index(c->data.entity[i1])] = i2;
+    c->header.index_by_entity_index[entity::index(c->data.entity[i2])] = i1;
     internal_copy(&c->data, i2, c->header.num);
     internal_copy(&c->data, i1, i2);
     internal_copy(&c->data, c->header.num, i1);
@@ -144,26 +146,13 @@ void swap(TransformComponent* c, uint32 i1, uint32 i2)
     update_child_parent_indices(c, i2);
 }
 
-void grow(TransformComponent* c, Allocator* allocator)
-{
-    const uint32 new_capacity = (c->header.capacity == 0 ? 8 : c->header.capacity * 2) + 1; // One extra so last index always can be used for swapping.
-    const uint32 bytes = new_capacity * transform_component::component_size;
-    void* buffer = allocator->alloc_raw(bytes);
-    auto new_data = initialize_data(buffer, new_capacity);
-    copy(&c->data, &new_data, c->header.num);
-    c->data = new_data;
-    allocator->dealloc(c->buffer);
-    c->buffer = buffer;
-    c->header.capacity = new_capacity;
-}
-
 void mark_dirty(TransformComponent* c, uint32 index)
 {
     auto dd = component::mark_dirty(&c->header, index);
 
     if (dd.new_index != dd.old_index)
         swap(c, dd.old_index, dd.new_index);
-    
+
     auto child_iter = c->data.first_child[dd.new_index];
 
     // Mark all children dirty as well.
@@ -171,14 +160,14 @@ void mark_dirty(TransformComponent* c, uint32 index)
     {
         auto entity = c->data.entity[child_iter];
         mark_dirty(c, child_iter);
-        child_iter = hash::get(&c->header.map, entity); // Index might change when swapping, refetch it.
-        auto child_parent = c->data.parent[child_iter];
-        Assert(c->data.parent[child_iter] != component::NotAssigned, "Swapped parent of transform child, but the parent is invalid after swap");
+        child_iter = c->header.index_by_entity_index[entity::index(entity)]; // Index might change when swapping, refetch it.
+        auto child_parent = c->data.parent_index[child_iter];
+        Assert(c->data.parent_index[child_iter] != component::NotAssigned, "Swapped parent of transform child, but the parent is invalid after swap");
 
         if (child_iter < child_parent)
         {
             swap(c, child_iter, child_parent); // Parents must be before all children, otherwise updating will be wonky.
-            child_iter = hash::get(&c->header.map, entity);
+            child_iter = c->header.index_by_entity_index[entity::index(entity)];
         }
 
         child_iter = c->data.next_sibling[child_iter];
@@ -194,30 +183,25 @@ uint32 component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(real32) + size
                             + sizeof(uint32) + sizeof(uint32) + sizeof(uint32) + sizeof(uint32)
                             + sizeof(Matrix4);
 
-void init(TransformComponent* c, Allocator* allocator)
+void init(TransformComponent* c)
 {
     memset(c, 0, sizeof(TransformComponent));
-    component::init(&c->header, allocator);
+    component::init(&c->header);
+    const auto buffer_size = component_size * entity::max_entities;
+    c->buffer = memory::alloc(&MainThreadMemory, buffer_size);
+    c->data = initialize_data(c->buffer, entity::max_entities);
 }
 
-void deinit(TransformComponent* c, Allocator* allocator)
+void create(TransformComponent* c, Entity e)
 {
-    component::deinit(&c->header);
-    allocator->dealloc(c->buffer);
-}
-
-void create(TransformComponent* c, Entity e, Allocator* allocator)
-{
-    if (c->header.num >= c->header.capacity)
-        grow(c, allocator);
-
-    uint32 i = c->header.num++;
-    hash::set(&c->header.map, e, i);
+    auto i = c->header.num++;
+    assert(i < entity::max_entities);
+    c->header.index_by_entity_index[entity::index(e)] = i;
     c->data.entity[i] = e;
     c->data.position[i] = vector2::create(0, 0);
     c->data.rotation[i] = 0;
     c->data.pivot[i] = vector2::create(0, 0);
-    c->data.parent[i] = component::NotAssigned;
+    c->data.parent_index[i] = component::NotAssigned;
     c->data.first_child[i] = component::NotAssigned;
     c->data.next_sibling[i] = component::NotAssigned;
     c->data.previous_sibling[i] = component::NotAssigned;
@@ -229,8 +213,7 @@ void create(TransformComponent* c, Entity e, Allocator* allocator)
 
 void destroy(TransformComponent* c, Entity e)
 {
-    uint32 i = hash::get(&c->header.map, e, 0u);
-    hash::remove(&c->header.map, e);
+    auto i = GetIndex(c, e);
     --c->header.num;
 
     if (i == c->header.num)
@@ -241,62 +224,62 @@ void destroy(TransformComponent* c, Entity e)
 
 void set_position(TransformComponent* c, Entity e, const Vector2* position)
 {    
-    auto i = hash::get(&c->header.map, e);
+    auto i = GetIndex(c, e);
     c->data.position[i] = *position;
     mark_dirty(c, i);
 }
 
 const Vector2* position(TransformComponent* c, Entity e)
 {
-    return &c->data.position[hash::get(&c->header.map, e)];
+    return &c->data.position[GetIndex(c, e)];
 }
 
 void set_rotation(TransformComponent* c, Entity e, real32 rotation)
 {
-    auto i = hash::get(&c->header.map, e);
+    auto i = GetIndex(c, e);
     c->data.rotation[i] = rotation;
     mark_dirty(c, i);
 }
 
 real32 rotation(TransformComponent* c, Entity e)
 {
-    return c->data.rotation[hash::get(&c->header.map, e)];
+    return c->data.rotation[GetIndex(c, e)];
 }
 
 void set_pivot(TransformComponent* c, Entity e, const Vector2* pivot)
 {
-    auto i = hash::get(&c->header.map, e);
+    auto i = GetIndex(c, e);
     c->data.pivot[i] = *pivot;
     mark_dirty(c, i);
 }
 
 const Vector2* pivot(TransformComponent* c, Entity e)
 {
-    return &c->data.pivot[hash::get(&c->header.map, e)];
+    return &c->data.pivot[GetIndex(c, e)];
 }
 
 void set_parent(TransformComponent* c, Entity e, Entity parent_entity)
 {
-    auto i = hash::get(&c->header.map, e);
-    set_parent_internal(&c->data, i, hash::get(&c->header.map, parent_entity));
+    auto i = GetIndex(c, e);
+    set_parent_internal(&c->data, i, GetIndex(c, parent_entity));
     mark_dirty(c, i);
 }
 
 Entity parent(TransformComponent* c, Entity e)
 {
-    return c->data.parent[hash::get(&c->header.map, e)];
+    return c->data.entity[c->data.parent_index[GetIndex(c, e)]];
 }
 
 void set_world_transform(TransformComponent* c, Entity e, const Matrix4* world_transform)
 {
-    auto i = hash::get(&c->header.map, e);
+    auto i = GetIndex(c, e);
     c->data.world_transform[i] = *world_transform;
     mark_dirty(c, i);
 }
 
 const Matrix4* world_transform(TransformComponent* c, Entity e)
 {
-    return &c->data.world_transform[hash::get(&c->header.map, e)];
+    return &c->data.world_transform[GetIndex(c, e)];
 }
 
 void* copy_dirty_data(TransformComponent* c)

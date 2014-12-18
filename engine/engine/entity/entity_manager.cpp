@@ -9,29 +9,11 @@ namespace bowtie
 namespace
 {
 
-const uint32 entity_index_bits = 20;
-const uint32 entity_index_mask = (1 << entity_index_bits) - 1;
-const uint32 entity_generation_bits = 12;
-const uint32 entity_generation_mask = (1 << entity_generation_bits) - 1;
-
-uint32 entity_index(Entity e)
-{
-    return e & entity_index_mask;
-}
-
-uint32 entity_generation(Entity e)
-{
-    return (e >> entity_index_bits) & entity_generation_mask;
-}
 
 uint32 get_next_index(EntityManager* m)
 {
     if (m->index_holes.size == 0)
-    {
-        uint32 new_index = ++m->last_entity_index;;
-        Assert(new_index < (1 << entity_generation_bits), "Invalid entity handle created");
-        return new_index; 
-    }
+        return ++m->last_entity_index;
 
     uint32 hole_index = rand() % m->index_holes.size;
     uint32 index = m->index_holes[hole_index];
@@ -57,7 +39,7 @@ void deinit(EntityManager* m)
     vector::deinit(&m->generation);
 }
 
-Entity create(EntityManager* m)
+Entity create(EntityManager* m, World* world)
 {
     uint32 index = get_next_index(m);
 
@@ -69,12 +51,15 @@ Entity create(EntityManager* m)
     else
         ++m->generation[index];
 
-    return (m->generation[index] << entity_index_bits) | index;
+    Entity e = {};
+    e.id = entity::create_id(index, m->generation[index]);
+    e.world = world;
+    return e;
 }
 
 void destroy(EntityManager* m, Entity entity)
 {
-    uint32 index = entity_index(entity);
+    uint32 index = entity::index(entity);
     ++m->generation[index];
     
     if (index <= m->last_entity_index)
@@ -83,7 +68,7 @@ void destroy(EntityManager* m, Entity entity)
 
 bool is_alive(EntityManager* m, Entity entity)
 {
-    return m->generation[entity_index(entity)] == entity_generation(entity);
+    return m->generation[entity::index(entity)] == entity::generation(entity);
 }
 
 } // namespace entity_manager

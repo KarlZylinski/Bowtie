@@ -22,64 +22,64 @@ namespace
 int32 create(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    transform_component::create(&e.world->transform_components, e.entity, s_allocator);
+    transform_component::create(&e.world->transform_components, e);
     return 0;
 }
 
 int32 destroy(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    transform_component::destroy(&e.world->transform_components, e.entity);
+    transform_component::destroy(&e.world->transform_components, e);
     return 0;
 }
 
 int32 position(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    script_interface::push_vector2(lua, transform_component::position(&e.world->transform_components, e.entity));
+    script_interface::push_vector2(lua, transform_component::position(&e.world->transform_components, e));
     return 1;
 }
 
 int32 set_position(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    transform_component::set_position(&e.world->transform_components, e.entity, &script_interface::to_vector2(lua, 2));
+    transform_component::set_position(&e.world->transform_components, e, &script_interface::to_vector2(lua, 2));
     return 0;
 }
 
 int32 rotation(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    lua_pushnumber(lua, transform_component::rotation(&e.world->transform_components, e.entity));
+    lua_pushnumber(lua, transform_component::rotation(&e.world->transform_components, e));
     return 1;
 }
 
 int32 set_rotation(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    transform_component::set_rotation(&e.world->transform_components, e.entity, (real32)lua_tonumber(lua, 2));
+    transform_component::set_rotation(&e.world->transform_components, e, (real32)lua_tonumber(lua, 2));
     return 0;
 }
 
 int32 pivot(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    script_interface::push_vector2(lua, transform_component::pivot(&e.world->transform_components, e.entity));
+    script_interface::push_vector2(lua, transform_component::pivot(&e.world->transform_components, e));
     return 1;
 }
 
 int32 set_pivot(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    transform_component::set_pivot(&e.world->transform_components, e.entity, &script_interface::to_vector2(lua, 2));
+    transform_component::set_pivot(&e.world->transform_components, e, &script_interface::to_vector2(lua, 2));
     return 0;
 }
 
 int32 parent(lua_State* lua)
 {
     auto e = script_interface::to_entity(lua, 1);
-    auto parent = transform_component::parent(&e.world->transform_components, e.entity);
-    script_interface::push_entity(lua, parent, e.world);
+    auto parent = transform_component::parent(&e.world->transform_components, e);
+    script_interface::push_entity(lua, parent);
     return 1;
 }
 
@@ -88,7 +88,7 @@ int32 set_parent(lua_State* lua)
     auto e = script_interface::to_entity(lua, 1);
     auto parent = script_interface::to_entity(lua, 2);
     Assert(e.world == parent.world, "A parent and child transform must be part of the same world");
-    transform_component::set_parent(&e.world->transform_components, e.entity, parent.entity);
+    transform_component::set_parent(&e.world->transform_components, e, parent);
     return 0;
 }
 

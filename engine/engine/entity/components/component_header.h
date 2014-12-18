@@ -1,18 +1,16 @@
 #pragma once
 
 #include <base/hash.h>
+#include "../entity.h"
 
 namespace bowtie
 {
 
-typedef uint32 Entity;
-
 struct ComponentHeader
 {
     // Maps entity id to component indices
-    Hash<uint32> map;
+    uint32 index_by_entity_index[entity::max_entities];
     uint32 num;
-    uint32 capacity;
     uint32 last_dirty_index;
     uint32 first_new;
 };
@@ -20,8 +18,7 @@ struct ComponentHeader
 namespace component
 {
     const uint32 NotAssigned = (uint32)-1;
-    void init(ComponentHeader* h, Allocator* allocator);
-    void deinit(ComponentHeader* h);
+    void init(ComponentHeader* h);
     bool has_entity(const ComponentHeader* h, Entity e);
     uint32 num_dirty(const ComponentHeader* h);
     void reset_dirty(ComponentHeader* h);

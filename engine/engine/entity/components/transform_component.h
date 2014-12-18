@@ -15,7 +15,7 @@ struct TransformComponentData
     Vector2* position;
     real32* rotation;
     Vector2* pivot;
-    uint32* parent;
+    uint32* parent_index;
     uint32* first_child;
     uint32* next_sibling;
     uint32* previous_sibling;
@@ -32,9 +32,8 @@ struct TransformComponent
 namespace transform_component
 {
     extern uint32 component_size;
-    void init(TransformComponent* c, Allocator* allocator);
-    void deinit(TransformComponent* c, Allocator* allocator);
-    void create(TransformComponent* c, Entity e, Allocator* allocator);
+    void init(TransformComponent* c);
+    void create(TransformComponent* c, Entity e);
     void destroy(TransformComponent* c, Entity e);
     void set_position(TransformComponent* c, Entity e, const Vector2* rect);
     const Vector2* position(TransformComponent* c, Entity e);

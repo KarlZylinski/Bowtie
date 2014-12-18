@@ -36,9 +36,8 @@ struct SpriteRendererComponent
 namespace sprite_renderer_component
 {
     extern uint32 component_size;
-    void init(SpriteRendererComponent* c, Allocator* allocator);
-    void deinit(SpriteRendererComponent* c, Allocator* allocator);
-    void create(SpriteRendererComponent* c, Entity e, Allocator* allocator, const Rect* rect, const Color* color);
+    void init(SpriteRendererComponent* c);
+    void create(SpriteRendererComponent* c, Entity e, const Rect* rect, const Color* color);
     void destroy(SpriteRendererComponent* c, Entity e);
     void set_rect(SpriteRendererComponent* c, Entity e, const Rect* rect);
     const Rect* rect(SpriteRendererComponent* c, Entity e);
