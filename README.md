@@ -59,7 +59,7 @@ My 2D engine, built from the ground up using C++ and OpenGL.
 - [ ] Remove lua, turn game project into an empty c game project.
 - [ ] Move any static or dynamically allocated chucks of memory to permanent memory.
 - [ ] Look over temp allocator, make it possible to somehow push the head forward more often? Requires one temp allocator per thread? Might be good though, because of mutex perf. issues
-- [ ] The tough one! What to do about the component allocations? Make entity into a regular index and have gaps in component collections? That would be ok if it wasn't for two things: bad locality and marking one entity dirty forces you to move all entities. You could have an indirection table though. It's only the touched ones that are updated and those are at the front so that's ok.
+- [x] The tough one! What to do about the component allocations? Make entity into a regular index and have gaps in component collections? That would be ok if it wasn't for two things: bad locality and marking one entity dirty forces you to move all entities. You could have an indirection table though. It's only the touched ones that are updated and those are at the front so that's ok.
 
         entity index -> transform index table
         mark dirty by moving transform index to front
