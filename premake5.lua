@@ -1,9 +1,8 @@
 solution "bowtie"
    language "C++"
-   configurations { "debug", "release" }
-   forceincludes { "$(BOWTIE_SOURCE)/base/base/types.h", "$(BOWTIE_SOURCE)/base/base/assert.h" }
    flags { "Unicode", "ExtraWarnings", "FatalWarnings" }
- 
+   configurations { "debug", "release" }
+
    configuration "debug"
       defines { "DEBUG" }
       flags { "Symbols" }
@@ -20,7 +19,8 @@ solution "bowtie"
       buildoptions { "/wd4996", "/wd4238", "/TP" }
       linkoptions { "/ignore:4098" }
       flags { "StaticRuntime" }
-
+      
+   forceincludes { "$(BOWTIE_SOURCE)/base/base/types.h", "$(BOWTIE_SOURCE)/base/base/assert.h" }
    defines { "_CRT_SECURE_NO_WARNINGS" }
 
    project "application_windows"
