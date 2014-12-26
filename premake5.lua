@@ -30,6 +30,7 @@ solution "bowtie"
       flags { "WinMain" }
       links { "base", "engine", "game", "opengl_renderer", "os", "lua51.lib", "opengl32", "dbghelp" }
       includedirs { "base", "engine", "game", "opengl_renderer", "os" }
+      debugdir "$(BOWTIE_OUTPUT)"
       configuration "debug"
          libdirs { "$(BOWTIE_LIBS)/luajit/lib/debug" }
       configuration "release"
