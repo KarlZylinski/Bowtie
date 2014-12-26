@@ -187,7 +187,10 @@ void close(Window* w)
 
 LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-    Window* window = (Window*)GetWindowLong(hwnd,GWLP_USERDATA);
+    Window* window = (Window*)GetWindowLong(hwnd, GWLP_USERDATA);
+
+    if (window == nullptr)
+        return DefWindowProc(hwnd, message, wparam, lparam);
 
     switch(message)
     {

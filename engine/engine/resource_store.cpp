@@ -8,7 +8,7 @@
 #include <base/jzon.h>
 #include <base/string_utils.h>
 #include <base/stream.h>
-#include <resource_path.h>
+#include <base/resource_path.h>
 
 #include "font.h"
 #include "material.h"

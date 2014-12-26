@@ -4,7 +4,7 @@
 #include <vector>
 #include <base/file.h>
 #include <base/memory.h>
-#include "resource_path.h"
+#include <base/resource_path.h>
 
 namespace bowtie
 {
