@@ -8,7 +8,7 @@
 namespace bowtie
 {
 
-namespace
+namespace transform_component
 {
 
 TransformComponentData initialize_data(void* buffer, uint32 size)
@@ -173,11 +173,6 @@ void mark_dirty(TransformComponent* c, uint32 index)
         child_iter = c->data.next_sibling[child_iter];
     }
 }
-
-}
-
-namespace transform_component
-{
 
 uint32 component_size = sizeof(Entity) + sizeof(Vector2) + sizeof(real32) + sizeof(Vector2)
                             + sizeof(uint32) + sizeof(uint32) + sizeof(uint32) + sizeof(uint32)

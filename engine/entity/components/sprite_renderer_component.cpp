@@ -11,7 +11,7 @@
 namespace bowtie
 {
 
-namespace
+namespace sprite_renderer_component
 {
 
 SpriteRendererComponentData initialize_data(void* buffer, uint32 size)
@@ -66,11 +66,6 @@ void mark_dirty(SpriteRendererComponent* c, uint32 index)
 
     swap(c, dd.old_index, dd.new_index);
 }
-
-}
-
-namespace sprite_renderer_component
-{
 
 uint32 component_size = (sizeof(Entity) + sizeof(Color) + sizeof(Rect) + sizeof(Material) + sizeof(RenderResourceHandle) + sizeof(Quad) + sizeof(int32));
 

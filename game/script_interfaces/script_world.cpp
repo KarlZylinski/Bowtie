@@ -10,13 +10,10 @@
 namespace bowtie
 {
 
-namespace
-{
-    Engine* s_engine;
-}
-
 namespace world_script_interface
 {
+
+Engine* s_engine;
 
 int32 create(lua_State* lua)
 {

@@ -7,13 +7,10 @@
 namespace bowtie
 {
 
-namespace
-{
-    Engine* s_engine;
-}
-
 namespace time_script_interface
 {
+
+Engine* s_engine;
 
 int32 time(lua_State* lua)
 {
