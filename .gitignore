@@ -11,6 +11,8 @@
 *.lai
 *.la
 *.a
+bin/
+source_include.h
 
 # Visual Studio specific
 *.sdf
