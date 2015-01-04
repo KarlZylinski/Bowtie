@@ -25,12 +25,11 @@ run = ARGV[0] == "run" or ARGV[1] == "run"
 
 compiler_params =  "-std=c++11 -x c++ -Wall -Werror " +
                    "-Wno-unknown-pragmas -Wno-address-of-temporary -Wno-missing-braces " +
-                   "-I #{libs_dir}/luajit " +
                    "-D LINUX -D GLEW_STATIC " +
                    "-I #{source_dir} " +
                    "-include #{source_dir}/base/types.h -include #{source_dir}/base/assert.h "
 
-linker_params = "-L/usr/X11R6/lib -ldl -L#{libs_dir}/luajit -lluajit -lX11 -lXft -lGL -o #{output_dir}/bowtie "
+linker_params = "-L/usr/X11R6/lib -ldl -lX11 -lXft -lGL -o #{output_dir}/bowtie "
 #                "user32.lib lua51.lib opengl32.lib Gdi32.lib dbghelp.lib " +
 
 if release_build 

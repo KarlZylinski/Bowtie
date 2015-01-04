@@ -13,23 +13,20 @@ release_build = ARGV[0] == "release"
 run = ARGV[0] == "run" or ARGV[1] == "run"
 
 compiler_params = "/W4 /WX /TP " +
-                  "/I #{libs_dir}/luajit/include " +
                   "/D WINDOWS /D GLEW_STATIC /DUNICODE /D_UNICODE /D _CRT_SECURE_NO_WARNINGS " +
-                  "/wd4996 /wd4238 /wd4530 " +
+                  "/wd4996 /wd4238 /wd4530 /wd4100 " +
                   "/I #{source_dir} " +
                   "/FI #{source_dir}/base/types.h /FI #{source_dir}/base/assert.h "
 
 linker_params = "/subsystem:windows /entry:mainCRTStartup /incremental:no " +
                 "/ignore:4098 " +
-                "user32.lib lua51.lib opengl32.lib Gdi32.lib dbghelp.lib " +
+                "user32.lib opengl32.lib Gdi32.lib dbghelp.lib " +
                 "/out:#{output_dir}/bowtie.exe"
 
 if release_build 
     compiler_params = compiler_params + "/GL /O2 /MT /D NDEBUG"
-    linker_params = "/libpath:#{libs_dir}/luajit/lib/release " + linker_params
 else
     compiler_params = compiler_params + "/Zi /MTd /D DEBUG"
-    linker_params = "/libpath:#{libs_dir}/luajit/lib/debug " + linker_params
 end
 
 setup_build_environment = "\"" + ENV["VS110COMNTOOLS"] + "..\\..\\VC\\vcvarsall.bat\" amd64"

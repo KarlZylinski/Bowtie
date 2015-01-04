@@ -1,7 +1,5 @@
 #pragma once
 
-struct lua_State;
-
 namespace bowtie
 {
 
@@ -12,7 +10,6 @@ struct RenderInterface;
 struct Game
 {
     bool started;
-    lua_State* _lua;
 };
 
 namespace game
