@@ -37,3 +37,6 @@ source_include.h
 *.suo
 *.user
 *.filters
+
+# Sublime
+*.sublime-workspace

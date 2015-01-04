@@ -1,21 +1,10 @@
 require "fileutils"
 
-def print_header(header)
-    puts
-    puts header
-    puts "-" * header.length
-end
-
-puts "OK"
-print_header "Creating unity build source include"
-
 if !system("ruby write_source_include_header.rb bowtie_windows/source_include.h opengl_renderer")
-    puts FAILED
+    puts "Failed creating unity build source include"
     exit 1
 end
 
-puts "OK"
-print_header "Setting up compiler and linker parameters"
 libs_dir = ENV["BOWTIE_LIBS"]
 source_dir = ENV["BOWTIE_SOURCE"]
 output_dir = ENV["BOWTIE_OUTPUT"] || "bin"
@@ -37,24 +26,18 @@ linker_params = "/subsystem:windows /entry:mainCRTStartup /incremental:no " +
 
 if release_build 
     compiler_params = compiler_params + "/GL /O2 /MT /D NDEBUG"
-    linker_params = "/libpath:#{libs_dir}/luajit/lib/debug " + linker_params
+    linker_params = "/libpath:#{libs_dir}/luajit/lib/release " + linker_params
 else
     compiler_params = compiler_params + "/Zi /MTd /D DEBUG"
-    linker_params = "/libpath:#{libs_dir}/luajit/lib/release " + linker_params
+    linker_params = "/libpath:#{libs_dir}/luajit/lib/debug " + linker_params
 end
 
-puts "OK"
-print_header "Compiling"
 setup_build_environment = "\"" + ENV["VS110COMNTOOLS"] + "..\\..\\VC\\vcvarsall.bat\" amd64"
 compiler_string = "#{setup_build_environment} && cl.exe #{compiler_params} bowtie_windows/bowtie_windows.cpp /link #{linker_params}"
 
 if !system(compiler_string)
-    puts "FAILED"
     exit 1
 end
-
-puts
-puts "OK"
 
 if run
     Dir.chdir(output_dir){
