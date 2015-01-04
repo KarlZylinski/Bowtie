@@ -37,7 +37,7 @@ namespace sprite_renderer_component
 {
     extern uint32 component_size;
     void init(SpriteRendererComponent* c);
-    void create(SpriteRendererComponent* c, Entity e, const Rect* rect, const Color* color);
+    void create(Entity e, const Rect* rect, const Color* color);
     void destroy(SpriteRendererComponent* c, Entity e);
     void set_rect(SpriteRendererComponent* c, Entity e, const Rect* rect);
     const Rect* rect(SpriteRendererComponent* c, Entity e);
@@ -45,7 +45,7 @@ namespace sprite_renderer_component
     const Color* color(SpriteRendererComponent* c, Entity e);
     void set_render_handle(SpriteRendererComponent* c, Entity e, RenderResourceHandle render_handle);
     const Material* material(SpriteRendererComponent* c, Entity e);
-    void set_material(SpriteRendererComponent* c, Entity e, Material* material);
+    void set_material(Entity e, Material* material);
     RenderResourceHandle render_handle(SpriteRendererComponent* c, Entity e);
     void set_geometry(SpriteRendererComponent* c, Entity e, const Quad* geometry);
     const Quad* geometry(SpriteRendererComponent* c, Entity e);

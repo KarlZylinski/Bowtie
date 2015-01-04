@@ -13,7 +13,8 @@ struct Rect
 
 namespace rect
 {
-    void init(Rect* rect, Vector2* position, Vector2* size);
+    void init(Rect* rect, const Vector2* position, const Vector2* size);
+    Rect create(const Vector2* position, const Vector2* size);
 }
 
 }

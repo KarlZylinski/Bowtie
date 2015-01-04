@@ -187,8 +187,9 @@ void init(TransformComponent* c)
     c->data = initialize_data(c->buffer, entity::max_entities);
 }
 
-void create(TransformComponent* c, Entity e)
+void create(Entity e)
 {
+    auto c = &e.world->transform_components;
     auto i = c->header.num++;
     assert(i < entity::max_entities);
     c->header.index_by_entity_index[entity::index(e)] = i;
@@ -217,8 +218,9 @@ void destroy(TransformComponent* c, Entity e)
     internal_copy(&c->data, c->header.num - 1, i);
 }
 
-void set_position(TransformComponent* c, Entity e, const Vector2* position)
-{    
+void set_position(Entity e, const Vector2* position)
+{
+    auto c = &e.world->transform_components;
     auto i = GetIndex(c, e);
     c->data.position[i] = *position;
     mark_dirty(c, i);

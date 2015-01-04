@@ -17,7 +17,7 @@ void init(ComponentHeader* h)
 
 bool has_entity(const ComponentHeader* h, Entity e)
 {
-    return entity::index(e) < h->num;
+    return entity::index(e) <= h->num;
 }
 
 uint32 num_dirty(const ComponentHeader* h)

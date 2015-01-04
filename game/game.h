@@ -6,10 +6,16 @@ namespace bowtie
 struct Allocator;
 struct Engine;
 struct RenderInterface;
+struct World;
 
 struct Game
 {
     bool started;
+    Allocator* allocator;
+    Engine* engine;
+    RenderInterface* render_interface;
+    World* world;
+    Vector2 view_pos;
 };
 
 namespace game

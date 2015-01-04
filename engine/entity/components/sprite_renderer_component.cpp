@@ -78,8 +78,9 @@ void init(SpriteRendererComponent* c)
     c->data = initialize_data(c->buffer, entity::max_entities);
 }
 
-void create(SpriteRendererComponent* c, Entity e, const Rect* rect, const Color* color)
+void create(Entity e, const Rect* rect, const Color* color)
 {
+    auto c = &e.world->sprite_renderer_components;
     auto i = c->header.num++;
     assert(i < entity::max_entities);
     c->header.index_by_entity_index[entity::index(e)] = i;
@@ -140,8 +141,9 @@ const Material* material(SpriteRendererComponent* c, Entity e)
     return &c->data.material[GetIndex(c, e)];
 }
 
-void set_material(SpriteRendererComponent* c, Entity e, Material* material)
+void set_material(Entity e, Material* material)
 {
+    auto c = &e.world->sprite_renderer_components;
     auto i = GetIndex(c, e);
     c->data.material[i] = *material;
     mark_dirty(c, i);

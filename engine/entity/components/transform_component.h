@@ -33,9 +33,9 @@ namespace transform_component
 {
     extern uint32 component_size;
     void init(TransformComponent* c);
-    void create(TransformComponent* c, Entity e);
+    void create(Entity e);
     void destroy(TransformComponent* c, Entity e);
-    void set_position(TransformComponent* c, Entity e, const Vector2* rect);
+    void set_position(Entity e, const Vector2* rect);
     const Vector2* position(TransformComponent* c, Entity e);
     void set_rotation(TransformComponent* c, Entity e, real32 rotation);
     real32 rotation(TransformComponent* c, Entity e);
